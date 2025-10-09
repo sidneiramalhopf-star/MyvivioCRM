@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metavida - Saúde Integral</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🌿 METAVIDA</h1>
+                <p>BALANCE CENTER</p>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item" onclick="showSection('dashboard')">
+                    <span class="icon">🏠</span>
+                    <span>Início</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('practices')">
+                    <span class="icon">✨</span>
+                    <span>Minhas Práticas</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('planner')">
+                    <span class="icon">📋</span>
+                    <span>Planejador</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('ranking')">
+                    <span class="icon">🏆</span>
+                    <span>Ranking</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('rewards')">
+                    <span class="icon">🎁</span>
+                    <span>Recompensas</span>
+                </a>
+            </nav>
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <p class="user-name" id="userName">Visitante</p>
+                    <p class="user-tokens">💎 <span id="userTokens">0</span> tokens</p>
+                </div>
+                <button onclick="logout()" class="logout-btn">Sair</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="login-section" class="section active">
+                <div class="login-container">
+                    <div class="login-card">
+                        <h2>🌿 Bem-vindo ao Metavida</h2>
+                        <p class="subtitle">Equilíbrio entre corpo, mente e energia</p>
+                        
+                        <div class="tabs">
+                            <button class="tab active" onclick="switchTab('login')">Entrar</button>
+                            <button class="tab" onclick="switchTab('register')">Registrar</button>
+                        </div>
+
+                        <form id="login-form" class="auth-form">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="login-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Senha</label>
+                                <input type="password" id="login-password" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Entrar</button>
+                        </form>
+
+                        <form id="register-form" class="auth-form" style="display: none;">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <input type="text" id="register-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="register-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Senha</label>
+                                <input type="password" id="register-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Idade</label>
+                                <input type="number" id="register-age" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Objetivo</label>
+                                <select id="register-goal" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="reduzir estresse">Reduzir estresse</option>
+                                    <option value="ganhar energia">Ganhar energia</option>
+                                    <option value="melhorar foco">Melhorar foco</option>
+                                    <option value="equilíbrio geral">Equilíbrio geral</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Comunidade</label>
+                                <input type="text" id="register-community" placeholder="Ex: Comunidade Brasil" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Registrar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-section" class="section">
+                <div class="header">
+                    <h2>Bom dia, <span id="greetingName">Usuário</span></h2>
+                    <div class="header-actions">
+                        <span class="date" id="currentDate"></span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Suas Práticas</h3>
+                        <p class="subtitle">Últimos 7 dias</p>
+                        <div class="stat-value">
+                            <span class="number" id="totalPractices">0</span>
+                            <span class="trend positive">+0%</span>
+                        </div>
+                        <p class="stat-label">Total de práticas registradas</p>
+                        <button onclick="showSection('practices')" class="btn-secondary">Ver mais</button>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Distribuição</h3>
+                        <p class="subtitle">Por dimensão</p>
+                        <div class="dimension-stats">
+                            <div class="dimension-item">
+                                <span class="dimension-icon">🧠</span>
+                                <div>
+                                    <p>Mente</p>
+                                    <strong id="mindCount">0</strong>
+                                </div>
+                            </div>
+                            <div class="dimension-item">
+                                <span class="dimension-icon">💪</span>
+                                <div>
+                                    <p>Corpo</p>
+                                    <strong id="bodyCount">0</strong>
+                                </div>
+                            </div>
+                            <div class="dimension-item">
+                                <span class="dimension-icon">⚡</span>
+                                <div>
+                                    <p>Energia</p>
+                                    <strong id="energyCount">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card highlight">
+                        <h3>Seus Tokens</h3>
+                        <p class="subtitle">Ganhe praticando!</p>
+                        <div class="stat-value">
+                            <span class="number large" id="dashTokens">0</span>
+                            <span class="icon-large">💎</span>
+                        </div>
+                        <p class="stat-label">0.2 tokens por minuto de prática</p>
+                        <button onclick="showSection('rewards')" class="btn-primary">Resgatar</button>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Ranking</h3>
+                        <p class="subtitle">Sua posição</p>
+                        <div class="stat-value">
+                            <span class="number" id="userRank">-</span>
+                            <span class="icon">🏆</span>
+                        </div>
+                        <p class="stat-label">Continue praticando!</p>
+                        <button onclick="showSection('ranking')" class="btn-secondary">Ver ranking</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="practices-section" class="section">
+                <div class="header">
+                    <h2>Registrar Nova Prática</h2>
+                </div>
+
+                <div class="practice-form-card">
+                    <form id="practice-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Dimensão</label>
+                                <select id="practice-dimension" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="mente">🧠 Mente - Clareza mental e foco</option>
+                                    <option value="corpo">💪 Corpo - Vitalidade e força</option>
+                                    <option value="energia">⚡ Energia - Equilíbrio e serenidade</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Atividade</label>
+                                <input type="text" id="practice-activity" placeholder="Ex: Meditação, Yoga, Respiração" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Duração (minutos)</label>
+                                <input type="number" id="practice-duration" min="1" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Prática</button>
+                    </form>
+                </div>
+
+                <div class="practice-suggestions">
+                    <h3>Sugestões para você</h3>
+                    <div id="suggestions-container"></div>
+                </div>
+            </div>
+
+            <div id="planner-section" class="section">
+                <div class="header">
+                    <h2>Seu Plano Personalizado</h2>
+                </div>
+                <div id="planner-content"></div>
+            </div>
+
+            <div id="ranking-section" class="section">
+                <div class="header">
+                    <h2>🏆 Ranking Metavida</h2>
+                    <p class="subtitle">Top 10 usuários</p>
+                </div>
+                <div class="ranking-container">
+                    <table class="ranking-table" id="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>Posição</th>
+                                <th>Nome</th>
+                                <th>Tokens</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="rewards-section" class="section">
+                <div class="header">
+                    <h2>🎁 Recompensas</h2>
+                    <p class="subtitle">Troque seus tokens por vouchers</p>
+                </div>
+
+                <div class="rewards-grid">
+                    <div class="reward-card">
+                        <div class="reward-icon">🎫</div>
+                        <h3>Voucher R$10</h3>
+                        <p class="reward-cost">💎 20 tokens</p>
+                        <button onclick="redeemVoucher()" class="btn-primary" id="redeem-btn">Resgatar</button>
+                    </div>
+                </div>
+
+                <div class="vouchers-history">
+                    <h3>Seus Vouchers</h3>
+                    <div id="vouchers-list"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
