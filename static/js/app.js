@@ -5,20 +5,16 @@ let authToken = null;
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
-    updateDate();
 });
 
 function setupEventListeners() {
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
-    document.getElementById('register-form').addEventListener('submit', handleRegister);
-    document.getElementById('practice-form').addEventListener('submit', handlePracticeSubmit);
-}
-
-function updateDate() {
-    const dateElement = document.getElementById('currentDate');
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    dateElement.textContent = now.toLocaleDateString('pt-BR', options);
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const agendaForm = document.getElementById('agenda-form');
+    
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (registerForm) registerForm.addEventListener('submit', handleRegister);
+    if (agendaForm) agendaForm.addEventListener('submit', handleAgendaSubmit);
 }
 
 function switchTab(tab) {
@@ -46,17 +42,25 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
 
     try {
-        const response = await fetch(`${API_BASE}/login?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}`, {
-            method: 'POST'
+        const response = await fetch(`${API_BASE}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                senha: password
+            })
         });
 
         if (response.ok) {
             const data = await response.json();
             authToken = data.access_token;
             localStorage.setItem('authToken', authToken);
-            await loadUserData();
+            currentUser = { email: email };
             showToast('Login realizado com sucesso!', 'success');
             showDashboard();
+            await loadDashboardData();
         } else {
             showToast('Credenciais inválidas', 'error');
         }
@@ -70,13 +74,22 @@ async function handleRegister(e) {
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    const age = document.getElementById('register-age').value;
-    const goal = document.getElementById('register-goal').value;
-    const community = document.getElementById('register-community').value;
+    const type = document.getElementById('register-type').value;
+    const unidade = document.getElementById('register-unidade').value;
 
     try {
-        const response = await fetch(`${API_BASE}/registrar?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(password)}&nome=${encodeURIComponent(name)}&idade=${age}&objetivo=${encodeURIComponent(goal)}&comunidade_nome=${encodeURIComponent(community)}`, {
-            method: 'POST'
+        const response = await fetch(`${API_BASE}/registrar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                senha: password,
+                nome: name,
+                tipo: type,
+                unidade_id: parseInt(unidade)
+            })
         });
 
         if (response.ok) {
@@ -92,210 +105,156 @@ async function handleRegister(e) {
     }
 }
 
-async function loadUserData() {
+async function loadDashboardData() {
+    if (!authToken) return;
+    
+    try {
+        const statsResponse = await fetch(`${API_BASE}/stats/overview`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (statsResponse.ok) {
+            const stats = await statsResponse.json();
+            updateTopStats(stats);
+        }
+
+        const metricasResponse = await fetch(`${API_BASE}/metricas/ia?unidade_id=1`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (metricasResponse.ok) {
+            const metricas = await metricasResponse.json();
+            updateMetrics(metricas);
+        }
+
+        await loadAgendas();
+        await loadProgramas();
+    } catch (error) {
+        console.error('Erro ao carregar dados do dashboard', error);
+    }
+}
+
+function updateTopStats(stats) {
+    document.getElementById('stat-risco').textContent = stats.risco_desistencia + '%';
+    document.getElementById('stat-usuarios-visitantes').textContent = stats.usuarios_totais + stats.visitantes;
+    document.getElementById('stat-usuarios-ativos').textContent = stats.usuarios_ativos;
+    
+    document.getElementById('prog-expirados').textContent = stats.programas.expirados;
+    document.getElementById('prog-nao-atribuidos').textContent = stats.programas.nao_atribuidos;
+    document.getElementById('prog-atribuidos').textContent = stats.programas.atribuidos;
+}
+
+function updateMetrics(metricas) {
+    document.getElementById('metric-engajamento').textContent = metricas.engajamento + '%';
+    document.getElementById('metric-roi').textContent = metricas.roi + '%';
+    document.getElementById('metric-produtividade').textContent = metricas.produtividade + '%';
+    document.getElementById('metric-membros').textContent = metricas.usuarios_ativos;
+}
+
+async function loadAgendas() {
     if (!authToken) return;
 
     try {
-        const response = await fetch(`${API_BASE}/praticas?dimensao=mente&atividade=teste&duracao=1`, {
-            method: 'POST',
+        const response = await fetch(`${API_BASE}/agendas/historico`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
 
         if (response.ok) {
-            await loadDashboardData();
+            const agendas = await response.json();
+            displayAgendas(agendas);
         }
     } catch (error) {
-        console.error('Erro ao carregar dados do usuário', error);
+        console.error('Erro ao carregar agendas', error);
     }
 }
 
-async function loadDashboardData() {
-    try {
-        const rankingResponse = await fetch(`${API_BASE}/ranking`);
-        if (rankingResponse.ok) {
-            const ranking = await rankingResponse.json();
-            updateDashboard(ranking);
-        }
-
-        await loadSuggestions();
-    } catch (error) {
-        console.error('Erro ao carregar dashboard', error);
-    }
-}
-
-function updateDashboard(ranking) {
-    const greetingName = document.getElementById('greetingName');
-    const userName = document.getElementById('userName');
+function displayAgendas(agendas) {
+    const container = document.getElementById('agenda-list');
     
-    if (ranking.length > 0) {
-        greetingName.textContent = ranking[0].nome;
-        userName.textContent = ranking[0].nome;
-        document.getElementById('userTokens').textContent = ranking[0].tokens.toFixed(1);
-        document.getElementById('dashTokens').textContent = ranking[0].tokens.toFixed(0);
-    }
-}
-
-async function handlePracticeSubmit(e) {
-    e.preventDefault();
-    
-    const dimension = document.getElementById('practice-dimension').value;
-    const activity = document.getElementById('practice-activity').value;
-    const duration = document.getElementById('practice-duration').value;
-
-    if (!authToken) {
-        showToast('Faça login primeiro', 'error');
+    if (agendas.length === 0) {
+        container.innerHTML = '<p class="empty-message">Nenhuma atividade agendada</p>';
         return;
     }
 
-    try {
-        const response = await fetch(`${API_BASE}/praticas?dimensao=${encodeURIComponent(dimension)}&atividade=${encodeURIComponent(activity)}&duracao=${duration}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            showToast(data.mensagem, 'success');
-            document.getElementById('practice-form').reset();
-            document.getElementById('userTokens').textContent = data.tokens.toFixed(1);
-            document.getElementById('dashTokens').textContent = data.tokens.toFixed(0);
-            await loadDashboardData();
-        } else {
-            showToast('Erro ao registrar prática', 'error');
-        }
-    } catch (error) {
-        showToast('Erro ao registrar prática', 'error');
-    }
-}
-
-async function loadSuggestions() {
-    try {
-        const response = await fetch(`${API_BASE}/praticas/plano?objetivo=equilíbrio geral`);
-        if (response.ok) {
-            const data = await response.json();
-            displaySuggestions(data.plano_sugerido);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar sugestões', error);
-    }
-}
-
-function displaySuggestions(plan) {
-    const container = document.getElementById('suggestions-container');
-    container.innerHTML = `
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4>🧠 Mente</h4>
-                <p>${plan.mente}</p>
+    container.innerHTML = agendas.map(agenda => `
+        <div class="agenda-item ${agenda.concluida ? 'concluida' : ''}">
+            <div class="agenda-header">
+                <span class="agenda-titulo">${agenda.titulo}</span>
+                <span class="agenda-tipo">${agenda.tipo_atividade}</span>
             </div>
-            <div class="stat-card">
-                <h4>💪 Corpo</h4>
-                <p>${plan.corpo}</p>
-            </div>
-            <div class="stat-card">
-                <h4>⚡ Energia</h4>
-                <p>${plan.energia}</p>
+            <p class="agenda-descricao">${agenda.descricao}</p>
+            <div class="agenda-footer">
+                <span class="agenda-data">${formatDate(agenda.data)}</span>
+                <span class="agenda-duracao">${agenda.duracao_minutos} min</span>
+                ${!agenda.concluida ? `<button onclick="concluirAgenda(${agenda.id})" class="btn-concluir">✓</button>` : ''}
             </div>
         </div>
-    `;
-}
-
-function showSection(sectionName) {
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(s => s.classList.remove('active'));
-
-    const targetSection = document.getElementById(`${sectionName}-section`);
-    if (targetSection) {
-        targetSection.classList.add('active');
-
-        if (sectionName === 'ranking') {
-            loadRanking();
-        } else if (sectionName === 'planner') {
-            loadPlanner();
-        }
-    }
-}
-
-async function loadRanking() {
-    try {
-        const response = await fetch(`${API_BASE}/ranking`);
-        if (response.ok) {
-            const ranking = await response.json();
-            displayRanking(ranking);
-        }
-    } catch (error) {
-        showToast('Erro ao carregar ranking', 'error');
-    }
-}
-
-function displayRanking(ranking) {
-    const tbody = document.getElementById('ranking-body');
-    tbody.innerHTML = ranking.map((user, index) => `
-        <tr>
-            <td class="position">${index + 1}º</td>
-            <td>${user.nome}</td>
-            <td>💎 ${user.tokens.toFixed(1)}</td>
-        </tr>
     `).join('');
 }
 
-async function loadPlanner() {
+async function loadProgramas() {
+    if (!authToken) return;
+    
     try {
-        const response = await fetch(`${API_BASE}/praticas/plano?objetivo=reduzir estresse`);
+        const response = await fetch(`${API_BASE}/programas`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
         if (response.ok) {
-            const data = await response.json();
-            displayPlanner(data);
+            const programas = await response.json();
+            displayProgramas(programas);
         }
     } catch (error) {
-        showToast('Erro ao carregar plano', 'error');
+        console.error('Erro ao carregar programas', error);
     }
 }
 
-function displayPlanner(data) {
-    const container = document.getElementById('planner-content');
-    container.innerHTML = `
-        <div class="practice-form-card">
-            <h3>Plano para: ${data.objetivo}</h3>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>🧠 Mente</h4>
-                    <p>${data.plano_sugerido.mente}</p>
-                    <button onclick="quickPractice('mente', '${data.plano_sugerido.mente}')" class="btn-primary">Praticar</button>
-                </div>
-                <div class="stat-card">
-                    <h4>💪 Corpo</h4>
-                    <p>${data.plano_sugerido.corpo}</p>
-                    <button onclick="quickPractice('corpo', '${data.plano_sugerido.corpo}')" class="btn-primary">Praticar</button>
-                </div>
-                <div class="stat-card">
-                    <h4>⚡ Energia</h4>
-                    <p>${data.plano_sugerido.energia}</p>
-                    <button onclick="quickPractice('energia', '${data.plano_sugerido.energia}')" class="btn-primary">Praticar</button>
-                </div>
-            </div>
+function displayProgramas(programas) {
+    const container = document.getElementById('programs-grid');
+    
+    if (programas.length === 0) {
+        container.innerHTML = '<p class="empty-message">Nenhum programa cadastrado</p>';
+        return;
+    }
+
+    container.innerHTML = programas.map(prog => `
+        <div class="program-card status-${prog.status.replace(' ', '-')}">
+            <h4>${prog.nome}</h4>
+            <p class="program-status">${prog.status}</p>
+            <p class="program-usuarios">${prog.usuarios_matriculados} usuários</p>
         </div>
-    `;
+    `).join('');
 }
 
-function quickPractice(dimension, activity) {
-    showSection('practices');
-    document.getElementById('practice-dimension').value = dimension;
-    document.getElementById('practice-activity').value = activity;
-    document.getElementById('practice-duration').focus();
+function openAgendaModal() {
+    document.getElementById('agenda-modal').style.display = 'block';
 }
 
-async function redeemVoucher() {
+function closeAgendaModal() {
+    document.getElementById('agenda-modal').style.display = 'none';
+    document.getElementById('agenda-form').reset();
+}
+
+async function handleAgendaSubmit(e) {
+    e.preventDefault();
+    
+    const titulo = document.getElementById('agenda-titulo').value;
+    const descricao = document.getElementById('agenda-descricao').value;
+    const tipo = document.getElementById('agenda-tipo').value;
+    const duracao = document.getElementById('agenda-duracao').value;
+
     if (!authToken) {
         showToast('Faça login primeiro', 'error');
         return;
     }
 
     try {
-        const response = await fetch(`${API_BASE}/recompensas/voucher`, {
+        const response = await fetch(`${API_BASE}/agendas/criar?titulo=${encodeURIComponent(titulo)}&descricao=${encodeURIComponent(descricao)}&tipo_atividade=${encodeURIComponent(tipo)}&duracao_minutos=${duracao}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -303,16 +262,45 @@ async function redeemVoucher() {
         });
 
         if (response.ok) {
-            const data = await response.json();
-            showToast(`Voucher gerado: ${data.codigo_voucher}`, 'success');
-            await loadDashboardData();
+            showToast('Atividade adicionada à agenda!', 'success');
+            closeAgendaModal();
+            await loadAgendas();
         } else {
-            const error = await response.json();
-            showToast(error.detail || 'Erro ao resgatar voucher', 'error');
+            showToast('Erro ao criar agenda', 'error');
         }
     } catch (error) {
-        showToast('Erro ao resgatar voucher', 'error');
+        showToast('Erro ao criar agenda', 'error');
     }
+}
+
+async function concluirAgenda(agendaId) {
+    if (!authToken) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/agendas/${agendaId}/concluir`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            showToast('Agenda concluída!', 'success');
+            await loadAgendas();
+        }
+    } catch (error) {
+        showToast('Erro ao concluir agenda', 'error');
+    }
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function checkAuth() {
@@ -345,4 +333,11 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('agenda-modal');
+    if (event.target == modal) {
+        closeAgendaModal();
+    }
 }

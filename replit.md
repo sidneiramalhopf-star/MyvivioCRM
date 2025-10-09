@@ -1,25 +1,17 @@
-# Metavida App - Aplicativo Completo de Saúde Integral
+# Gym & Corporate Wellness CRM
 
 ## Visão Geral
-Aplicação completa (Backend + Frontend) em FastAPI para saúde integral através do equilíbrio entre corpo, mente e energia. Sistema com gamificação, comunidades e recompensas.
+Sistema de gestão inteligente para academias e wellness corporativo, com foco em otimização por IA de engajamento, ROI e produtividade.
 
-## Status Atual
-- ✅ **Backend FastAPI** totalmente funcional
-- ✅ **Frontend Web** completo e integrado
-- ✅ **Banco de dados SQLite** configurado
-- ✅ **Sistema de autenticação JWT** com segurança aprimorada
-- ✅ **Hash de senhas** com Argon2 (salt único por usuário)
-- ✅ **SECRET_KEY** via variável de ambiente SESSION_SECRET
-- ✅ **Autenticação** via header Authorization Bearer
-- ✅ **Gamificação** com tokens e vouchers
-- ✅ **Dashboard interativo** com estatísticas em tempo real
-- ✅ **Design responsivo** e moderno
-- ✅ **API REST** completa
-- ✅ **Documentação Swagger** disponível
+## Mudanças Recentes (09/10/2025)
+- **Transformação completa**: Migração de app de saúde integral (Metavida) para CRM de gestão de academias
+- Removida toda linguagem de "mente/corpo/energia"
+- Novo design inspirado no CRM Technogym
+- Implementação de sistema de agendas e métricas para IA
 
-## Arquitetura do Projeto
+## Tecnologias
 
-### Tecnologias
+### Backend
 - **Framework**: FastAPI 0.118.2
 - **Servidor**: Uvicorn 0.37.0
 - **Banco de Dados**: SQLite + SQLAlchemy 2.0.43
@@ -27,28 +19,56 @@ Aplicação completa (Backend + Frontend) em FastAPI para saúde integral atrav�
 - **Segurança**: Argon2 (argon2-cffi 25.1.0) + Passlib 1.7.4
 - **Linguagem**: Python 3.11
 
-### Estrutura de Arquivos
+### Frontend
+- **HTML5 + CSS3 + JavaScript Vanilla**
+- **Design**: Inspirado em CRM Technogym
+- **Cores**: Vermelho (#E74C3C) como cor primária
+
+## Estrutura do Projeto
+
 ```
 .
-├── metavida_app.py          # Aplicação principal FastAPI
-├── metavida_app.db          # Banco de dados SQLite (gerado automaticamente)
+├── metavida_app.py          # Backend FastAPI
+├── gym_wellness.db          # Banco SQLite (gerado automaticamente)
 ├── templates/
 │   └── index.html           # Frontend SPA
 ├── static/
 │   ├── css/
-│   │   └── style.css        # Estilos do frontend
+│   │   └── style.css        # Estilos profissionais
 │   └── js/
-│       └── app.js           # Lógica do frontend e integração API
-├── pyproject.toml           # Configuração uv/Python
-├── .gitignore               # Arquivos ignorados pelo git
+│       └── app.js           # Lógica JavaScript
+├── pyproject.toml           # Dependências Python
 └── replit.md                # Esta documentação
 ```
 
-### Modelos de Dados
-1. **Comunidade**: Agrupa usuários por localização/interesse
-2. **Usuario**: Perfil do usuário com tokens e objetivo
-3. **Pratica**: Registro de atividades (mente, corpo, energia)
-4. **Voucher**: Recompensas resgatáveis
+## Modelos de Dados
+
+### Unidade
+- Academias/unidades de wellness corporativo
+- Métricas de risco de desistência
+
+### Usuario
+- Tipos: administrador, gerente, instrutor, membro
+- Rastreamento de atividade e engajamento
+
+### Visitante
+- Leads/prospects
+- Controle de conversão
+
+### Programa
+- Status: expirado, não atribuído, atribuído
+- Gerenciamento de programas e turmas
+
+### Agenda
+- Atividades diárias dos usuários
+- Histórico de execução
+- Tipos: treino, aula, avaliação, consultoria, reunião
+
+### MetricaEngajamento
+- Taxa de engajamento
+- ROI (Retorno sobre Investimento)
+- Produtividade
+- Usuários ativos
 
 ## API Endpoints
 
@@ -56,102 +76,96 @@ Aplicação completa (Backend + Frontend) em FastAPI para saúde integral atrav�
 - `POST /registrar` - Criar novo usuário
 - `POST /login` - Login e geração de token JWT
 
-### Práticas
-- `POST /praticas` - Registrar prática (requer token)
-- `GET /praticas/plano?objetivo=X` - Gerar plano personalizado
+### Estatísticas
+- `GET /stats/overview` - Visão geral de todas as métricas
+- `GET /stats/unidade/{unidade_id}` - Estatísticas específicas da unidade
 
-### Gamificação
-- `GET /ranking` - Top 10 usuários por tokens
-- `POST /recompensas/voucher` - Gerar voucher (20 tokens)
+### Agendas
+- `GET /agendas/historico` - Listar agendas do usuário (requer token)
+- `POST /agendas/criar` - Criar nova atividade na agenda (requer token)
+- `PUT /agendas/{agenda_id}/concluir` - Marcar agenda como concluída (requer token)
 
-### Relatórios
-- `GET /relatorios/engajamento` - Estatísticas da comunidade
+### Programas
+- `GET /programas` - Listar todos os programas
+- `POST /programas/criar` - Criar novo programa
+
+### Visitantes
+- `POST /visitantes/registrar` - Registrar novo visitante/lead
+
+### Unidades
+- `GET /unidades` - Listar todas as unidades
+- `POST /unidades/criar` - Criar nova unidade
+
+### Métricas IA
+- `GET /metricas/ia?unidade_id=X` - Obter métricas para otimização por IA
 
 ### Frontend
 - `GET /` - Interface Web completa (SPA)
 - `GET /docs` - Documentação Swagger UI
 - `GET /redoc` - Documentação ReDoc
 
-## Como Usar
+## Recursos Principais
 
-### Iniciar o Servidor
-O aplicativo está configurado para iniciar automaticamente via workflow:
+### Dashboard
+- **Barra Superior de Estatísticas**:
+  - Risco de desistência da unidade
+  - Usuários e visitantes totais
+  - Usuários ativos no aplicativo
+  - Programas (expirados, não atribuídos, atribuídos)
+
+- **Sidebar Esquerda**:
+  - Histórico de agendas dia a dia
+  - Botão para adicionar novas atividades
+  - Visualização de status (concluída/pendente)
+
+- **Cards de Métricas**:
+  - Engajamento
+  - ROI
+  - Produtividade
+  - Membros ativos
+
+### Sistema de Agendas
+- Criação de atividades diárias
+- Tipos de atividade personalizáveis
+- Controle de duração
+- Marcação de conclusão
+- Histórico completo
+
+### Gestão de Programas
+- Controle de status
+- Usuários matriculados
+- Datas de início/fim
+
+## Preparação para IA
+
+O sistema está estruturado para otimização por IA com:
+- **Métricas de Engajamento**: Taxa de participação dos usuários
+- **ROI**: Retorno sobre investimento calculado
+- **Produtividade**: Índices de eficiência
+- **Risco de Desistência**: Predição de churn
+- **Histórico de Atividades**: Dados para análise comportamental
+
+## Como Executar
+
 ```bash
-uvicorn metavida_app:app --host 0.0.0.0 --port 5000 --reload
+# Instalar dependências (automático no Replit)
+# O servidor inicia automaticamente
+
+# Ou manualmente:
+uvicorn metavida_app:app --host 0.0.0.0 --port 5000
 ```
 
-### Acessar a API
-- **URL Base**: `https://<seu-repl>.repl.co`
-- **Documentação**: `https://<seu-repl>.repl.co/docs`
+## Próximos Passos
 
-### Exemplo de Uso
+1. Integração com algoritmos de ML para predição de churn
+2. Sistema de recomendação personalizado por IA
+3. Análise preditiva de ROI
+4. Dashboard de relatórios avançados
+5. API para integração com wearables e dispositivos fitness
 
-#### 1. Registrar Usuário
-```bash
-POST /registrar?email=usuario@exemplo.com&senha=minhasenha&nome=Nome&idade=30&objetivo=reduzir%20estresse&comunidade_nome=Minha%20Comunidade
-```
+## Notas de Desenvolvimento
 
-#### 2. Fazer Login
-```bash
-POST /login?email=usuario@exemplo.com&senha=minhasenha
-# Retorna: {"access_token": "eyJ...", "tipo": "bearer"}
-```
-
-#### 3. Registrar Prática (Autenticado)
-```bash
-POST /praticas?dimensao=mente&atividade=Meditacao&duracao=30
-Header: Authorization: Bearer eyJ...
-```
-
-#### 4. Ver Ranking (Público)
-```bash
-GET /ranking
-```
-
-#### 5. Resgatar Voucher (Autenticado)
-```bash
-POST /recompensas/voucher
-Header: Authorization: Bearer eyJ...
-```
-
-**IMPORTANTE**: Configure a variável de ambiente `SESSION_SECRET` antes de usar em produção!
-
-## Dimensões de Bem-Estar
-
-### Mente
-- Foco: clareza mental e concentração
-- Exemplos: meditação, leitura, afirmações
-
-### Corpo
-- Foco: vitalidade e força física
-- Exemplos: yoga, caminhada, treino funcional
-
-### Energia
-- Foco: equilíbrio e serenidade interior
-- Exemplos: respiração consciente, exposição solar
-
-## Sistema de Tokens
-- Ganho: 0.2 tokens por minuto de prática
-- Resgate: 20 tokens = 1 voucher de R$10
-
-## Últimas Alterações
-**08 de Outubro de 2025**
-- ✅ Projeto criado com estrutura completa
-- ✅ Instalado Python 3.11 e dependências
-- ✅ Configurado workflow do Uvicorn
-- ✅ Implementadas melhorias críticas de segurança:
-  - Hash de senhas com Argon2 e salt único
-  - SECRET_KEY via variável de ambiente SESSION_SECRET
-  - Autenticação via Authorization Bearer header
-  - Validação de usuário existente em cada request autenticado
-- ✅ API testada e funcionando perfeitamente
-- ✅ Documentação Swagger ativa
-- ✅ Aprovado pelo arquiteto - pronto para uso
-
-## Próximos Passos Sugeridos
-- [ ] Migrar para PostgreSQL (produção)
-- [ ] Implementar sistema de notificações
-- [ ] Criar frontend web/mobile
-- [ ] Adicionar integração com wearables
-- [ ] Sistema de desafios entre comunidades
-- [ ] Dashboard administrativo
+- Token JWT expira em 8 horas
+- Banco de dados SQLite para desenvolvimento (migrar para PostgreSQL em produção)
+- CORS habilitado para desenvolvimento (restringir em produção)
+- Senhas criptografadas com Argon2
