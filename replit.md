@@ -1,18 +1,21 @@
-# Metavida App - Backend de Saúde Integral
+# Metavida App - Aplicativo Completo de Saúde Integral
 
 ## Visão Geral
-Backend completo em FastAPI para o aplicativo Metavida, focado em saúde integral através do equilíbrio entre corpo, mente e energia. Sistema com gamificação, comunidades e recompensas.
+Aplicação completa (Backend + Frontend) em FastAPI para saúde integral através do equilíbrio entre corpo, mente e energia. Sistema com gamificação, comunidades e recompensas.
 
 ## Status Atual
-- ✅ Backend FastAPI totalmente funcional
-- ✅ Banco de dados SQLite configurado
-- ✅ Sistema de autenticação JWT com segurança aprimorada
-- ✅ Hash de senhas com Argon2 (salt único por usuário)
-- ✅ SECRET_KEY via variável de ambiente SESSION_SECRET
-- ✅ Autenticação via header Authorization Bearer
-- ✅ Gamificação com tokens e vouchers
-- ✅ API REST completa
-- ✅ Documentação Swagger disponível
+- ✅ **Backend FastAPI** totalmente funcional
+- ✅ **Frontend Web** completo e integrado
+- ✅ **Banco de dados SQLite** configurado
+- ✅ **Sistema de autenticação JWT** com segurança aprimorada
+- ✅ **Hash de senhas** com Argon2 (salt único por usuário)
+- ✅ **SECRET_KEY** via variável de ambiente SESSION_SECRET
+- ✅ **Autenticação** via header Authorization Bearer
+- ✅ **Gamificação** com tokens e vouchers
+- ✅ **Dashboard interativo** com estatísticas em tempo real
+- ✅ **Design responsivo** e moderno
+- ✅ **API REST** completa
+- ✅ **Documentação Swagger** disponível
 
 ## Arquitetura do Projeto
 
@@ -29,6 +32,13 @@ Backend completo em FastAPI para o aplicativo Metavida, focado em saúde integra
 .
 ├── metavida_app.py          # Aplicação principal FastAPI
 ├── metavida_app.db          # Banco de dados SQLite (gerado automaticamente)
+├── templates/
+│   └── index.html           # Frontend SPA
+├── static/
+│   ├── css/
+│   │   └── style.css        # Estilos do frontend
+│   └── js/
+│       └── app.js           # Lógica do frontend e integração API
 ├── pyproject.toml           # Configuração uv/Python
 ├── .gitignore               # Arquivos ignorados pelo git
 └── replit.md                # Esta documentação
@@ -57,8 +67,8 @@ Backend completo em FastAPI para o aplicativo Metavida, focado em saúde integra
 ### Relatórios
 - `GET /relatorios/engajamento` - Estatísticas da comunidade
 
-### Documentação
-- `GET /` - Mensagem de boas-vindas
+### Frontend
+- `GET /` - Interface Web completa (SPA)
 - `GET /docs` - Documentação Swagger UI
 - `GET /redoc` - Documentação ReDoc
 
