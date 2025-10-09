@@ -6,6 +6,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
@@ -138,6 +140,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def root():
+    return FileResponse("templates/index.html")
+
 # ============================================================
 # Endpoints de Autenticação e Usuários
 # ============================================================
@@ -236,13 +244,3 @@ def relatorio_engajamento(db: Session = Depends(get_db)):
         "mensagem": f"O equilíbrio geral das comunidades Metavida está em nível {nivel}."
     }
 
-# ============================================================
-# Endpoint raiz
-# ============================================================
-
-@app.get("/")
-def raiz():
-    return {
-        "mensagem": "🌿 Bem-vindo ao Backend do Método Metavida 🌿",
-        "descricao": "Equilíbrio entre corpo, mente e energia — agora também no digital!"
-    }
