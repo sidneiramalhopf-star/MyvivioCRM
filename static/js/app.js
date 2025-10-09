@@ -1,6 +1,7 @@
 const API_BASE = '';
 let currentUser = null;
 let authToken = null;
+let currentPage = 'home';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
@@ -36,6 +37,64 @@ function switchTab(tab) {
     }
 }
 
+function navigateTo(event, page) {
+    event.preventDefault();
+    currentPage = page;
+    
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    event.currentTarget.classList.add('active');
+    
+    document.querySelectorAll('.page-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const pageElement = document.getElementById(`page-${page}`);
+    if (pageElement) {
+        pageElement.classList.add('active');
+        
+        if (page === 'home') {
+            loadDashboardData();
+        } else if (page === 'planejador') {
+            loadAgendas();
+        } else if (page === 'treinamento') {
+            loadProgramas();
+        }
+    }
+}
+
+function navigateToPage(page) {
+    currentPage = page;
+    
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const navItem = document.querySelector(`.nav-item[onclick*="${page}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    document.querySelectorAll('.page-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const pageElement = document.getElementById(`page-${page}`);
+    if (pageElement) {
+        pageElement.classList.add('active');
+        
+        if (page === 'home') {
+            loadDashboardData();
+        } else if (page === 'planejador') {
+            loadAgendas();
+        } else if (page === 'treinamento') {
+            loadProgramas();
+        }
+    }
+}
+
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -57,7 +116,7 @@ async function handleLogin(e) {
             const data = await response.json();
             authToken = data.access_token;
             localStorage.setItem('authToken', authToken);
-            currentUser = { email: email };
+            currentUser = { email: email, nome: data.nome || email.split('@')[0] };
             showToast('Login realizado com sucesso!', 'success');
             showDashboard();
             await loadDashboardData();
@@ -116,7 +175,7 @@ async function loadDashboardData() {
         });
         if (statsResponse.ok) {
             const stats = await statsResponse.json();
-            updateTopStats(stats);
+            updateStats(stats);
         }
 
         const metricasResponse = await fetch(`${API_BASE}/metricas/ia?unidade_id=1`, {
@@ -128,26 +187,26 @@ async function loadDashboardData() {
             const metricas = await metricasResponse.json();
             updateMetrics(metricas);
         }
-
-        await loadAgendas();
-        await loadProgramas();
     } catch (error) {
         console.error('Erro ao carregar dados do dashboard', error);
     }
 }
 
-function updateTopStats(stats) {
-    document.getElementById('stat-risco').textContent = stats.risco_desistencia + '%';
-    document.getElementById('stat-usuarios-visitantes').textContent = stats.usuarios_totais + stats.visitantes;
-    document.getElementById('stat-usuarios-ativos').textContent = stats.usuarios_ativos;
+function updateStats(stats) {
+    document.getElementById('stat-risco').textContent = stats.risco_desistencia || '0';
+    document.getElementById('stat-usuarios').textContent = stats.usuarios_totais || '0';
+    document.getElementById('stat-usuarios-ativos').textContent = stats.usuarios_ativos || '0';
+    document.getElementById('stat-visitantes').textContent = stats.visitantes || '0';
     
-    document.getElementById('prog-expirados').textContent = stats.programas.expirados;
-    document.getElementById('prog-nao-atribuidos').textContent = stats.programas.nao_atribuidos;
-    document.getElementById('prog-atribuidos').textContent = stats.programas.atribuidos;
+    document.getElementById('prog-expirados').textContent = stats.programas.expirado;
+    document.getElementById('prog-nao-atribuidos').textContent = stats.programas['não-atribuído'];
+    document.getElementById('prog-atribuidos').textContent = stats.programas.atribuído;
 }
 
 function updateMetrics(metricas) {
-    document.getElementById('metric-engajamento').textContent = metricas.engajamento + '%';
+    if (!metricas) return;
+    
+    document.getElementById('metric-engajamento').textContent = metricas.taxa_engajamento + '%';
     document.getElementById('metric-roi').textContent = metricas.roi + '%';
     document.getElementById('metric-produtividade').textContent = metricas.produtividade + '%';
     document.getElementById('metric-membros').textContent = metricas.usuarios_ativos;
@@ -155,14 +214,14 @@ function updateMetrics(metricas) {
 
 async function loadAgendas() {
     if (!authToken) return;
-
+    
     try {
         const response = await fetch(`${API_BASE}/agendas/historico`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-
+        
         if (response.ok) {
             const agendas = await response.json();
             displayAgendas(agendas);
@@ -179,7 +238,7 @@ function displayAgendas(agendas) {
         container.innerHTML = '<p class="empty-message">Nenhuma atividade agendada</p>';
         return;
     }
-
+    
     container.innerHTML = agendas.map(agenda => `
         <div class="agenda-item ${agenda.concluida ? 'concluida' : ''}">
             <div class="agenda-header">
@@ -188,9 +247,11 @@ function displayAgendas(agendas) {
             </div>
             <p class="agenda-descricao">${agenda.descricao}</p>
             <div class="agenda-footer">
-                <span class="agenda-data">${formatDate(agenda.data)}</span>
-                <span class="agenda-duracao">${agenda.duracao_minutos} min</span>
-                ${!agenda.concluida ? `<button onclick="concluirAgenda(${agenda.id})" class="btn-concluir">✓</button>` : ''}
+                <span class="agenda-duracao">⏱️ ${agenda.duracao_minutos} min</span>
+                ${!agenda.concluida ? 
+                    `<button class="btn-concluir" onclick="concluirAgenda(${agenda.id})">✓ Concluir</button>` : 
+                    '<span style="color: var(--success-color); font-weight: 600;">✓ Concluída</span>'
+                }
             </div>
         </div>
     `).join('');
@@ -221,12 +282,12 @@ function displayProgramas(programas) {
         container.innerHTML = '<p class="empty-message">Nenhum programa cadastrado</p>';
         return;
     }
-
-    container.innerHTML = programas.map(prog => `
-        <div class="program-card status-${prog.status.replace(' ', '-')}">
-            <h4>${prog.nome}</h4>
-            <p class="program-status">${prog.status}</p>
-            <p class="program-usuarios">${prog.usuarios_matriculados} usuários</p>
+    
+    container.innerHTML = programas.map(p => `
+        <div class="program-card status-${p.status}">
+            <h4>${p.nome}</h4>
+            <p class="program-status">Status: ${p.status}</p>
+            <p class="program-usuarios">👥 ${p.usuarios_matriculados} matriculados</p>
         </div>
     `).join('');
 }
@@ -247,82 +308,80 @@ async function handleAgendaSubmit(e) {
     const descricao = document.getElementById('agenda-descricao').value;
     const tipo = document.getElementById('agenda-tipo').value;
     const duracao = document.getElementById('agenda-duracao').value;
-
-    if (!authToken) {
-        showToast('Faça login primeiro', 'error');
-        return;
-    }
-
+    
     try {
-        const response = await fetch(`${API_BASE}/agendas/criar?titulo=${encodeURIComponent(titulo)}&descricao=${encodeURIComponent(descricao)}&tipo_atividade=${encodeURIComponent(tipo)}&duracao_minutos=${duracao}`, {
+        const response = await fetch(`${API_BASE}/agendas/criar`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
-            }
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                descricao: descricao,
+                tipo_atividade: tipo,
+                duracao_minutos: parseInt(duracao)
+            })
         });
-
+        
         if (response.ok) {
-            showToast('Atividade adicionada à agenda!', 'success');
+            showToast('Atividade adicionada com sucesso!', 'success');
             closeAgendaModal();
             await loadAgendas();
         } else {
-            showToast('Erro ao criar agenda', 'error');
+            showToast('Erro ao adicionar atividade', 'error');
         }
     } catch (error) {
-        showToast('Erro ao criar agenda', 'error');
+        showToast('Erro ao adicionar atividade', 'error');
     }
 }
 
-async function concluirAgenda(agendaId) {
-    if (!authToken) return;
-
+async function concluirAgenda(id) {
     try {
-        const response = await fetch(`${API_BASE}/agendas/${agendaId}/concluir`, {
+        const response = await fetch(`${API_BASE}/agendas/${id}/concluir`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         });
-
+        
         if (response.ok) {
-            showToast('Agenda concluída!', 'success');
+            showToast('Atividade concluída!', 'success');
             await loadAgendas();
         }
     } catch (error) {
-        showToast('Erro ao concluir agenda', 'error');
+        showToast('Erro ao concluir atividade', 'error');
     }
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { 
-        day: '2-digit', 
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
 function checkAuth() {
-    authToken = localStorage.getItem('authToken');
-    if (authToken) {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        authToken = token;
         showDashboard();
         loadDashboardData();
-    } else {
-        document.getElementById('login-section').classList.add('active');
     }
 }
 
 function showDashboard() {
     document.getElementById('login-section').classList.remove('active');
     document.getElementById('dashboard-section').classList.add('active');
+    
+    if (currentUser) {
+        const userNameElements = document.querySelectorAll('#userName, #userName-display');
+        userNameElements.forEach(el => {
+            el.textContent = currentUser.nome || currentUser.email.split('@')[0];
+        });
+    }
 }
 
 function logout() {
-    localStorage.removeItem('authToken');
     authToken = null;
     currentUser = null;
-    location.reload();
+    localStorage.removeItem('authToken');
+    document.getElementById('dashboard-section').classList.remove('active');
+    document.getElementById('login-section').classList.add('active');
+    showToast('Logout realizado com sucesso', 'success');
 }
 
 function showToast(message, type = 'info') {
@@ -337,7 +396,7 @@ function showToast(message, type = 'info') {
 
 window.onclick = function(event) {
     const modal = document.getElementById('agenda-modal');
-    if (event.target == modal) {
+    if (event.target === modal) {
         closeAgendaModal();
     }
 }

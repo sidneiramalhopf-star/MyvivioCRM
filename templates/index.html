@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
@@ -67,88 +68,286 @@
         </div>
 
         <div id="dashboard-section" class="section">
-            <div class="top-stats-bar">
-                <div class="stat-item">
-                    <span class="stat-label">Risco de Desistência</span>
-                    <span class="stat-value" id="stat-risco">0%</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Usuários e Visitantes</span>
-                    <span class="stat-value" id="stat-usuarios-visitantes">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Usuários Ativos</span>
-                    <span class="stat-value" id="stat-usuarios-ativos">0</span>
-                </div>
-                <div class="stat-item programas-stat">
-                    <span class="stat-label">Programas</span>
-                    <div class="programas-breakdown">
-                        <span class="programa-item expirado"><span id="prog-expirados">0</span> Expirado</span>
-                        <span class="programa-item nao-atribuido"><span id="prog-nao-atribuidos">0</span> Não atribuído</span>
-                        <span class="programa-item atribuido"><span id="prog-atribuidos">0</span> Atribuído</span>
+            <div class="dashboard-layout">
+                <aside class="nav-sidebar">
+                    <div class="logo-section">
+                        <div class="logo-placeholder">
+                            <span class="logo-text">Logo</span>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="main-layout">
-                <aside class="left-sidebar">
-                    <div class="sidebar-header">
-                        <h3>📅 Agenda Diária</h3>
-                        <button class="btn-add" onclick="openAgendaModal()">+ Nova</button>
-                    </div>
-                    <div class="agenda-list" id="agenda-list">
-                    </div>
+                    <nav class="main-nav">
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'iniciar')">
+                            <i class="fas fa-rocket"></i>
+                            <span>Iniciar</span>
+                        </a>
+                        <a href="#" class="nav-item active" onclick="navigateTo(event, 'home')">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'planejador')">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Planejador</span>
+                        </a>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'pessoas')">
+                            <i class="fas fa-users"></i>
+                            <span>Pessoas</span>
+                        </a>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'treinamento')">
+                            <i class="fas fa-dumbbell"></i>
+                            <span>Treinamento</span>
+                        </a>
+                        <div class="nav-divider"></div>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'config')">
+                            <i class="fas fa-cog"></i>
+                            <span>Configuração</span>
+                        </a>
+                    </nav>
                 </aside>
 
-                <main class="content-area">
-                    <div class="header">
-                        <h2>Dashboard</h2>
-                        <div class="user-info-header">
-                            <span id="userName">Usuário</span>
-                            <button onclick="logout()" class="btn-logout">Sair</button>
+                <div class="main-content">
+                    <header class="top-header">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Buscar no Mywellness CRM">
+                        </div>
+                        <div class="header-actions">
+                            <button class="icon-btn" title="Notificações">
+                                <i class="fas fa-bell"></i>
+                                <span class="badge">3</span>
+                            </button>
+                            <button class="icon-btn" title="Ajuda">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
+                            <div class="user-menu">
+                                <span id="userName">Usuário</span>
+                                <button onclick="logout()" class="btn-logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div id="page-iniciar" class="page-content">
+                        <div class="page-header">
+                            <h1>🚀 Iniciar</h1>
+                            <p class="page-subtitle">Bem-vindo ao seu painel de controle</p>
+                        </div>
+                        <div class="quick-actions">
+                            <div class="action-card" onclick="navigateToPage('planejador')">
+                                <i class="fas fa-calendar-plus"></i>
+                                <h3>Nova Agenda</h3>
+                                <p>Agende uma nova atividade</p>
+                            </div>
+                            <div class="action-card" onclick="navigateToPage('pessoas')">
+                                <i class="fas fa-user-plus"></i>
+                                <h3>Adicionar Pessoa</h3>
+                                <p>Cadastre um novo membro</p>
+                            </div>
+                            <div class="action-card" onclick="navigateToPage('treinamento')">
+                                <i class="fas fa-plus-circle"></i>
+                                <h3>Novo Programa</h3>
+                                <p>Crie um programa de treino</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="cards-grid">
-                        <div class="card">
-                            <h3>📊 Engajamento</h3>
-                            <div class="metric-display">
-                                <span class="metric-value" id="metric-engajamento">0%</span>
+                    <div id="page-home" class="page-content active">
+                        <div class="page-header">
+                            <div>
+                                <h1>Boa noite, <span id="userName-display">Usuário</span></h1>
+                                <p class="page-subtitle">Acompanhe suas métricas e performance</p>
                             </div>
-                            <p class="metric-label">Taxa de engajamento</p>
+                            <div class="view-tabs">
+                                <button class="view-tab active">Dia após dia</button>
+                                <button class="view-tab">Desempenho</button>
+                            </div>
                         </div>
 
-                        <div class="card">
-                            <h3>💰 ROI</h3>
-                            <div class="metric-display">
-                                <span class="metric-value" id="metric-roi">0%</span>
+                        <div class="metrics-section">
+                            <h2>Retenção</h2>
+                            <div class="stats-grid">
+                                <div class="stat-card highlight">
+                                    <div class="stat-icon warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">
+                                            <span id="stat-risco" class="big-number">0</span>
+                                            <span class="trend negative">-3%</span>
+                                        </div>
+                                        <p class="stat-label">Risco de desistência da unidade</p>
+                                        <p class="stat-meta">Usuários ativos de alto risco</p>
+                                        <button class="btn-outline">VER MAIS</button>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="metric-label">Retorno sobre investimento</p>
-                        </div>
 
-                        <div class="card">
-                            <h3>⚡ Produtividade</h3>
-                            <div class="metric-display">
-                                <span class="metric-value" id="metric-produtividade">0%</span>
+                            <h2>Usuários e visitantes</h2>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon info">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">
+                                            <span id="stat-usuarios" class="number">0</span>
+                                        </div>
+                                        <p class="stat-label">Total de Usuários</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon success">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">
+                                            <span id="stat-usuarios-ativos" class="number">0</span>
+                                        </div>
+                                        <p class="stat-label">Usuários Ativos</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon primary">
+                                        <i class="fas fa-user-friends"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">
+                                            <span id="stat-visitantes" class="number">0</span>
+                                        </div>
+                                        <p class="stat-label">Visitantes</p>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="metric-label">Índice de produtividade</p>
-                        </div>
 
-                        <div class="card">
-                            <h3>👥 Membros Ativos</h3>
-                            <div class="metric-display">
-                                <span class="metric-value" id="metric-membros">0</span>
+                            <h2>Métricas de Performance</h2>
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <h3>📊 Engajamento</h3>
+                                    <div class="metric-display">
+                                        <span class="metric-value" id="metric-engajamento">0%</span>
+                                    </div>
+                                    <p class="metric-label">Taxa de engajamento</p>
+                                </div>
+
+                                <div class="metric-card">
+                                    <h3>💰 ROI</h3>
+                                    <div class="metric-display">
+                                        <span class="metric-value" id="metric-roi">0%</span>
+                                    </div>
+                                    <p class="metric-label">Retorno sobre investimento</p>
+                                </div>
+
+                                <div class="metric-card">
+                                    <h3>⚡ Produtividade</h3>
+                                    <div class="metric-display">
+                                        <span class="metric-value" id="metric-produtividade">0%</span>
+                                    </div>
+                                    <p class="metric-label">Índice de produtividade</p>
+                                </div>
+
+                                <div class="metric-card">
+                                    <h3>👥 Membros Ativos</h3>
+                                    <div class="metric-display">
+                                        <span class="metric-value" id="metric-membros">0</span>
+                                    </div>
+                                    <p class="metric-label">Usuários ativos hoje</p>
+                                </div>
                             </div>
-                            <p class="metric-label">Usuários ativos hoje</p>
                         </div>
                     </div>
 
-                    <div class="programs-section">
-                        <h3>Programas</h3>
-                        <div class="programs-grid" id="programs-grid">
+                    <div id="page-planejador" class="page-content">
+                        <div class="page-header">
+                            <h1>📅 Planejador</h1>
+                            <button class="btn-primary" onclick="openAgendaModal()">
+                                <i class="fas fa-plus"></i> Nova Atividade
+                            </button>
+                        </div>
+                        <div class="agenda-section">
+                            <div class="agenda-list" id="agenda-list"></div>
                         </div>
                     </div>
-                </main>
+
+                    <div id="page-pessoas" class="page-content">
+                        <div class="page-header">
+                            <h1>👥 Pessoas</h1>
+                            <button class="btn-primary">
+                                <i class="fas fa-user-plus"></i> Adicionar Pessoa
+                            </button>
+                        </div>
+                        <div class="people-section">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Tipo</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pessoas-table">
+                                        <tr>
+                                            <td colspan="5" class="empty-message">Carregando...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="page-treinamento" class="page-content">
+                        <div class="page-header">
+                            <h1>💪 Treinamento</h1>
+                            <button class="btn-primary">
+                                <i class="fas fa-plus"></i> Novo Programa
+                            </button>
+                        </div>
+                        <div class="programs-section">
+                            <div class="programs-stats">
+                                <div class="program-stat expirado">
+                                    <span class="count" id="prog-expirados">0</span>
+                                    <span class="label">Expirados</span>
+                                </div>
+                                <div class="program-stat nao-atribuido">
+                                    <span class="count" id="prog-nao-atribuidos">0</span>
+                                    <span class="label">Não atribuídos</span>
+                                </div>
+                                <div class="program-stat atribuido">
+                                    <span class="count" id="prog-atribuidos">0</span>
+                                    <span class="label">Atribuídos</span>
+                                </div>
+                            </div>
+                            <div class="programs-grid" id="programs-grid"></div>
+                        </div>
+                    </div>
+
+                    <div id="page-config" class="page-content">
+                        <div class="page-header">
+                            <h1>⚙️ Configuração</h1>
+                        </div>
+                        <div class="config-section">
+                            <div class="config-card">
+                                <h3>Perfil do Usuário</h3>
+                                <p>Gerencie suas informações pessoais</p>
+                            </div>
+                            <div class="config-card">
+                                <h3>Unidade</h3>
+                                <p>Configurações da unidade</p>
+                            </div>
+                            <div class="config-card">
+                                <h3>Notificações</h3>
+                                <p>Preferências de notificação</p>
+                            </div>
+                            <div class="config-card">
+                                <h3>Segurança</h3>
+                                <p>Alterar senha e configurações de segurança</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
