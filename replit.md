@@ -8,6 +8,8 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 - Removida toda linguagem de "mente/corpo/energia"
 - Novo design inspirado no CRM Technogym
 - Implementação de sistema de agendas e métricas para IA
+- **Segurança reforçada**: Todos os endpoints sensíveis protegidos com autenticação JWT
+- **Autenticação moderna**: Login/registro com JSON body (não query params) e Argon2 hash
 
 ## Tecnologias
 
@@ -169,3 +171,22 @@ uvicorn metavida_app:app --host 0.0.0.0 --port 5000
 - Banco de dados SQLite para desenvolvimento (migrar para PostgreSQL em produção)
 - CORS habilitado para desenvolvimento (restringir em produção)
 - Senhas criptografadas com Argon2
+
+## Segurança
+
+### Endpoints Protegidos (requerem autenticação JWT)
+- Todas as estatísticas (`/stats/*`)
+- Todas as métricas IA (`/metricas/*`)
+- Todas as agendas (`/agendas/*`)
+- Gestão de programas (`/programas/*`)
+- Gestão de unidades (`/unidades/*`)
+
+### Endpoints Públicos (sem autenticação)
+- `/registrar` - Registro de novos usuários
+- `/login` - Autenticação
+- `/visitantes/registrar` - Captura de leads (por design)
+- `/` - Interface web
+- `/docs`, `/redoc` - Documentação API
+
+### Produção
+⚠️ **IMPORTANTE**: Configurar variável de ambiente `SESSION_SECRET` com valor seguro em produção
