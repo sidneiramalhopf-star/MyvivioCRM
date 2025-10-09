@@ -6,7 +6,9 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 ## Mudanças Recentes (09/10/2025)
 - **Transformação completa**: Migração de app de saúde integral (Metavida) para CRM de gestão de academias
 - Removida toda linguagem de "mente/corpo/energia"
-- Novo design inspirado no CRM Technogym
+- **Novo layout Technogym**: Sidebar de navegação esquerda fixa com 6 páginas (Iniciar, Home, Planejador, Pessoas, Treinamento, Configuração)
+- **Espaço para logo**: Logo placeholder no topo da sidebar
+- **Design profissional**: Interface moderna inspirada no CRM Technogym
 - Implementação de sistema de agendas e métricas para IA
 - **Segurança reforçada**: Todos os endpoints sensíveis protegidos com autenticação JWT
 - **Autenticação moderna**: Login/registro com JSON body (não query params) e Argon2 hash
@@ -23,8 +25,10 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 
 ### Frontend
 - **HTML5 + CSS3 + JavaScript Vanilla**
-- **Design**: Inspirado em CRM Technogym
-- **Cores**: Vermelho (#E74C3C) como cor primária
+- **Design**: Layout inspirado em CRM Technogym com sidebar de navegação
+- **Cores**: Sidebar escura (#2d2d2d), Vermelho (#E74C3C) como cor primária
+- **Ícones**: Font Awesome 6.4.0
+- **Navegação**: 6 páginas principais (Iniciar, Home, Planejador, Pessoas, Treinamento, Configuração)
 
 ## Estrutura do Projeto
 
@@ -108,23 +112,41 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 
 ## Recursos Principais
 
-### Dashboard
-- **Barra Superior de Estatísticas**:
-  - Risco de desistência da unidade
-  - Usuários e visitantes totais
-  - Usuários ativos no aplicativo
-  - Programas (expirados, não atribuídos, atribuídos)
+### Navegação (Sidebar Esquerda)
+- **Logo**: Espaço para logo da empresa no topo
+- **Menu Principal**:
+  - 🚀 Iniciar - Ações rápidas e bem-vindo
+  - 🏠 Home - Dashboard com métricas e estatísticas
+  - 📅 Planejador - Agendas e atividades
+  - 👥 Pessoas - Lista de usuários e visitantes
+  - 💪 Treinamento - Programas e treinos
+  - ⚙️ Configuração - Configurações do sistema
 
-- **Sidebar Esquerda**:
-  - Histórico de agendas dia a dia
-  - Botão para adicionar novas atividades
-  - Visualização de status (concluída/pendente)
+### Página Home (Dashboard)
+- **Seção Retenção**:
+  - Card destacado com risco de desistência
+  - Indicador de tendência
+  - Botão "VER MAIS"
 
-- **Cards de Métricas**:
+- **Seção Usuários e Visitantes**:
+  - Total de usuários
+  - Usuários ativos
+  - Visitantes
+
+- **Cards de Métricas de Performance**:
   - Engajamento
   - ROI
   - Produtividade
   - Membros ativos
+
+### Página Planejador
+- Lista de agendas diárias
+- Botão para adicionar novas atividades
+- Marcação de conclusão de atividades
+
+### Página Treinamento
+- Estatísticas de programas (expirados, não atribuídos, atribuídos)
+- Grid de programas disponíveis
 
 ### Sistema de Agendas
 - Criação de atividades diárias
