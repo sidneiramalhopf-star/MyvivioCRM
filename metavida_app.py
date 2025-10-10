@@ -106,6 +106,82 @@ class MetricaEngajamento(Base):
     unidade = relationship("Unidade")
 
 # ============================================================
+# Novos Modelos - Sistema de Calendário e Aulas
+# ============================================================
+
+class Sala(Base):
+    __tablename__ = "salas"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String)
+    capacidade = Column(Integer)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    ativa = Column(Boolean, default=True)
+    unidade = relationship("Unidade")
+    eventos_aulas = relationship("EventoAula", back_populates="sala")
+
+class Instrutor(Base):
+    __tablename__ = "instrutores"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String)
+    email = Column(String)
+    especialidades = Column(Text)  # JSON string com lista de especialidades
+    foto_url = Column(String, nullable=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    ativo = Column(Boolean, default=True)
+    unidade = relationship("Unidade")
+    eventos_aulas = relationship("EventoAula", back_populates="instrutor")
+
+class EventoCalendario(Base):
+    __tablename__ = "eventos_calendario"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    titulo = Column(String)
+    descricao = Column(Text)
+    data_inicio = Column(DateTime)
+    data_fim = Column(DateTime)
+    tipo_evento = Column(String)  # treino, reuniao, avaliacao, etc
+    status = Column(String, default="pendente")  # pendente, cumprida, cancelada
+    lembrete = Column(Boolean, default=False)
+    tarefas_vinculadas = Column(Text)  # JSON string com lista de tarefas
+    cor = Column(String, default="#62b1ca")
+    usuario = relationship("Usuario")
+
+class EventoAula(Base):
+    __tablename__ = "eventos_aulas"
+    id = Column(Integer, primary_key=True, index=True)
+    nome_aula = Column(String)
+    descricao = Column(Text)
+    instrutor_id = Column(Integer, ForeignKey("instrutores.id"))
+    sala_id = Column(Integer, ForeignKey("salas.id"))
+    data_hora = Column(DateTime)
+    dia_semana = Column(String)  # segunda, terca, etc (para recorrencia)
+    duracao_minutos = Column(Integer, default=60)
+    limite_inscricoes = Column(Integer)
+    foto_url = Column(String, nullable=True)
+    grupos_permitidos = Column(Text)  # JSON string com lista de grupos
+    requer_reserva = Column(Boolean, default=True)
+    config_padrao_15dias = Column(Boolean, default=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    recorrente = Column(Boolean, default=False)
+    ativa = Column(Boolean, default=True)
+    instrutor = relationship("Instrutor", back_populates="eventos_aulas")
+    sala = relationship("Sala", back_populates="eventos_aulas")
+    unidade = relationship("Unidade")
+    reservas = relationship("ReservaAula", back_populates="evento_aula")
+
+class ReservaAula(Base):
+    __tablename__ = "reservas_aulas"
+    id = Column(Integer, primary_key=True, index=True)
+    evento_aula_id = Column(Integer, ForeignKey("eventos_aulas.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    data_reserva = Column(DateTime, default=datetime.utcnow)
+    presente = Column(Boolean, default=False)
+    cancelada = Column(Boolean, default=False)
+    data_cancelamento = Column(DateTime, nullable=True)
+    evento_aula = relationship("EventoAula", back_populates="reservas")
+    usuario = relationship("Usuario")
+
+# ============================================================
 # Inicializar Banco de Dados
 # ============================================================
 
@@ -128,6 +204,63 @@ def init_sample_data():
                 usuarios_ativos=42
             )
             db.add(metrica)
+            db.commit()
+        
+        if db.query(Sala).count() == 0:
+            salas = [
+                Sala(nome="Sala A - Spinning", capacidade=20, unidade_id=1),
+                Sala(nome="Sala B - Yoga", capacidade=15, unidade_id=1),
+                Sala(nome="Sala C - Musculação", capacidade=30, unidade_id=1)
+            ]
+            for sala in salas:
+                db.add(sala)
+            db.commit()
+        
+        if db.query(Instrutor).count() == 0:
+            instrutores = [
+                Instrutor(nome="Carlos Silva", email="carlos@gym.com", especialidades="Spinning, HIIT", unidade_id=1),
+                Instrutor(nome="Ana Martins", email="ana@gym.com", especialidades="Yoga, Pilates", unidade_id=1),
+                Instrutor(nome="João Santos", email="joao@gym.com", especialidades="Musculação, Funcional", unidade_id=1)
+            ]
+            for instrutor in instrutores:
+                db.add(instrutor)
+            db.commit()
+        
+        if db.query(EventoAula).count() == 0:
+            aulas = [
+                EventoAula(
+                    nome_aula="Spinning Matinal",
+                    descricao="Aula intensa de spinning para começar o dia",
+                    instrutor_id=1,
+                    sala_id=1,
+                    data_hora=datetime.utcnow() + timedelta(days=1, hours=6),
+                    duracao_minutos=45,
+                    limite_inscricoes=20,
+                    unidade_id=1
+                ),
+                EventoAula(
+                    nome_aula="Yoga Relaxante",
+                    descricao="Sessão de yoga para relaxamento",
+                    instrutor_id=2,
+                    sala_id=2,
+                    data_hora=datetime.utcnow() + timedelta(days=1, hours=18),
+                    duracao_minutos=60,
+                    limite_inscricoes=15,
+                    unidade_id=1
+                ),
+                EventoAula(
+                    nome_aula="Treino Funcional",
+                    descricao="Treino funcional de alta intensidade",
+                    instrutor_id=3,
+                    sala_id=3,
+                    data_hora=datetime.utcnow() + timedelta(days=2, hours=7),
+                    duracao_minutos=50,
+                    limite_inscricoes=25,
+                    unidade_id=1
+                )
+            ]
+            for aula in aulas:
+                db.add(aula)
             db.commit()
     finally:
         db.close()
@@ -458,4 +591,360 @@ def metricas_ia(unidade_id: int, usuario: Usuario = Depends(get_current_user), d
         "roi": metrica.roi,
         "produtividade": metrica.produtividade,
         "usuarios_ativos": metrica.usuarios_ativos
+    }
+
+# ============================================================
+# Endpoints de Calendário
+# ============================================================
+
+@app.post("/calendario/eventos/criar")
+def criar_evento_calendario(
+    titulo: str,
+    descricao: str,
+    data_inicio: str,
+    data_fim: str,
+    tipo_evento: str,
+    lembrete: bool = False,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    evento = EventoCalendario(
+        usuario_id=usuario.id,
+        titulo=titulo,
+        descricao=descricao,
+        data_inicio=datetime.fromisoformat(data_inicio),
+        data_fim=datetime.fromisoformat(data_fim),
+        tipo_evento=tipo_evento,
+        lembrete=lembrete
+    )
+    db.add(evento)
+    db.commit()
+    return {"mensagem": "Evento criado com sucesso!", "id": evento.id}
+
+@app.get("/calendario/eventos")
+def listar_eventos_calendario(
+    data_inicio: Optional[str] = None,
+    data_fim: Optional[str] = None,
+    tipo_evento: Optional[str] = None,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(EventoCalendario).filter(EventoCalendario.usuario_id == usuario.id)
+    
+    if data_inicio:
+        query = query.filter(EventoCalendario.data_inicio >= datetime.fromisoformat(data_inicio))
+    if data_fim:
+        query = query.filter(EventoCalendario.data_fim <= datetime.fromisoformat(data_fim))
+    if tipo_evento:
+        query = query.filter(EventoCalendario.tipo_evento == tipo_evento)
+    
+    eventos = query.order_by(EventoCalendario.data_inicio).all()
+    
+    return [{
+        "id": e.id,
+        "titulo": e.titulo,
+        "descricao": e.descricao,
+        "data_inicio": e.data_inicio.isoformat() if e.data_inicio else None,
+        "data_fim": e.data_fim.isoformat() if e.data_fim else None,
+        "tipo_evento": e.tipo_evento,
+        "status": e.status,
+        "lembrete": e.lembrete,
+        "cor": e.cor
+    } for e in eventos]
+
+@app.put("/calendario/eventos/{evento_id}/marcar-cumprida")
+def marcar_evento_cumprida(
+    evento_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    evento = db.query(EventoCalendario).filter(
+        EventoCalendario.id == evento_id,
+        EventoCalendario.usuario_id == usuario.id
+    ).first()
+    
+    if not evento:
+        raise HTTPException(status_code=404, detail="Evento não encontrado")
+    
+    evento.status = "cumprida"
+    db.commit()
+    return {"mensagem": "Evento marcado como cumprido!"}
+
+@app.delete("/calendario/eventos/{evento_id}")
+def deletar_evento_calendario(
+    evento_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    evento = db.query(EventoCalendario).filter(
+        EventoCalendario.id == evento_id,
+        EventoCalendario.usuario_id == usuario.id
+    ).first()
+    
+    if not evento:
+        raise HTTPException(status_code=404, detail="Evento não encontrado")
+    
+    db.delete(evento)
+    db.commit()
+    return {"mensagem": "Evento deletado com sucesso!"}
+
+# ============================================================
+# Endpoints de Salas
+# ============================================================
+
+@app.get("/salas")
+def listar_salas(usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+    salas = db.query(Sala).filter(Sala.ativa == True).all()
+    return [{
+        "id": s.id,
+        "nome": s.nome,
+        "capacidade": s.capacidade,
+        "unidade_id": s.unidade_id
+    } for s in salas]
+
+@app.post("/salas/criar")
+def criar_sala(
+    nome: str,
+    capacidade: int,
+    unidade_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    sala = Sala(nome=nome, capacidade=capacidade, unidade_id=unidade_id)
+    db.add(sala)
+    db.commit()
+    return {"mensagem": "Sala criada com sucesso!", "id": sala.id}
+
+# ============================================================
+# Endpoints de Instrutores
+# ============================================================
+
+@app.get("/instrutores")
+def listar_instrutores(usuario: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
+    instrutores = db.query(Instrutor).filter(Instrutor.ativo == True).all()
+    return [{
+        "id": i.id,
+        "nome": i.nome,
+        "email": i.email,
+        "especialidades": i.especialidades,
+        "foto_url": i.foto_url
+    } for i in instrutores]
+
+@app.post("/instrutores/criar")
+def criar_instrutor(
+    nome: str,
+    email: str,
+    especialidades: str,
+    unidade_id: int,
+    foto_url: str = None,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    instrutor = Instrutor(
+        nome=nome,
+        email=email,
+        especialidades=especialidades,
+        unidade_id=unidade_id,
+        foto_url=foto_url
+    )
+    db.add(instrutor)
+    db.commit()
+    return {"mensagem": "Instrutor criado com sucesso!", "id": instrutor.id}
+
+# ============================================================
+# Endpoints de Agendamento de Aulas
+# ============================================================
+
+@app.post("/aulas/criar")
+def criar_evento_aula(
+    nome_aula: str,
+    descricao: str,
+    instrutor_id: int,
+    sala_id: int,
+    data_hora: str,
+    limite_inscricoes: int,
+    duracao_minutos: int = 60,
+    dia_semana: str = None,
+    grupos_permitidos: str = "[]",
+    requer_reserva: bool = True,
+    recorrente: bool = False,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    evento = EventoAula(
+        nome_aula=nome_aula,
+        descricao=descricao,
+        instrutor_id=instrutor_id,
+        sala_id=sala_id,
+        data_hora=datetime.fromisoformat(data_hora),
+        duracao_minutos=duracao_minutos,
+        dia_semana=dia_semana,
+        limite_inscricoes=limite_inscricoes,
+        grupos_permitidos=grupos_permitidos,
+        requer_reserva=requer_reserva,
+        recorrente=recorrente,
+        unidade_id=usuario.unidade_id or 1
+    )
+    db.add(evento)
+    db.commit()
+    return {"mensagem": "Aula criada com sucesso!", "id": evento.id}
+
+@app.get("/aulas")
+def listar_aulas(
+    sala_id: Optional[int] = None,
+    instrutor_id: Optional[int] = None,
+    data_inicio: Optional[str] = None,
+    data_fim: Optional[str] = None,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(EventoAula).filter(EventoAula.ativa == True)
+    
+    if sala_id:
+        query = query.filter(EventoAula.sala_id == sala_id)
+    if instrutor_id:
+        query = query.filter(EventoAula.instrutor_id == instrutor_id)
+    if data_inicio:
+        query = query.filter(EventoAula.data_hora >= datetime.fromisoformat(data_inicio))
+    if data_fim:
+        query = query.filter(EventoAula.data_hora <= datetime.fromisoformat(data_fim))
+    
+    aulas = query.order_by(EventoAula.data_hora).all()
+    
+    return [{
+        "id": a.id,
+        "nome_aula": a.nome_aula,
+        "descricao": a.descricao,
+        "instrutor": a.instrutor.nome if a.instrutor else None,
+        "sala": a.sala.nome if a.sala else None,
+        "data_hora": a.data_hora.isoformat() if a.data_hora else None,
+        "duracao_minutos": a.duracao_minutos,
+        "limite_inscricoes": a.limite_inscricoes,
+        "total_reservas": len([r for r in a.reservas if not r.cancelada]),
+        "foto_url": a.foto_url
+    } for a in aulas]
+
+# ============================================================
+# Endpoints de Reservas de Aulas
+# ============================================================
+
+@app.post("/aulas/{aula_id}/reservar")
+def reservar_aula(
+    aula_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+    
+    reservas_ativas = db.query(ReservaAula).filter(
+        ReservaAula.evento_aula_id == aula_id,
+        ReservaAula.cancelada == False
+    ).count()
+    
+    if reservas_ativas >= aula.limite_inscricoes:
+        raise HTTPException(status_code=400, detail="Aula lotada")
+    
+    reserva_existente = db.query(ReservaAula).filter(
+        ReservaAula.evento_aula_id == aula_id,
+        ReservaAula.usuario_id == usuario.id,
+        ReservaAula.cancelada == False
+    ).first()
+    
+    if reserva_existente:
+        raise HTTPException(status_code=400, detail="Você já reservou esta aula")
+    
+    reserva = ReservaAula(evento_aula_id=aula_id, usuario_id=usuario.id)
+    db.add(reserva)
+    db.commit()
+    
+    return {"mensagem": "Reserva realizada com sucesso!", "id": reserva.id}
+
+@app.get("/aulas/{aula_id}/reservas")
+def listar_reservas_aula(
+    aula_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    reservas = db.query(ReservaAula).filter(
+        ReservaAula.evento_aula_id == aula_id
+    ).all()
+    
+    return [{
+        "id": r.id,
+        "usuario_nome": r.usuario.nome if r.usuario else "Desconhecido",
+        "usuario_email": r.usuario.email if r.usuario else "",
+        "data_reserva": r.data_reserva.isoformat() if r.data_reserva else None,
+        "presente": r.presente,
+        "cancelada": r.cancelada
+    } for r in reservas]
+
+@app.put("/aulas/reservas/{reserva_id}/marcar-presenca")
+def marcar_presenca(
+    reserva_id: int,
+    presente: bool,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    reserva = db.query(ReservaAula).filter(ReservaAula.id == reserva_id).first()
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva não encontrada")
+    
+    reserva.presente = presente
+    db.commit()
+    return {"mensagem": "Presença atualizada com sucesso!"}
+
+@app.delete("/aulas/reservas/{reserva_id}/cancelar")
+def cancelar_reserva(
+    reserva_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    reserva = db.query(ReservaAula).filter(
+        ReservaAula.id == reserva_id,
+        ReservaAula.usuario_id == usuario.id
+    ).first()
+    
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva não encontrada")
+    
+    reserva.cancelada = True
+    reserva.data_cancelamento = datetime.utcnow()
+    db.commit()
+    return {"mensagem": "Reserva cancelada com sucesso!"}
+
+# ============================================================
+# Endpoints de Estatísticas e Relatórios
+# ============================================================
+
+@app.get("/aulas/{aula_id}/estatisticas")
+def estatisticas_aula(
+    aula_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+    
+    reservas = db.query(ReservaAula).filter(ReservaAula.evento_aula_id == aula_id).all()
+    
+    total_inscricoes = len([r for r in reservas if not r.cancelada])
+    total_presentes = len([r for r in reservas if r.presente and not r.cancelada])
+    total_faltas = len([r for r in reservas if not r.presente and not r.cancelada and aula.data_hora < datetime.utcnow()])
+    total_canceladas = len([r for r in reservas if r.cancelada])
+    
+    ocupacao_percentual = (total_inscricoes / aula.limite_inscricoes * 100) if aula.limite_inscricoes > 0 else 0
+    
+    return {
+        "aula_id": aula_id,
+        "nome_aula": aula.nome_aula,
+        "limite_inscricoes": aula.limite_inscricoes,
+        "total_inscricoes": total_inscricoes,
+        "total_presentes": total_presentes,
+        "total_faltas": total_faltas,
+        "total_canceladas": total_canceladas,
+        "ocupacao_percentual": round(ocupacao_percentual, 2),
+        "vagas_disponiveis": aula.limite_inscricoes - total_inscricoes
     }
