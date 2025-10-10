@@ -1,15 +1,17 @@
-# Gym & Corporate Wellness CRM
+# Myvivio CRM - Gym & Corporate Wellness
 
 ## Visão Geral
 Sistema de gestão inteligente para academias e wellness corporativo, com foco em otimização por IA de engajamento, ROI e produtividade.
 
-## Mudanças Recentes (09/10/2025)
-- **Transformação completa**: Migração de app de saúde integral (Metavida) para CRM de gestão de academias
-- Removida toda linguagem de "mente/corpo/energia"
-- **Novo layout Technogym**: Sidebar de navegação esquerda fixa com 6 páginas (Iniciar, Home, Planejador, Pessoas, Treinamento, Configuração)
-- **Espaço para logo**: Logo placeholder no topo da sidebar
-- **Design profissional**: Interface moderna inspirada no CRM Technogym
-- Implementação de sistema de agendas e métricas para IA
+## Mudanças Recentes (10/10/2025)
+- **Rebranding completo para Myvivio CRM**: Nome da marca atualizado em toda a interface
+- **Nova paleta de cores**: Implementada paleta profissional (#62b1ca, #1f2746, #333f6e, #ffffff, #000000)
+- **Ícones profissionais**: Todos os emojis substituídos por ícones Font Awesome
+- **Home Dashboard com abas**:
+  - **Aba "Dia após dia"**: Timeline de atividades, widgets de contatos, leads e programas
+  - **Aba "Desempenho"**: Métricas de retenção, usuários, ROI, engajamento e produtividade
+- **Busca personalizada**: "Buscar no Myvivio CRM"
+- **Layout Technogym**: Sidebar de navegação esquerda fixa com 6 páginas
 - **Segurança reforçada**: Todos os endpoints sensíveis protegidos com autenticação JWT
 - **Autenticação moderna**: Login/registro com JSON body (não query params) e Argon2 hash
 
@@ -26,9 +28,17 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 ### Frontend
 - **HTML5 + CSS3 + JavaScript Vanilla**
 - **Design**: Layout inspirado em CRM Technogym com sidebar de navegação
-- **Cores**: Sidebar escura (#2d2d2d), Vermelho (#E74C3C) como cor primária
-- **Ícones**: Font Awesome 6.4.0
-- **Navegação**: 6 páginas principais (Iniciar, Home, Planejador, Pessoas, Treinamento, Configuração)
+- **Paleta de Cores**:
+  - **Accent Blue**: #62b1ca (botões, destaques, links)
+  - **Dark Blue**: #1f2746 (sidebar, cabeçalhos)
+  - **Medium Blue**: #333f6e (backgrounds secundários)
+  - **White**: #ffffff (textos primários, backgrounds)
+  - **Black**: #000000 (textos, ícones)
+  - **Warning**: #f39c12 (alertas, programas expirados)
+  - **Success**: #27ae60 (confirmações)
+  - **Danger**: #e74c3c (apenas toasts de erro do sistema)
+- **Ícones**: Font Awesome 6.4.0 (totalmente substituindo emojis)
+- **Navegação**: 6 páginas principais com ícones profissionais
 
 ## Estrutura do Projeto
 
@@ -37,12 +47,12 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 ├── metavida_app.py          # Backend FastAPI
 ├── gym_wellness.db          # Banco SQLite (gerado automaticamente)
 ├── templates/
-│   └── index.html           # Frontend SPA
+│   └── index.html           # Frontend SPA com navegação e abas
 ├── static/
 │   ├── css/
-│   │   └── style.css        # Estilos profissionais
+│   │   └── style.css        # Estilos profissionais Myvivio
 │   └── js/
-│       └── app.js           # Lógica JavaScript
+│       └── app.js           # Lógica JavaScript (tabs, navegação)
 ├── pyproject.toml           # Dependências Python
 └── replit.md                # Esta documentação
 ```
@@ -113,16 +123,30 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 ## Recursos Principais
 
 ### Navegação (Sidebar Esquerda)
-- **Logo**: Espaço para logo da empresa no topo
-- **Menu Principal**:
-  - 🚀 Iniciar - Ações rápidas e bem-vindo
-  - 🏠 Home - Dashboard com métricas e estatísticas
-  - 📅 Planejador - Agendas e atividades
-  - 👥 Pessoas - Lista de usuários e visitantes
-  - 💪 Treinamento - Programas e treinos
-  - ⚙️ Configuração - Configurações do sistema
+- **Logo**: Espaço para logo Myvivio no topo
+- **Busca**: Campo de busca "Buscar no Myvivio CRM"
+- **Menu Principal** (com ícones Font Awesome):
+  - <i class="fa-solid fa-rocket"></i> Iniciar - Ações rápidas e bem-vindo
+  - <i class="fa-solid fa-house"></i> Home - Dashboard com métricas e estatísticas
+  - <i class="fa-solid fa-calendar-days"></i> Planejador - Agendas e atividades
+  - <i class="fa-solid fa-users"></i> Pessoas - Lista de usuários e visitantes
+  - <i class="fa-solid fa-dumbbell"></i> Treinamento - Programas e treinos
+  - <i class="fa-solid fa-gear"></i> Configuração - Configurações do sistema
 
-### Página Home (Dashboard)
+### Página Home (Dashboard com Abas)
+
+#### Aba "Dia após dia" (Layout 2 colunas)
+**Coluna Esquerda:**
+- **Atividades**: Timeline com tarefas "Para fazer" e "Feito"
+  - Cards de atividades com status visual
+  - Marcação de conclusão
+
+**Coluna Direita:**
+- **Contatos**: Widgets com estatísticas de contatos (verde/amarelo/vermelho)
+- **Leads**: Estatísticas de leads e conversões
+- **Programas**: Visão geral rápida dos programas
+
+#### Aba "Desempenho"
 - **Seção Retenção**:
   - Card destacado com risco de desistência
   - Indicador de tendência
@@ -186,6 +210,8 @@ uvicorn metavida_app:app --host 0.0.0.0 --port 5000
 3. Análise preditiva de ROI
 4. Dashboard de relatórios avançados
 5. API para integração com wearables e dispositivos fitness
+6. Implementação de gráficos e visualizações avançadas
+7. Sistema de notificações em tempo real
 
 ## Notas de Desenvolvimento
 
@@ -193,6 +219,28 @@ uvicorn metavida_app:app --host 0.0.0.0 --port 5000
 - Banco de dados SQLite para desenvolvimento (migrar para PostgreSQL em produção)
 - CORS habilitado para desenvolvimento (restringir em produção)
 - Senhas criptografadas com Argon2
+- Paleta de cores mantida consistente em toda a aplicação
+- Uso exclusivo de ícones Font Awesome para interface profissional
+
+## Design System
+
+### Cores
+- **Primária (Accent Blue)**: #62b1ca - Botões principais, links, destaques
+- **Secundária (Dark Blue)**: #1f2746 - Sidebar, headers, fundos escuros
+- **Terciária (Medium Blue)**: #333f6e - Fundos secundários, cards
+- **Neutras**: #ffffff (backgrounds), #000000 (textos)
+- **Feedback**: Success (#27ae60), Warning (#f39c12), Danger (#e74c3c - apenas erros)
+
+### Tipografia
+- Família: System fonts (sans-serif)
+- Tamanhos: 0.85rem a 2.5rem
+- Pesos: 400 (normal), 600 (semibold), 700 (bold)
+
+### Componentes
+- Cards com sombra suave (0 2px 8px rgba(0,0,0,0.1))
+- Bordas arredondadas (8px a 12px)
+- Transições suaves (0.3s)
+- Hover states com elevação
 
 ## Segurança
 
@@ -212,3 +260,11 @@ uvicorn metavida_app:app --host 0.0.0.0 --port 5000
 
 ### Produção
 ⚠️ **IMPORTANTE**: Configurar variável de ambiente `SESSION_SECRET` com valor seguro em produção
+
+## Branding - Myvivio CRM
+
+- **Nome**: Myvivio CRM
+- **Slogan**: Sistema de Gestão Inteligente
+- **Identidade Visual**: Design profissional inspirado em Technogym
+- **Público-alvo**: Academias e programas de wellness corporativo
+- **Diferencial**: Otimização por IA para engajamento e ROI
