@@ -58,7 +58,7 @@ function navigateTo(event, page) {
         if (page === 'home') {
             loadDashboardData();
         } else if (page === 'planejador') {
-            loadAgendas();
+            initPlanner();
         } else if (page === 'treinamento') {
             loadProgramas();
         }
@@ -88,7 +88,7 @@ function navigateToPage(page) {
         if (page === 'home') {
             loadDashboardData();
         } else if (page === 'planejador') {
-            loadAgendas();
+            initPlanner();
         } else if (page === 'treinamento') {
             loadProgramas();
         }
@@ -478,4 +478,309 @@ window.onclick = function(event) {
     if (event.target === modal) {
         closeAgendaModal();
     }
+}
+
+// ============================================
+// PLANEJADOR - Funções de Calendário e Reservas
+// ============================================
+
+let currentDate = new Date();
+let viewMode = 'week';
+let sidebarCollapsed = false;
+
+// Toggle Sidebar
+function togglePlannerSidebar() {
+    const sidebar = document.getElementById('planner-sidebar');
+    sidebarCollapsed = !sidebarCollapsed;
+    if (sidebarCollapsed) {
+        sidebar.classList.add('collapsed');
+    } else {
+        sidebar.classList.remove('collapsed');
+    }
+}
+
+// Trocar entre visualizações do Planejador
+function switchPlannerView(view, evt) {
+    // Remove active de todos os botões
+    document.querySelectorAll('.planner-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    // Remove active de todas as views
+    document.querySelectorAll('.planner-view').forEach(v => v.classList.remove('active'));
+    
+    // Ativa o botão clicado (se houver evento)
+    if (evt) {
+        evt.target.closest('.planner-menu-item').classList.add('active');
+    } else {
+        // Se não houver evento, ativa o botão correspondente
+        const button = document.querySelector(`.planner-menu-item[onclick*="${view}"]`);
+        if (button) button.classList.add('active');
+    }
+    
+    // Ativa a view correspondente
+    document.getElementById(`planner-${view}`).classList.add('active');
+    
+    // Carregar dados específicos
+    if (view === 'calendario') {
+        renderCalendar();
+    } else if (view === 'reservas') {
+        renderWeekCalendar();
+    } else if (view === 'agendamento') {
+        renderAgendamentoList();
+    }
+}
+
+// Inicializar Planejador quando a página for carregada
+function initPlanner() {
+    // Verificar se estamos na página do planejador
+    const plannerPage = document.getElementById('page-planejador');
+    if (plannerPage && plannerPage.classList.contains('active')) {
+        switchPlannerView('calendario');
+    }
+}
+
+// ===== CALENDÁRIO =====
+
+function renderCalendar() {
+    const mode = document.getElementById('view-mode').value;
+    if (mode === 'week') {
+        renderWeekView();
+    } else {
+        renderMonthView();
+    }
+}
+
+function renderMonthView() {
+    const header = document.getElementById('calendar-header');
+    const body = document.getElementById('calendar-body');
+    
+    // Dias da semana
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    header.innerHTML = weekDays.map(day => `<div>${day}</div>`).join('');
+    
+    // Obter primeiro e último dia do mês
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    // Construir calendário
+    let html = '';
+    let day = 1;
+    
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startDay) {
+                html += '<div class="calendar-day other-month"></div>';
+            } else if (day > daysInMonth) {
+                html += '<div class="calendar-day other-month"></div>';
+            } else {
+                const isToday = day === new Date().getDate() && 
+                               month === new Date().getMonth() && 
+                               year === new Date().getFullYear();
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}">
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-events">
+                            ${day % 3 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
+                            ${day % 5 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
+                        </div>
+                    </div>
+                `;
+                day++;
+            }
+        }
+        if (day > daysInMonth) break;
+    }
+    
+    body.innerHTML = html;
+}
+
+function renderWeekView() {
+    const header = document.getElementById('calendar-header');
+    const body = document.getElementById('calendar-body');
+    
+    // Obter início da semana
+    const today = new Date(currentDate);
+    const dayOfWeek = today.getDay();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - dayOfWeek);
+    
+    // Dias da semana com datas
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    let headerHTML = '';
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        const isToday = date.toDateString() === new Date().toDateString();
+        headerHTML += `
+            <div class="${isToday ? 'today' : ''}">
+                ${weekDays[i]}<br>
+                <small>${date.getDate()}</small>
+            </div>
+        `;
+    }
+    
+    header.innerHTML = headerHTML;
+    body.innerHTML = '<div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: var(--text-secondary);">Selecione uma data para ver as atividades</div>';
+}
+
+function changeViewMode() {
+    renderCalendar();
+}
+
+function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function goToToday() {
+    currentDate = new Date();
+    renderCalendar();
+}
+
+// ===== RESERVA DE AULAS =====
+
+let currentWeek = new Date();
+
+function renderWeekCalendar() {
+    const container = document.getElementById('week-calendar');
+    
+    // Obter início da semana
+    const today = new Date(currentWeek);
+    const dayOfWeek = today.getDay();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - dayOfWeek);
+    
+    const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    
+    // Exemplo de aulas
+    const classes = [
+        { day: 1, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '17/30', type: 'ginasio' },
+        { day: 3, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '6/30', type: 'ginasio' },
+        { day: 4, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '4/30', type: 'ginasio' },
+        { day: 5, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '4/30', type: 'ginasio' },
+        { day: 6, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '1/30', type: 'ginasio' },
+        { day: 6, time: '08:00', duration: 30, name: 'Personal Training 30\'', instructor: 'Lima Bernardo', capacity: '0/1', type: 'personal' },
+        { day: 3, time: '09:00', duration: 30, name: 'Personal Training 30\'', instructor: 'Ramalho Sidnei', capacity: '0/1', type: 'personal' },
+    ];
+    
+    let html = '<div class="week-grid">';
+    
+    // Cabeçalho com dias
+    html += '<div class="week-header time"></div>';
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        const isToday = date.toDateString() === new Date().toDateString();
+        html += `
+            <div class="week-header ${isToday ? 'today' : ''}">
+                ${weekDays[i]}<br>
+                <small>${date.getDate()} Out</small>
+            </div>
+        `;
+    }
+    
+    // Horários
+    const hours = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+    
+    hours.forEach(hour => {
+        html += `<div class="time-slot">${hour}</div>`;
+        
+        for (let day = 0; day < 7; day++) {
+            const dayClasses = classes.filter(c => c.day === day && c.time === hour);
+            html += '<div class="week-cell">';
+            dayClasses.forEach(cls => {
+                html += `
+                    <div class="class-block ${cls.type}">
+                        <div class="class-time">${cls.time} - ${addMinutes(cls.time, cls.duration)}</div>
+                        <div class="class-name">${cls.name}</div>
+                        <div class="class-instructor">${cls.instructor}</div>
+                        <div class="class-capacity">${cls.capacity}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function addMinutes(time, minutes) {
+    const [hours, mins] = time.split(':').map(Number);
+    const totalMins = hours * 60 + mins + minutes;
+    const newHours = Math.floor(totalMins / 60);
+    const newMins = totalMins % 60;
+    return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
+}
+
+function previousWeek() {
+    currentWeek.setDate(currentWeek.getDate() - 7);
+    renderWeekCalendar();
+}
+
+function nextWeek() {
+    currentWeek.setDate(currentWeek.getDate() + 7);
+    renderWeekCalendar();
+}
+
+function goToTodayReservas() {
+    currentWeek = new Date();
+    renderWeekCalendar();
+}
+
+// ===== AGENDAMENTO DE AULAS =====
+
+let currentAgendaDate = new Date();
+
+function renderAgendamentoList() {
+    const container = document.getElementById('agendamento-list');
+    
+    const agendamentos = [
+        { time: '12:00 - 12:30', title: 'Personal Training 30\' - CP', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/1' },
+        { time: '15:00 - 17:30', title: 'Personal Training 30\' - SR', location: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '0/1' },
+        { time: '17:30 - 18:00', title: 'Personal Training 30\' - CP', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/1' },
+        { time: '18:00 - 20:00', title: 'GINÁSIO', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/30' }
+    ];
+    
+    let html = '';
+    agendamentos.forEach(item => {
+        html += `
+            <div class="agendamento-item">
+                <div class="agendamento-time">${item.time}</div>
+                <div class="agendamento-info">
+                    <div class="agendamento-title">${item.title}</div>
+                    <div class="agendamento-subtitle">${item.location}</div>
+                    <div class="agendamento-instructor">${item.instructor}</div>
+                </div>
+                <div class="agendamento-capacity">${item.capacity}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function previousDayAgenda() {
+    currentAgendaDate.setDate(currentAgendaDate.getDate() - 1);
+    renderAgendamentoList();
+}
+
+function nextDayAgenda() {
+    currentAgendaDate.setDate(currentAgendaDate.getDate() + 1);
+    renderAgendamentoList();
+}
+
+function goToTodayAgendamento() {
+    currentAgendaDate = new Date();
+    renderAgendamentoList();
 }

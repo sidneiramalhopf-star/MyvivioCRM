@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251010">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251010v3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -387,14 +387,113 @@
                     </div>
 
                     <div id="page-planejador" class="page-content">
-                        <div class="page-header">
-                            <h1><i class="fas fa-calendar-alt"></i> Planejador</h1>
-                            <button class="btn-primary" onclick="openAgendaModal()">
-                                <i class="fas fa-plus"></i> Nova Atividade
-                            </button>
-                        </div>
-                        <div class="agenda-section">
-                            <div class="agenda-list" id="agenda-list"></div>
+                        <div class="planner-container">
+                            <!-- Sidebar Colapsável -->
+                            <div class="planner-sidebar" id="planner-sidebar">
+                                <div class="sidebar-toggle" onclick="togglePlannerSidebar()">
+                                    <i class="fas fa-bars"></i>
+                                </div>
+                                <div class="sidebar-content">
+                                    <button class="planner-menu-item active" onclick="switchPlannerView('calendario', event)">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Calendário</span>
+                                    </button>
+                                    <button class="planner-menu-item" onclick="switchPlannerView('reservas', event)">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <span>Reserva de aulas</span>
+                                    </button>
+                                    <button class="planner-menu-item" onclick="switchPlannerView('agendamento', event)">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Agendamento de aulas</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Área Principal -->
+                            <div class="planner-main">
+                                <!-- Seção Calendário -->
+                                <div id="planner-calendario" class="planner-view active">
+                                    <div class="planner-header">
+                                        <h1><i class="fas fa-calendar"></i> Calendário</h1>
+                                        <div class="calendar-controls">
+                                            <button class="btn-icon" onclick="previousMonth()"><i class="fas fa-chevron-left"></i></button>
+                                            <button class="btn-outline" onclick="goToToday()">HOJE</button>
+                                            <button class="btn-icon" onclick="nextMonth()"><i class="fas fa-chevron-right"></i></button>
+                                            <select id="view-mode" onchange="changeViewMode()" class="view-select">
+                                                <option value="week">Semana</option>
+                                                <option value="month">Mês</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-display">
+                                        <div class="calendar-header" id="calendar-header"></div>
+                                        <div class="calendar-body" id="calendar-body"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Seção Reserva de Aulas -->
+                                <div id="planner-reservas" class="planner-view">
+                                    <div class="planner-header">
+                                        <h1><i class="fas fa-clipboard-list"></i> Reserva da aula</h1>
+                                        <div class="reservas-controls">
+                                            <input type="text" class="search-input" placeholder="Buscar" id="search-reservas">
+                                            <select class="filter-select">
+                                                <option>Sempre</option>
+                                                <option>Hoje</option>
+                                                <option>Esta Semana</option>
+                                            </select>
+                                            <button class="btn-outline"><i class="fas fa-filter"></i> MOSTRA</button>
+                                        </div>
+                                    </div>
+                                    <div class="week-navigator">
+                                        <button class="btn-icon" onclick="previousWeek()"><i class="fas fa-chevron-left"></i></button>
+                                        <button class="btn-icon"><i class="fas fa-calendar"></i></button>
+                                        <button class="btn-icon" onclick="nextWeek()"><i class="fas fa-chevron-right"></i></button>
+                                        <button class="btn-outline" onclick="goToTodayReservas()">HOJE</button>
+                                    </div>
+                                    <div class="week-calendar" id="week-calendar"></div>
+                                </div>
+
+                                <!-- Seção Agendamento de Aulas -->
+                                <div id="planner-agendamento" class="planner-view">
+                                    <div class="planner-header">
+                                        <h1><i class="fas fa-plus-circle"></i> Agendamento de aulas</h1>
+                                        <div class="agendamento-controls">
+                                            <input type="text" class="search-input" placeholder="Buscar" id="search-agendamento">
+                                            <button class="btn-outline"><i class="fas fa-eye-slash"></i> OCULTAR</button>
+                                        </div>
+                                    </div>
+                                    <div class="filters-row">
+                                        <select class="filter-select">
+                                            <option>Todas as salas</option>
+                                        </select>
+                                        <select class="filter-select">
+                                            <option>Todos os tipos</option>
+                                        </select>
+                                        <select class="filter-select">
+                                            <option>Todos os salas</option>
+                                        </select>
+                                        <select class="filter-select">
+                                            <option>Todos os membros da equipe</option>
+                                        </select>
+                                        <select class="filter-select">
+                                            <option>Sempre</option>
+                                        </select>
+                                    </div>
+                                    <div class="agendamento-navigator">
+                                        <button class="btn-icon" onclick="previousDayAgenda()"><i class="fas fa-chevron-left"></i></button>
+                                        <button class="btn-icon"><i class="fas fa-calendar"></i></button>
+                                        <button class="btn-icon" onclick="nextDayAgenda()"><i class="fas fa-chevron-right"></i></button>
+                                        <button class="btn-outline" onclick="goToTodayAgendamento()">HOJE</button>
+                                        <div class="view-toggle">
+                                            <button class="toggle-btn active">Dia</button>
+                                            <button class="toggle-btn">Semana (compactada)</button>
+                                            <button class="toggle-btn">Semana</button>
+                                        </div>
+                                    </div>
+                                    <div class="agendamento-list" id="agendamento-list"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -516,6 +615,6 @@
 
     <div id="toast" class="toast"></div>
 
-    <script src="/static/js/app.js?v=20251010"></script>
+    <script src="/static/js/app.js?v=20251010v3"></script>
 </body>
 </html>
