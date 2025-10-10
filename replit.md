@@ -6,10 +6,17 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 ## Mudanças Recentes (10/10/2025)
 
 ### Expansão do Backend - Sistema Completo de Calendário e Aulas
-- **Novos Modelos de Dados**: Sala, Instrutor, EventoCalendario, EventoAula, ReservaAula
+- **Novos Modelos de Dados**: Sala, Instrutor, EventoCalendario, EventoAula, ReservaAula, **Attendance**
 - **Sistema de Calendário**: CRUD completo com filtros, lembretes e marcação de conclusão
 - **Sistema de Aulas**: Agendamento de aulas com instrutores, salas e limite de inscrições
 - **Reservas de Aulas**: Sistema completo de reservas, cancelamento e controle de presença
+- **Sistema Attendance (Presença Autoritativa)**:
+  - **Única Fonte de Verdade**: Todas estatísticas e gráficos usam SOMENTE Attendance
+  - **Constraint Único no Banco**: `idx_unique_attendance_reserva` garante 1 registro por reserva
+  - **3 Status Validados**: presente, falta, justificada (com metadados completos)
+  - **Limpeza Automática**: Remove duplicatas na inicialização antes de criar constraint
+  - **DELETE+INSERT**: Garante unicidade em tempo de execução
+  - **Endpoint Admin**: `/admin/attendance/limpar-duplicatas` para manutenção manual
 - **E-mail em Massa**: Envio de e-mails para todos inscritos em uma aula (SMTP configurável)
 - **Gráficos Circulares**: Geração automática de gráficos com matplotlib (ocupação, presença, faltas)
 - **Exportação de Relatórios**: Exportação CSV de calendário e aulas com filtros de data
@@ -127,13 +134,15 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 - Datas de reserva e cancelamento
 - Vinculada a usuário e aula
 
-#### Attendance
-- Registro detalhado de presença
-- Status: presente, falta, justificada
-- Observações e notas
-- Rastreamento de quem marcou presença
-- Histórico completo por usuário/aula
-- Vinculado a reserva, evento e usuário
+#### Attendance (ÚNICA FONTE DE VERDADE)
+- **Registro Autoritativo de Presença**: Única fonte para todas estatísticas
+- **Status Validados**: presente, falta, justificada (3 opções)
+- **Metadados Completos**: observações, quem marcou, quando marcou
+- **Constraint Único**: `idx_unique_attendance_reserva` no banco (1 registro/reserva)
+- **Limpeza Automática**: Remove duplicatas na inicialização
+- **DELETE+INSERT**: Padrão que garante unicidade em runtime
+- **Histórico Completo**: Por usuário, por aula, com filtros de data
+- **Vinculado**: reserva_aula_id (FK), evento_aula_id (FK), usuario_id (FK)
 
 ### Agenda
 - Atividades diárias dos usuários
