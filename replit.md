@@ -75,21 +75,65 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 
 ## Modelos de Dados
 
-### Unidade
+### Modelos Principais
+
+#### Unidade
 - Academias/unidades de wellness corporativo
 - Métricas de risco de desistência
 
-### Usuario
+#### Usuario
 - Tipos: administrador, gerente, instrutor, membro
 - Rastreamento de atividade e engajamento
 
-### Visitante
+#### Visitante
 - Leads/prospects
 - Controle de conversão
 
-### Programa
+#### Programa
 - Status: expirado, não atribuído, atribuído
-- Gerenciamento de programas e turmas
+
+### Novos Modelos - Sistema de Calendário e Aulas
+
+#### Sala
+- Nome e capacidade
+- Vinculada a unidade
+- Status ativo/inativo
+
+#### Instrutor
+- Nome, email, especialidades
+- Foto (URL)
+- Vinculado a unidade
+
+#### EventoCalendario
+- Eventos pessoais do usuário
+- Título, descrição, datas
+- Tipo de evento, status (pendente/cumprida)
+- Lembretes e tarefas vinculadas
+- Cor personalizável
+
+#### EventoAula
+- Aulas agendadas
+- Instrutor e sala
+- Data/hora, duração
+- Limite de inscrições
+- Grupos permitidos
+- Suporte a recorrência
+- Configurações de reserva
+
+#### ReservaAula
+- Sistema de reservas de aulas
+- Controle de reserva e cancelamento
+- Status de presença básico
+- Datas de reserva e cancelamento
+- Vinculada a usuário e aula
+
+#### Attendance
+- Registro detalhado de presença
+- Status: presente, falta, justificada
+- Observações e notas
+- Rastreamento de quem marcou presença
+- Histórico completo por usuário/aula
+- Vinculado a reserva, evento e usuário
 
 ### Agenda
 - Atividades diárias dos usuários
@@ -130,6 +174,37 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 
 ### Métricas IA
 - `GET /metricas/ia?unidade_id=X` - Obter métricas para otimização por IA
+
+### Calendário (NOVO)
+- `POST /calendario/eventos/criar` - Criar evento no calendário
+- `GET /calendario/eventos` - Listar eventos (filtros: data_inicio, data_fim, tipo_evento)
+- `PUT /calendario/eventos/{evento_id}/marcar-cumprida` - Marcar evento como cumprido
+- `DELETE /calendario/eventos/{evento_id}` - Deletar evento
+- `GET /calendario/exportar-csv` - Exportar eventos em CSV (filtros: data_inicio, data_fim)
+
+### Salas e Instrutores (NOVO)
+- `GET /salas` - Listar todas as salas
+- `POST /salas/criar` - Criar nova sala
+- `GET /instrutores` - Listar todos os instrutores
+- `POST /instrutores/criar` - Criar novo instrutor
+
+### Aulas (NOVO)
+- `POST /aulas/criar` - Criar aula agendada
+- `GET /aulas` - Listar aulas (filtros: sala_id, instrutor_id, data_inicio, data_fim)
+- `GET /aulas/{aula_id}/estatisticas` - Estatísticas da aula (ocupação, presença, faltas)
+- `GET /aulas/{aula_id}/grafico` - Gráfico circular da aula (base64)
+- `GET /aulas/exportar-csv` - Exportar aulas em CSV (filtros: data_inicio, data_fim)
+- `POST /aulas/{aula_id}/enviar-email-inscritos` - Enviar e-mail para todos inscritos
+
+### Reservas (NOVO)
+- `POST /aulas/{aula_id}/reservar` - Reservar vaga em aula
+- `GET /aulas/{aula_id}/reservas` - Listar reservas da aula
+- `PUT /aulas/reservas/{reserva_id}/marcar-presenca` - Marcar presença (presente: true/false, observacoes)
+- `DELETE /aulas/reservas/{reserva_id}/cancelar` - Cancelar reserva
+
+### Attendance (NOVO)
+- `GET /aulas/{aula_id}/attendance` - Listar registros de presença da aula
+- `GET /usuarios/{usuario_id}/attendance` - Histórico de presença do usuário (filtros: data_inicio, data_fim)
 
 ### Frontend
 - `GET /` - Interface Web completa (SPA)

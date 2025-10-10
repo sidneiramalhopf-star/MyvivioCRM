@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
 from datetime import datetime, timedelta
@@ -180,16 +180,85 @@ class ReservaAula(Base):
     data_cancelamento = Column(DateTime, nullable=True)
     evento_aula = relationship("EventoAula", back_populates="reservas")
     usuario = relationship("Usuario")
+    attendance_records = relationship("Attendance", back_populates="reserva")
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+    # Constraint único será adicionado APÓS limpeza de duplicatas na inicialização
+    id = Column(Integer, primary_key=True, index=True)
+    reserva_aula_id = Column(Integer, ForeignKey("reservas_aulas.id"), index=True)
+    evento_aula_id = Column(Integer, ForeignKey("eventos_aulas.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    status = Column(String)  # presente, falta, justificada
+    data_marcacao = Column(DateTime, default=datetime.utcnow)
+    observacoes = Column(Text, nullable=True)
+    marcado_por = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    reserva = relationship("ReservaAula", back_populates="attendance_records")
+    evento_aula = relationship("EventoAula")
+    usuario = relationship("Usuario", foreign_keys=[usuario_id])
+    marcador = relationship("Usuario", foreign_keys=[marcado_por])
 
 # ============================================================
 # Inicializar Banco de Dados
 # ============================================================
 
+# Passo 1: Criar tabelas SEM constraint único
 Base.metadata.create_all(bind=engine)
+
+def limpar_duplicatas_attendance_startup(db: Session):
+    """
+    Limpa duplicatas de Attendance na inicialização
+    """
+    from sqlalchemy import func
+    
+    duplicatas = db.query(
+        Attendance.reserva_aula_id,
+        func.count(Attendance.id).label('count')
+    ).group_by(Attendance.reserva_aula_id).having(func.count(Attendance.id) > 1).all()
+    
+    for reserva_id, count in duplicatas:
+        registros = db.query(Attendance).filter(
+            Attendance.reserva_aula_id == reserva_id
+        ).order_by(Attendance.data_marcacao.desc()).all()
+        
+        for registro in registros[1:]:
+            db.delete(registro)
+    
+    db.commit()
+
+def criar_constraint_unico_attendance():
+    """
+    Cria constraint único APÓS limpeza de duplicatas
+    """
+    import sqlite3
+    
+    conn = sqlite3.connect("gym_wellness.db")
+    cursor = conn.cursor()
+    
+    try:
+        # Verificar se constraint já existe
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_unique_attendance_reserva'")
+        if cursor.fetchone() is None:
+            # Criar constraint único
+            cursor.execute("CREATE UNIQUE INDEX idx_unique_attendance_reserva ON attendance(reserva_aula_id)")
+            conn.commit()
+            print("✅ Constraint único criado em attendance.reserva_aula_id")
+        else:
+            print("✅ Constraint único já existe em attendance.reserva_aula_id")
+    except sqlite3.IntegrityError as e:
+        print(f"❌ Erro ao criar constraint: {e} - Ainda há duplicatas!")
+    finally:
+        conn.close()
 
 def init_sample_data():
     db = SessionLocal()
     try:
+        # Passo 2: LIMPEZA AUTOMÁTICA DE DUPLICATAS
+        limpar_duplicatas_attendance_startup(db)
+        
+        # Passo 3: CRIAR CONSTRAINT ÚNICO (após limpeza)
+        criar_constraint_unico_attendance()
+        
         if db.query(Unidade).count() == 0:
             unidade = Unidade(nome="Unidade Principal", endereco="Av. Principal, 123", risco_desistencia=15.5)
             db.add(unidade)
@@ -883,7 +952,8 @@ def listar_reservas_aula(
 @app.put("/aulas/reservas/{reserva_id}/marcar-presenca")
 def marcar_presenca(
     reserva_id: int,
-    presente: bool,
+    status: str,  # presente, falta, justificada
+    observacoes: str = None,
     usuario: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -891,9 +961,35 @@ def marcar_presenca(
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva não encontrada")
     
-    reserva.presente = presente
+    # Validar status
+    if status not in ["presente", "falta", "justificada"]:
+        raise HTTPException(status_code=400, detail="Status deve ser: presente, falta ou justificada")
+    
+    # Atualizar campo legado na reserva (para compatibilidade)
+    reserva.presente = (status == "presente")
+    
+    # GARANTIR UNICIDADE: Deletar TODOS os registros existentes de Attendance para esta reserva
+    db.query(Attendance).filter(
+        Attendance.reserva_aula_id == reserva.id
+    ).delete()
+    
+    # Criar NOVO registro único e autoritativo
+    attendance = Attendance(
+        reserva_aula_id=reserva.id,
+        evento_aula_id=reserva.evento_aula_id,
+        usuario_id=reserva.usuario_id,
+        status=status,
+        observacoes=observacoes,
+        marcado_por=usuario.id
+    )
+    db.add(attendance)
     db.commit()
-    return {"mensagem": "Presença atualizada com sucesso!"}
+    
+    return {
+        "mensagem": "Presença registrada com sucesso!",
+        "attendance_id": attendance.id,
+        "status": status
+    }
 
 @app.delete("/aulas/reservas/{reserva_id}/cancelar")
 def cancelar_reserva(
@@ -913,6 +1009,101 @@ def cancelar_reserva(
     reserva.data_cancelamento = datetime.utcnow()
     db.commit()
     return {"mensagem": "Reserva cancelada com sucesso!"}
+
+# ============================================================
+# Endpoint de Limpeza de Duplicatas (Administração)
+# ============================================================
+
+@app.post("/admin/attendance/limpar-duplicatas")
+def limpar_duplicatas_attendance(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Remove registros duplicados de Attendance, mantendo apenas o mais recente por reserva
+    """
+    # Buscar todas as reservas com mais de um registro de Attendance
+    from sqlalchemy import func
+    
+    duplicatas = db.query(
+        Attendance.reserva_aula_id,
+        func.count(Attendance.id).label('count')
+    ).group_by(Attendance.reserva_aula_id).having(func.count(Attendance.id) > 1).all()
+    
+    total_removidos = 0
+    
+    for reserva_id, count in duplicatas:
+        # Buscar todos os registros desta reserva
+        registros = db.query(Attendance).filter(
+            Attendance.reserva_aula_id == reserva_id
+        ).order_by(Attendance.data_marcacao.desc()).all()
+        
+        # Manter o mais recente, deletar os outros
+        for registro in registros[1:]:
+            db.delete(registro)
+            total_removidos += 1
+    
+    db.commit()
+    
+    return {
+        "mensagem": "Duplicatas removidas com sucesso!",
+        "reservas_afetadas": len(duplicatas),
+        "registros_removidos": total_removidos
+    }
+
+# ============================================================
+# Endpoints de Attendance (Presença Detalhada)
+# ============================================================
+
+@app.get("/aulas/{aula_id}/attendance")
+def listar_attendance_aula(
+    aula_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos os registros de presença de uma aula
+    """
+    attendance_records = db.query(Attendance).filter(
+        Attendance.evento_aula_id == aula_id
+    ).all()
+    
+    return [{
+        "id": a.id,
+        "usuario": a.usuario.nome if a.usuario else "Desconhecido",
+        "status": a.status,
+        "data_marcacao": a.data_marcacao.isoformat() if a.data_marcacao else None,
+        "observacoes": a.observacoes,
+        "marcado_por": a.marcador.nome if a.marcador else "Sistema"
+    } for a in attendance_records]
+
+@app.get("/usuarios/{usuario_id}/attendance")
+def listar_attendance_usuario(
+    usuario_id: int,
+    data_inicio: Optional[str] = None,
+    data_fim: Optional[str] = None,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Lista histórico de presença de um usuário
+    """
+    query = db.query(Attendance).filter(Attendance.usuario_id == usuario_id)
+    
+    if data_inicio:
+        query = query.filter(Attendance.data_marcacao >= datetime.fromisoformat(data_inicio))
+    if data_fim:
+        query = query.filter(Attendance.data_marcacao <= datetime.fromisoformat(data_fim))
+    
+    attendance_records = query.order_by(Attendance.data_marcacao.desc()).all()
+    
+    return [{
+        "id": a.id,
+        "aula": a.evento_aula.nome_aula if a.evento_aula else "N/A",
+        "status": a.status,
+        "data_marcacao": a.data_marcacao.isoformat() if a.data_marcacao else None,
+        "observacoes": a.observacoes
+    } for a in attendance_records]
 
 # ============================================================
 # Funcionalidade de E-mail
@@ -1055,22 +1246,29 @@ def grafico_aula(
     db: Session = Depends(get_db)
 ):
     """
-    Gera gráfico circular com estatísticas da aula
+    Gera gráfico circular com estatísticas da aula (usando Attendance)
     """
     aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
     if not aula:
         raise HTTPException(status_code=404, detail="Aula não encontrada")
     
+    # Usar SOMENTE Attendance como fonte autoritativa
+    attendance_records = db.query(Attendance).filter(Attendance.evento_aula_id == aula_id).all()
     reservas = db.query(ReservaAula).filter(ReservaAula.evento_aula_id == aula_id).all()
     
     total_inscricoes = len([r for r in reservas if not r.cancelada])
-    total_presentes = len([r for r in reservas if r.presente and not r.cancelada])
-    total_faltas = len([r for r in reservas if not r.presente and not r.cancelada and aula.data_hora < datetime.utcnow()])
+    
+    # Calcular SOMENTE usando Attendance
+    total_presentes = len([a for a in attendance_records if a.status == "presente"])
+    total_faltas = len([a for a in attendance_records if a.status == "falta"])
+    total_justificadas = len([a for a in attendance_records if a.status == "justificada"])
+    
     vagas_disponiveis = aula.limite_inscricoes - total_inscricoes
     
     dados_grafico = {
         "Presentes": total_presentes,
         "Faltas": total_faltas,
+        "Justificadas": total_justificadas,
         "Vagas Disponíveis": vagas_disponiveis
     }
     
@@ -1185,12 +1383,17 @@ def estatisticas_aula(
     if not aula:
         raise HTTPException(status_code=404, detail="Aula não encontrada")
     
+    # Usar SOMENTE Attendance como fonte autoritativa
+    attendance_records = db.query(Attendance).filter(Attendance.evento_aula_id == aula_id).all()
     reservas = db.query(ReservaAula).filter(ReservaAula.evento_aula_id == aula_id).all()
     
     total_inscricoes = len([r for r in reservas if not r.cancelada])
-    total_presentes = len([r for r in reservas if r.presente and not r.cancelada])
-    total_faltas = len([r for r in reservas if not r.presente and not r.cancelada and aula.data_hora < datetime.utcnow()])
     total_canceladas = len([r for r in reservas if r.cancelada])
+    
+    # Calcular presença/faltas SOMENTE usando Attendance
+    total_presentes = len([a for a in attendance_records if a.status == "presente"])
+    total_faltas = len([a for a in attendance_records if a.status == "falta"])
+    total_justificadas = len([a for a in attendance_records if a.status == "justificada"])
     
     ocupacao_percentual = (total_inscricoes / aula.limite_inscricoes * 100) if aula.limite_inscricoes > 0 else 0
     
@@ -1201,6 +1404,7 @@ def estatisticas_aula(
         "total_inscricoes": total_inscricoes,
         "total_presentes": total_presentes,
         "total_faltas": total_faltas,
+        "total_justificadas": total_justificadas,
         "total_canceladas": total_canceladas,
         "ocupacao_percentual": round(ocupacao_percentual, 2),
         "vagas_disponiveis": aula.limite_inscricoes - total_inscricoes
