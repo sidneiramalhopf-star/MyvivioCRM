@@ -915,6 +915,263 @@ def cancelar_reserva(
     return {"mensagem": "Reserva cancelada com sucesso!"}
 
 # ============================================================
+# Funcionalidade de E-mail
+# ============================================================
+
+import aiosmtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+async def enviar_email(destinatario: str, assunto: str, corpo: str):
+    """
+    Função para enviar e-mail (configurar SMTP em produção)
+    """
+    # Configurações de exemplo - ajustar para servidor SMTP real
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER", "noreply@myvivio.com")
+    smtp_pass = os.getenv("SMTP_PASSWORD", "")
+    
+    message = MIMEMultipart()
+    message["From"] = smtp_user
+    message["To"] = destinatario
+    message["Subject"] = assunto
+    
+    message.attach(MIMEText(corpo, "html"))
+    
+    try:
+        if smtp_pass:  # Só tenta enviar se tiver senha configurada
+            await aiosmtplib.send(
+                message,
+                hostname=smtp_host,
+                port=smtp_port,
+                username=smtp_user,
+                password=smtp_pass,
+                start_tls=True
+            )
+            return True
+        return False
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+        return False
+
+@app.post("/aulas/{aula_id}/enviar-email-inscritos")
+async def enviar_email_inscritos(
+    aula_id: int,
+    assunto: str,
+    mensagem: str,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Envia e-mail para todos os inscritos em uma aula
+    """
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+    
+    reservas = db.query(ReservaAula).filter(
+        ReservaAula.evento_aula_id == aula_id,
+        ReservaAula.cancelada == False
+    ).all()
+    
+    if not reservas:
+        return {"mensagem": "Nenhum inscrito para enviar e-mail"}
+    
+    # Template de e-mail com placeholders
+    corpo_email = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #62b1ca;">Myvivio CRM - {aula.nome_aula}</h2>
+                <p>{mensagem}</p>
+                <hr style="border: 1px solid #eee; margin: 20px 0;">
+                <p><strong>Detalhes da Aula:</strong></p>
+                <ul>
+                    <li>Aula: {aula.nome_aula}</li>
+                    <li>Instrutor: {aula.instrutor.nome if aula.instrutor else 'N/A'}</li>
+                    <li>Sala: {aula.sala.nome if aula.sala else 'N/A'}</li>
+                    <li>Data/Hora: {aula.data_hora.strftime('%d/%m/%Y às %H:%M') if aula.data_hora else 'N/A'}</li>
+                </ul>
+                <p style="color: #666; font-size: 12px;">Este é um e-mail automático do Myvivio CRM</p>
+            </div>
+        </body>
+    </html>
+    """
+    
+    emails_enviados = 0
+    for reserva in reservas:
+        if reserva.usuario and reserva.usuario.email:
+            sucesso = await enviar_email(
+                reserva.usuario.email,
+                assunto,
+                corpo_email
+            )
+            if sucesso:
+                emails_enviados += 1
+    
+    return {
+        "mensagem": f"E-mails enviados com sucesso!",
+        "total_inscritos": len(reservas),
+        "emails_enviados": emails_enviados
+    }
+
+# ============================================================
+# Geração de Gráficos e Relatórios
+# ============================================================
+
+import matplotlib
+matplotlib.use('Agg')  # Backend não-interativo
+import matplotlib.pyplot as plt
+import io
+import base64
+from fastapi.responses import StreamingResponse
+import csv
+
+def gerar_grafico_circular(dados: dict) -> str:
+    """
+    Gera gráfico circular e retorna em base64
+    """
+    labels = list(dados.keys())
+    sizes = list(dados.values())
+    colors = ['#62b1ca', '#27ae60', '#f39c12', '#e74c3c']
+    
+    plt.figure(figsize=(8, 6))
+    plt.pie(sizes, labels=labels, colors=colors[:len(labels)], autopct='%1.1f%%', startangle=90)
+    plt.axis('equal')
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png', bbox_inches='tight')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.read()).decode()
+    plt.close()
+    
+    return f"data:image/png;base64,{image_base64}"
+
+@app.get("/aulas/{aula_id}/grafico")
+def grafico_aula(
+    aula_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Gera gráfico circular com estatísticas da aula
+    """
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+    
+    reservas = db.query(ReservaAula).filter(ReservaAula.evento_aula_id == aula_id).all()
+    
+    total_inscricoes = len([r for r in reservas if not r.cancelada])
+    total_presentes = len([r for r in reservas if r.presente and not r.cancelada])
+    total_faltas = len([r for r in reservas if not r.presente and not r.cancelada and aula.data_hora < datetime.utcnow()])
+    vagas_disponiveis = aula.limite_inscricoes - total_inscricoes
+    
+    dados_grafico = {
+        "Presentes": total_presentes,
+        "Faltas": total_faltas,
+        "Vagas Disponíveis": vagas_disponiveis
+    }
+    
+    # Remover zeros
+    dados_grafico = {k: v for k, v in dados_grafico.items() if v > 0}
+    
+    if not dados_grafico:
+        return {"erro": "Sem dados para gráfico"}
+    
+    grafico_base64 = gerar_grafico_circular(dados_grafico)
+    
+    return {
+        "aula": aula.nome_aula,
+        "grafico": grafico_base64,
+        "dados": dados_grafico
+    }
+
+@app.get("/calendario/exportar-csv")
+def exportar_calendario_csv(
+    data_inicio: str,
+    data_fim: str,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Exporta eventos do calendário em CSV
+    """
+    eventos = db.query(EventoCalendario).filter(
+        EventoCalendario.usuario_id == usuario.id,
+        EventoCalendario.data_inicio >= datetime.fromisoformat(data_inicio),
+        EventoCalendario.data_fim <= datetime.fromisoformat(data_fim)
+    ).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Cabeçalho
+    writer.writerow(['ID', 'Título', 'Descrição', 'Data Início', 'Data Fim', 'Tipo', 'Status'])
+    
+    # Dados
+    for e in eventos:
+        writer.writerow([
+            e.id,
+            e.titulo,
+            e.descricao,
+            e.data_inicio.isoformat() if e.data_inicio else '',
+            e.data_fim.isoformat() if e.data_fim else '',
+            e.tipo_evento,
+            e.status
+        ])
+    
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode()),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=calendario_{data_inicio}_{data_fim}.csv"}
+    )
+
+@app.get("/aulas/exportar-csv")
+def exportar_aulas_csv(
+    data_inicio: str,
+    data_fim: str,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Exporta aulas em CSV
+    """
+    aulas = db.query(EventoAula).filter(
+        EventoAula.ativa == True,
+        EventoAula.data_hora >= datetime.fromisoformat(data_inicio),
+        EventoAula.data_hora <= datetime.fromisoformat(data_fim)
+    ).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Cabeçalho
+    writer.writerow(['ID', 'Aula', 'Instrutor', 'Sala', 'Data/Hora', 'Duração', 'Limite', 'Inscritos'])
+    
+    # Dados
+    for a in aulas:
+        writer.writerow([
+            a.id,
+            a.nome_aula,
+            a.instrutor.nome if a.instrutor else '',
+            a.sala.nome if a.sala else '',
+            a.data_hora.isoformat() if a.data_hora else '',
+            a.duracao_minutos,
+            a.limite_inscricoes,
+            len([r for r in a.reservas if not r.cancelada])
+        ])
+    
+    output.seek(0)
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode()),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=aulas_{data_inicio}_{data_fim}.csv"}
+    )
+
+# ============================================================
 # Endpoints de Estatísticas e Relatórios
 # ============================================================
 

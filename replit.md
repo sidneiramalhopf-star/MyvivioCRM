@@ -4,6 +4,18 @@
 Sistema de gestão inteligente para academias e wellness corporativo, com foco em otimização por IA de engajamento, ROI e produtividade.
 
 ## Mudanças Recentes (10/10/2025)
+
+### Expansão do Backend - Sistema Completo de Calendário e Aulas
+- **Novos Modelos de Dados**: Sala, Instrutor, EventoCalendario, EventoAula, ReservaAula
+- **Sistema de Calendário**: CRUD completo com filtros, lembretes e marcação de conclusão
+- **Sistema de Aulas**: Agendamento de aulas com instrutores, salas e limite de inscrições
+- **Reservas de Aulas**: Sistema completo de reservas, cancelamento e controle de presença
+- **E-mail em Massa**: Envio de e-mails para todos inscritos em uma aula (SMTP configurável)
+- **Gráficos Circulares**: Geração automática de gráficos com matplotlib (ocupação, presença, faltas)
+- **Exportação de Relatórios**: Exportação CSV de calendário e aulas com filtros de data
+- **Estatísticas Avançadas**: Métricas detalhadas de ocupação, presença e performance
+
+### Interface e Design
 - **Rebranding completo para Myvivio CRM**: Nome da marca atualizado em toda a interface
 - **Nova paleta de cores**: Implementada paleta profissional (#62b1ca, #1f2746, #333f6e, #ffffff, #000000)
 - **Ícones profissionais**: Todos os emojis substituídos por ícones Font Awesome
@@ -12,6 +24,7 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
   - **Aba "Desempenho"**: Métricas de retenção, usuários, ROI, engajamento e produtividade
 - **Busca personalizada**: "Buscar no Myvivio CRM"
 - **Layout Technogym**: Sidebar de navegação esquerda fixa com 6 páginas
+- **Planejador Avançado**: Sidebar colapsável com 3 seções (Calendário, Reservas, Agendamento)
 - **Segurança reforçada**: Todos os endpoints sensíveis protegidos com autenticação JWT
 - **Autenticação moderna**: Login/registro com JSON body (não query params) e Argon2 hash
 
@@ -23,6 +36,9 @@ Sistema de gestão inteligente para academias e wellness corporativo, com foco e
 - **Banco de Dados**: SQLite + SQLAlchemy 2.0.43
 - **Autenticação**: JWT (PyJWT 2.10.1) + HTTPBearer
 - **Segurança**: Argon2 (argon2-cffi 25.1.0) + Passlib 1.7.4
+- **Gráficos**: Matplotlib 3.10.7 (gráficos circulares de ocupação)
+- **E-mail**: aiosmtplib 4.0.2 (envio assíncrono de e-mails)
+- **Relatórios**: ReportLab 4.4.4 + CSV (exportação de dados)
 - **Linguagem**: Python 3.11
 
 ### Frontend
