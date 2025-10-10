@@ -95,6 +95,21 @@ function navigateToPage(page) {
     }
 }
 
+function switchHomeTab(tab) {
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.home-tab-content').forEach(c => c.classList.remove('active'));
+    
+    event.currentTarget.classList.add('active');
+    
+    if (tab === 'dia-apos-dia') {
+        document.getElementById('tab-dia-apos-dia').classList.add('active');
+        loadDayToDayData();
+    } else if (tab === 'desempenho') {
+        document.getElementById('tab-desempenho').classList.add('active');
+        loadDashboardData();
+    }
+}
+
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -190,6 +205,70 @@ async function loadDashboardData() {
     } catch (error) {
         console.error('Erro ao carregar dados do dashboard', error);
     }
+}
+
+async function loadDayToDayData() {
+    if (!authToken) return;
+    
+    try {
+        const agendasResponse = await fetch(`${API_BASE}/agendas/historico`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (agendasResponse.ok) {
+            const agendas = await agendasResponse.json();
+            displayDayToDayActivities(agendas);
+        }
+
+        const statsResponse = await fetch(`${API_BASE}/stats/overview`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (statsResponse.ok) {
+            const stats = await statsResponse.json();
+            document.getElementById('contacts-risk').textContent = stats.risco_desistencia || '0';
+            document.getElementById('contacts-total').textContent = stats.usuarios_totais || '0';
+            document.getElementById('leads-count').textContent = stats.visitantes || '0';
+            document.getElementById('programs-expired').textContent = stats.programas?.expirado || '0';
+            document.getElementById('programs-unassigned').textContent = stats.programas?.['não-atribuído'] || '0';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados do dia a dia', error);
+    }
+}
+
+function displayDayToDayActivities(agendas) {
+    const timeline = document.getElementById('activities-timeline');
+    const todoCount = document.getElementById('activities-todo');
+    const doneCount = document.getElementById('activities-done');
+    const todayCount = document.getElementById('today-activities-count');
+    
+    if (!agendas || agendas.length === 0) {
+        timeline.innerHTML = '<p class="empty-message">Nenhuma atividade agendada</p>';
+        todoCount.textContent = '0';
+        doneCount.textContent = '0';
+        todayCount.textContent = '0 atividades';
+        return;
+    }
+    
+    const todo = agendas.filter(a => !a.concluida).length;
+    const done = agendas.filter(a => a.concluida).length;
+    
+    todoCount.textContent = todo;
+    doneCount.textContent = done;
+    todayCount.textContent = `${agendas.length} atividades`;
+    
+    timeline.innerHTML = agendas.map(agenda => `
+        <div class="activity-timeline-item">
+            <div class="activity-time">${agenda.duracao_minutos} min</div>
+            <div class="activity-title">${agenda.titulo}</div>
+            <div class="activity-details">${agenda.tipo_atividade} - ${agenda.concluida ? 'Concluída' : 'Pendente'}</div>
+        </div>
+    `).join('');
 }
 
 function updateStats(stats) {

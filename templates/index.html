@@ -12,7 +12,7 @@
         <div id="login-section" class="section active">
             <div class="login-container">
                 <div class="login-card">
-                    <h2>🏋️ Gym & Wellness CRM</h2>
+                    <h2><i class="fas fa-dumbbell"></i> Myvivio CRM</h2>
                     <p class="subtitle">Sistema de Gestão Inteligente</p>
                     
                     <div class="tabs">
@@ -109,7 +109,7 @@
                     <header class="top-header">
                         <div class="search-bar">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Buscar no Mywellness CRM">
+                            <input type="text" placeholder="Buscar no Myvivio CRM">
                         </div>
                         <div class="header-actions">
                             <button class="icon-btn" title="Notificações">
@@ -130,7 +130,7 @@
 
                     <div id="page-iniciar" class="page-content">
                         <div class="page-header">
-                            <h1>🚀 Iniciar</h1>
+                            <h1><i class="fas fa-rocket"></i> Iniciar</h1>
                             <p class="page-subtitle">Bem-vindo ao seu painel de controle</p>
                         </div>
                         <div class="quick-actions">
@@ -159,99 +159,228 @@
                                 <p class="page-subtitle">Acompanhe suas métricas e performance</p>
                             </div>
                             <div class="view-tabs">
-                                <button class="view-tab active">Dia após dia</button>
-                                <button class="view-tab">Desempenho</button>
+                                <button class="view-tab active" onclick="switchHomeTab('dia-apos-dia')">Dia após dia</button>
+                                <button class="view-tab" onclick="switchHomeTab('desempenho')">Desempenho</button>
                             </div>
                         </div>
 
-                        <div class="metrics-section">
-                            <h2>Retenção</h2>
-                            <div class="stats-grid">
-                                <div class="stat-card highlight">
-                                    <div class="stat-icon warning">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-value">
-                                            <span id="stat-risco" class="big-number">0</span>
-                                            <span class="trend negative">-3%</span>
+                        <div id="tab-dia-apos-dia" class="home-tab-content active">
+                            <div class="day-layout">
+                                <div class="left-column">
+                                    <div class="activities-section">
+                                        <div class="section-header">
+                                            <h2>Atividades</h2>
+                                            <button class="btn-icon-add" onclick="openAgendaModal()">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
                                         </div>
-                                        <p class="stat-label">Risco de desistência da unidade</p>
-                                        <p class="stat-meta">Usuários ativos de alto risco</p>
-                                        <button class="btn-outline">VER MAIS</button>
+                                        
+                                        <div class="activity-stats">
+                                            <div class="activity-stat-box">
+                                                <div class="stat-icon-circle blue">
+                                                    <i class="far fa-circle"></i>
+                                                </div>
+                                                <div class="stat-info">
+                                                    <div class="stat-number" id="activities-todo">0</div>
+                                                    <div class="stat-text">Para fazer</div>
+                                                </div>
+                                            </div>
+                                            <div class="activity-stat-box">
+                                                <div class="stat-icon-circle green">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="stat-info">
+                                                    <div class="stat-number" id="activities-done">0</div>
+                                                    <div class="stat-text">Feito</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="timeline-header">
+                                            <h3>HOJE</h3>
+                                            <span class="timeline-count" id="today-activities-count">6 atividades</span>
+                                        </div>
+
+                                        <div class="activities-timeline" id="activities-timeline">
+                                            <p class="empty-message">Nenhuma atividade agendada</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="programs-widget">
+                                        <div class="section-header">
+                                            <h2>Programas</h2>
+                                        </div>
+                                        <div class="programs-summary">
+                                            <div class="program-summary-item">
+                                                <span class="program-label">Programas dos meus contatos</span>
+                                                <span class="program-meta">Últimos 30 dias</span>
+                                            </div>
+                                            <div class="program-status-row">
+                                                <div class="program-status-item">
+                                                    <i class="fas fa-exclamation-circle" style="color: var(--danger-color);"></i>
+                                                    <span class="status-number" id="programs-expired">0</span>
+                                                    <span class="status-label">Expirado</span>
+                                                </div>
+                                                <div class="program-status-item">
+                                                    <i class="fas fa-circle" style="color: var(--warning-color);"></i>
+                                                    <span class="status-number" id="programs-unassigned">0</span>
+                                                    <span class="status-label">Não atribuído</span>
+                                                </div>
+                                            </div>
+                                            <div class="program-actions">
+                                                <button class="btn-text">RENOVAR</button>
+                                                <button class="btn-text">ATRIBUIR</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="right-column">
+                                    <div class="contacts-section">
+                                        <div class="section-header">
+                                            <h2>Contatos</h2>
+                                        </div>
+                                        <div class="contacts-widget">
+                                            <div class="contacts-filter">
+                                                <span>Todos os clientes presentes</span>
+                                                <i class="fas fa-filter"></i>
+                                            </div>
+                                            <div class="contacts-card">
+                                                <h3>Meus contatos</h3>
+                                                <p class="contacts-meta">Últimos 30 dias</p>
+                                                <div class="contacts-grid">
+                                                    <div class="contact-item">
+                                                        <div class="contact-icon red">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                        </div>
+                                                        <div class="contact-info">
+                                                            <div class="contact-number" id="contacts-risk">0</div>
+                                                            <div class="contact-label">Contatos de alto risco ativos</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="contact-item">
+                                                        <div class="contact-icon green">
+                                                            <i class="fas fa-users"></i>
+                                                        </div>
+                                                        <div class="contact-info">
+                                                            <div class="contact-number" id="contacts-total">0</div>
+                                                            <div class="contact-label">Total de contatos atribuídos</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button class="btn-outline-primary">GERENCIAR CONTATOS DE ALTO RISCO</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="leads-widget">
+                                            <h3>Leads</h3>
+                                            <p class="leads-meta">Últimos 30 dias</p>
+                                            <div class="leads-item">
+                                                <div class="lead-icon">
+                                                    <i class="fas fa-flag"></i>
+                                                </div>
+                                                <div class="lead-info">
+                                                    <div class="lead-number" id="leads-count">0</div>
+                                                    <div class="lead-label">Lead para gerenciar</div>
+                                                </div>
+                                            </div>
+                                            <button class="btn-text">CONTATO</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <h2>Usuários e visitantes</h2>
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-icon info">
-                                        <i class="fas fa-users"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-value">
-                                            <span id="stat-usuarios" class="number">0</span>
+                        <div id="tab-desempenho" class="home-tab-content">
+                            <div class="metrics-section">
+                                <h2>Retenção</h2>
+                                <div class="stats-grid">
+                                    <div class="stat-card highlight">
+                                        <div class="stat-icon warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
                                         </div>
-                                        <p class="stat-label">Total de Usuários</p>
-                                    </div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon success">
-                                        <i class="fas fa-user-check"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-value">
-                                            <span id="stat-usuarios-ativos" class="number">0</span>
+                                        <div class="stat-content">
+                                            <div class="stat-value">
+                                                <span id="stat-risco" class="big-number">0</span>
+                                                <span class="trend negative">-3%</span>
+                                            </div>
+                                            <p class="stat-label">Risco de desistência da unidade</p>
+                                            <p class="stat-meta">Usuários ativos de alto risco</p>
+                                            <button class="btn-outline">VER MAIS</button>
                                         </div>
-                                        <p class="stat-label">Usuários Ativos</p>
                                     </div>
                                 </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon primary">
-                                        <i class="fas fa-user-friends"></i>
-                                    </div>
-                                    <div class="stat-content">
-                                        <div class="stat-value">
-                                            <span id="stat-visitantes" class="number">0</span>
+
+                                <h2>Usuários e visitantes</h2>
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-icon info">
+                                            <i class="fas fa-users"></i>
                                         </div>
-                                        <p class="stat-label">Visitantes</p>
+                                        <div class="stat-content">
+                                            <div class="stat-value">
+                                                <span id="stat-usuarios" class="number">0</span>
+                                            </div>
+                                            <p class="stat-label">Total de Usuários</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon success">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-value">
+                                                <span id="stat-usuarios-ativos" class="number">0</span>
+                                            </div>
+                                            <p class="stat-label">Usuários Ativos</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon primary">
+                                            <i class="fas fa-user-friends"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="stat-value">
+                                                <span id="stat-visitantes" class="number">0</span>
+                                            </div>
+                                            <p class="stat-label">Visitantes</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <h2>Métricas de Performance</h2>
-                            <div class="metrics-grid">
-                                <div class="metric-card">
-                                    <h3>📊 Engajamento</h3>
-                                    <div class="metric-display">
-                                        <span class="metric-value" id="metric-engajamento">0%</span>
+                                <h2>Métricas de Performance</h2>
+                                <div class="metrics-grid">
+                                    <div class="metric-card">
+                                        <h3><i class="fas fa-chart-line"></i> Engajamento</h3>
+                                        <div class="metric-display">
+                                            <span class="metric-value" id="metric-engajamento">0%</span>
+                                        </div>
+                                        <p class="metric-label">Taxa de engajamento</p>
                                     </div>
-                                    <p class="metric-label">Taxa de engajamento</p>
-                                </div>
 
-                                <div class="metric-card">
-                                    <h3>💰 ROI</h3>
-                                    <div class="metric-display">
-                                        <span class="metric-value" id="metric-roi">0%</span>
+                                    <div class="metric-card">
+                                        <h3><i class="fas fa-dollar-sign"></i> ROI</h3>
+                                        <div class="metric-display">
+                                            <span class="metric-value" id="metric-roi">0%</span>
+                                        </div>
+                                        <p class="metric-label">Retorno sobre investimento</p>
                                     </div>
-                                    <p class="metric-label">Retorno sobre investimento</p>
-                                </div>
 
-                                <div class="metric-card">
-                                    <h3>⚡ Produtividade</h3>
-                                    <div class="metric-display">
-                                        <span class="metric-value" id="metric-produtividade">0%</span>
+                                    <div class="metric-card">
+                                        <h3><i class="fas fa-bolt"></i> Produtividade</h3>
+                                        <div class="metric-display">
+                                            <span class="metric-value" id="metric-produtividade">0%</span>
+                                        </div>
+                                        <p class="metric-label">Índice de produtividade</p>
                                     </div>
-                                    <p class="metric-label">Índice de produtividade</p>
-                                </div>
 
-                                <div class="metric-card">
-                                    <h3>👥 Membros Ativos</h3>
-                                    <div class="metric-display">
-                                        <span class="metric-value" id="metric-membros">0</span>
+                                    <div class="metric-card">
+                                        <h3><i class="fas fa-user-check"></i> Membros Ativos</h3>
+                                        <div class="metric-display">
+                                            <span class="metric-value" id="metric-membros">0</span>
+                                        </div>
+                                        <p class="metric-label">Usuários ativos hoje</p>
                                     </div>
-                                    <p class="metric-label">Usuários ativos hoje</p>
                                 </div>
                             </div>
                         </div>
@@ -259,7 +388,7 @@
 
                     <div id="page-planejador" class="page-content">
                         <div class="page-header">
-                            <h1>📅 Planejador</h1>
+                            <h1><i class="fas fa-calendar-alt"></i> Planejador</h1>
                             <button class="btn-primary" onclick="openAgendaModal()">
                                 <i class="fas fa-plus"></i> Nova Atividade
                             </button>
@@ -271,7 +400,7 @@
 
                     <div id="page-pessoas" class="page-content">
                         <div class="page-header">
-                            <h1>👥 Pessoas</h1>
+                            <h1><i class="fas fa-users"></i> Pessoas</h1>
                             <button class="btn-primary">
                                 <i class="fas fa-user-plus"></i> Adicionar Pessoa
                             </button>
@@ -300,7 +429,7 @@
 
                     <div id="page-treinamento" class="page-content">
                         <div class="page-header">
-                            <h1>💪 Treinamento</h1>
+                            <h1><i class="fas fa-dumbbell"></i> Treinamento</h1>
                             <button class="btn-primary">
                                 <i class="fas fa-plus"></i> Novo Programa
                             </button>
@@ -326,7 +455,7 @@
 
                     <div id="page-config" class="page-content">
                         <div class="page-header">
-                            <h1>⚙️ Configuração</h1>
+                            <h1><i class="fas fa-cog"></i> Configuração</h1>
                         </div>
                         <div class="config-section">
                             <div class="config-card">
