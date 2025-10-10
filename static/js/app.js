@@ -784,3 +784,182 @@ function goToTodayAgendamento() {
     currentAgendaDate = new Date();
     renderAgendamentoList();
 }
+
+// ============================================================
+// CONEXÃO COM BACKEND - NOVOS ENDPOINTS
+// ============================================================
+
+// Carregar eventos do calendário
+async function carregarEventosCalendario() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const response = await fetch('/calendario/eventos', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const eventos = await response.json();
+            renderizarEventosCalendario(eventos);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar eventos:', error);
+    }
+}
+
+// Carregar aulas para reserva
+async function carregarAulasDisponiveis() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const dataInicio = new Date(currentWeek);
+        dataInicio.setDate(dataInicio.getDate() - dataInicio.getDay());
+        const dataFim = new Date(dataInicio);
+        dataFim.setDate(dataFim.getDate() + 6);
+        
+        const response = await fetch(`/aulas?data_inicio=${dataInicio.toISOString()}&data_fim=${dataFim.toISOString()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const aulas = await response.json();
+            renderizarAulasReserva(aulas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar aulas:', error);
+    }
+}
+
+// Carregar lista de agendamentos
+async function carregarAgendamentos() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const dataInicio = new Date(currentAgendaDate);
+        dataInicio.setHours(0, 0, 0, 0);
+        const dataFim = new Date(currentAgendaDate);
+        dataFim.setHours(23, 59, 59, 999);
+        
+        const response = await fetch(`/aulas?data_inicio=${dataInicio.toISOString()}&data_fim=${dataFim.toISOString()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const aulas = await response.json();
+            renderizarListaAgendamentos(aulas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+    }
+}
+
+// Renderizar eventos do calendário
+function renderizarEventosCalendario(eventos) {
+    const calendarBody = document.getElementById('calendar-body');
+    if (!calendarBody) return;
+    
+    // Adicionar eventos ao calendário (implementação básica)
+    console.log('Eventos carregados:', eventos);
+}
+
+// Renderizar aulas para reserva
+function renderizarAulasReserva(aulas) {
+    const weekCalendar = document.getElementById('week-calendar');
+    if (!weekCalendar) return;
+    
+    let html = '<div class="week-schedule">';
+    
+    aulas.forEach(aula => {
+        const dataHora = new Date(aula.data_hora);
+        const horaInicio = dataHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const horaFim = new Date(dataHora.getTime() + aula.duracao_minutos * 60000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        const vagas = aula.reservas_count || 0;
+        const limite = aula.limite_inscricoes || 0;
+        
+        html += `
+            <div class="aula-card" onclick="verDetalhesAula(${aula.id})">
+                <div class="aula-time">${horaInicio} - ${horaFim}</div>
+                <div class="aula-title">${aula.titulo || 'Aula'}</div>
+                <div class="aula-instructor">${aula.instrutor_nome || 'Instrutor'}</div>
+                <div class="aula-room">${aula.sala_nome || 'Sala'}</div>
+                <div class="aula-capacity">${vagas}/${limite}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    weekCalendar.innerHTML = html;
+}
+
+// Renderizar lista de agendamentos
+function renderizarListaAgendamentos(aulas) {
+    const container = document.getElementById('agendamento-list');
+    if (!container) return;
+    
+    if (aulas.length === 0) {
+        container.innerHTML = '<p class="empty-message">Nenhuma aula agendada para este dia</p>';
+        return;
+    }
+    
+    let html = '';
+    aulas.forEach(aula => {
+        const dataHora = new Date(aula.data_hora);
+        const horaInicio = dataHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const horaFim = new Date(dataHora.getTime() + aula.duracao_minutos * 60000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        const vagas = aula.reservas_count || 0;
+        const limite = aula.limite_inscricoes || 0;
+        
+        html += `
+            <div class="agendamento-item">
+                <div class="agendamento-time">${horaInicio} - ${horaFim}</div>
+                <div class="agendamento-info">
+                    <div class="agendamento-title">${aula.titulo || 'Aula'}</div>
+                    <div class="agendamento-subtitle">${aula.sala_nome || 'Sala não especificada'}</div>
+                    <div class="agendamento-instructor">${aula.instrutor_nome || 'Instrutor não especificado'}</div>
+                </div>
+                <div class="agendamento-capacity">${vagas}/${limite}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Ver detalhes de uma aula
+async function verDetalhesAula(aulaId) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Faça login para ver detalhes da aula', 'error');
+            return;
+        }
+        
+        const response = await fetch(`/aulas/${aulaId}/estatisticas`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const stats = await response.json();
+            showToast(`Aula: ${stats.ocupacao_percentual}% ocupada`, 'success');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+    }
+}
+
+// Atualizar funções existentes para carregar dados do backend
+const originalRenderWeekCalendar = renderWeekCalendar;
+renderWeekCalendar = function() {
+    originalRenderWeekCalendar();
+    carregarAulasDisponiveis();
+};
+
+const originalRenderAgendamentoList = renderAgendamentoList;
+renderAgendamentoList = function() {
+    carregarAgendamentos();
+};
