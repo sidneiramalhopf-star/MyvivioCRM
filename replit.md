@@ -3,9 +3,45 @@
 ## Visão Geral
 Sistema de gestão inteligente para academias e wellness corporativo, com foco em otimização por IA de engajamento, ROI e produtividade.
 
-## Mudanças Recentes (10/10/2025)
+## Mudanças Recentes
 
-### Expansão do Backend - Sistema Completo de Calendário e Aulas
+### 11/10/2025 - Melhorias UX/UI no Frontend
+
+#### Calendário Interativo e Criação Rápida de Eventos
+- **Mês/Ano Dinâmico**: Display de mês e ano atualizado em tempo real na navegação do calendário
+- **Criação com 1 Clique**: Clicar em qualquer data do calendário abre modal de criação de evento automaticamente
+- **Botão "+" Quick Add**: Botão circular azul (#62b1ca) ao lado do título "Calendário" para criar eventos instantaneamente
+- **Modal de Evento Completo**: 
+  - Formulário com campos: título, data (pré-preenchida), hora início/fim, tipo de evento, descrição
+  - Checkbox para ativar lembrete
+  - Integração com backend via `/calendario/eventos/criar`
+  - Validação e feedback visual com toast notifications
+
+#### Barra Lateral Global do Planejador
+- **Disponível em TODAS as Tabs**: Sidebar acessível em qualquer página do sistema
+- **Botão Flutuante Lateral**: 
+  - Posição fixa no lado direito da tela (50% altura)
+  - Cor: #62b1ca com sombra e hover effects
+  - Ícone Font Awesome calendário
+  - Visível até na tela de login
+- **Conteúdo da Sidebar**:
+  - **Mini Calendário**: Visualização compacta do mês atual com navegação
+  - **Estatísticas de Reservas**: Cards com aulas agendadas e % de ocupação
+  - **Próximas Atividades**: Lista das atividades mais próximas
+- **UX/Interação**:
+  - Slide animation suave (transform translateX)
+  - Fecha automaticamente ao clicar fora
+  - Header fixo com botão de fechar
+  - Scroll interno para conteúdo longo
+  - Responsive: 100% da largura em mobile
+
+#### Melhorias de Código
+- Event listeners registrados corretamente no `setupEventListeners()`
+- Funções de navegação do calendário atualizadas para manter sincronização
+- Cache busting: CSS e JS com versão atualizada (v20251011v1)
+- Código modular e reutilizável para futuras expansões
+
+### 10/10/2025 - Expansão do Backend - Sistema Completo de Calendário e Aulas
 - **Novos Modelos de Dados**: Sala, Instrutor, EventoCalendario, EventoAula, ReservaAula, **Attendance**
 - **Sistema de Calendário**: CRUD completo com filtros, lembretes e marcação de conclusão
 - **Sistema de Aulas**: Agendamento de aulas com instrutores, salas e limite de inscrições

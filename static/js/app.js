@@ -12,10 +12,15 @@ function setupEventListeners() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const agendaForm = document.getElementById('agenda-form');
+    const eventForm = document.getElementById('event-form');
     
     if (loginForm) loginForm.addEventListener('submit', handleLogin);
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     if (agendaForm) agendaForm.addEventListener('submit', handleAgendaSubmit);
+    if (eventForm) eventForm.addEventListener('submit', handleEventFormSubmit);
+    
+    // Inicializar display de mês/ano no calendário
+    updateMonthYearDisplay();
 }
 
 function switchTab(tab) {
@@ -1082,55 +1087,50 @@ function closeEventModal() {
 }
 
 // Submeter formulário de evento
-document.addEventListener('DOMContentLoaded', () => {
-    const eventForm = document.getElementById('event-form');
-    if (eventForm) {
-        eventForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const titulo = document.getElementById('event-titulo').value;
-            const data = document.getElementById('event-data').value;
-            const horaInicio = document.getElementById('event-hora-inicio').value;
-            const horaFim = document.getElementById('event-hora-fim').value;
-            const tipo = document.getElementById('event-tipo').value;
-            const descricao = document.getElementById('event-descricao').value;
-            const temLembrete = document.getElementById('event-lembrete').checked;
-            
-            const eventData = {
-                titulo: titulo,
-                data_evento: data,
-                hora_inicio: horaInicio || null,
-                hora_fim: horaFim || null,
-                tipo_evento: tipo,
-                descricao: descricao || '',
-                tem_lembrete: temLembrete
-            };
-            
-            try {
-                const response = await fetch('/calendario/eventos/criar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(eventData)
-                });
-                
-                if (response.ok) {
-                    showToast('Evento criado com sucesso!', 'success');
-                    closeEventModal();
-                    renderCalendar();
-                } else {
-                    const error = await response.json();
-                    showToast(error.detail || 'Erro ao criar evento', 'error');
-                }
-            } catch (error) {
-                showToast('Erro ao criar evento', 'error');
-                console.error('Erro:', error);
-            }
+async function handleEventFormSubmit(e) {
+    e.preventDefault();
+    
+    const titulo = document.getElementById('event-titulo').value;
+    const data = document.getElementById('event-data').value;
+    const horaInicio = document.getElementById('event-hora-inicio').value;
+    const horaFim = document.getElementById('event-hora-fim').value;
+    const tipo = document.getElementById('event-tipo').value;
+    const descricao = document.getElementById('event-descricao').value;
+    const temLembrete = document.getElementById('event-lembrete').checked;
+    
+    const eventData = {
+        titulo: titulo,
+        data_evento: data,
+        hora_inicio: horaInicio || null,
+        hora_fim: horaFim || null,
+        tipo_evento: tipo,
+        descricao: descricao || '',
+        tem_lembrete: temLembrete
+    };
+    
+    try {
+        const response = await fetch('/calendario/eventos/criar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(eventData)
         });
+        
+        if (response.ok) {
+            showToast('Evento criado com sucesso!', 'success');
+            closeEventModal();
+            renderCalendar();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao criar evento', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao criar evento', 'error');
+        console.error('Erro:', error);
     }
-});
+}
 
 // Fechar modal ao clicar fora
 window.addEventListener('click', (event) => {
@@ -1237,7 +1237,4 @@ function miniNextMonth() {
     renderMiniCalendar();
 }
 
-// Inicializar mini calendário quando a barra lateral abrir
-document.addEventListener('DOMContentLoaded', () => {
-    updateMonthYearDisplay();
-});
+// Funções de navegação do calendário já estão conectadas via onclick no HTML
