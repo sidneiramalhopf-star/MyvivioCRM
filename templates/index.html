@@ -414,14 +414,20 @@
                                 <!-- Seção Calendário -->
                                 <div id="planner-calendario" class="planner-view active">
                                     <div class="planner-header">
-                                        <h1><i class="fas fa-calendar"></i> Calendário</h1>
+                                        <div class="page-title-wrapper">
+                                            <h1><i class="fas fa-calendar"></i> Calendário</h1>
+                                            <button id="quick-add-event" class="btn-icon-accent" onclick="openEventModal()" title="Adicionar Atividade">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
                                         <div class="calendar-controls">
                                             <button class="btn-icon" onclick="previousMonth()"><i class="fas fa-chevron-left"></i></button>
-                                            <button class="btn-outline" onclick="goToToday()">HOJE</button>
+                                            <h2 id="month-year" class="month-year-display">Janeiro 2025</h2>
                                             <button class="btn-icon" onclick="nextMonth()"><i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn-outline" onclick="goToToday()">HOJE</button>
                                             <select id="view-mode" onchange="changeViewMode()" class="view-select">
-                                                <option value="week">Semana</option>
                                                 <option value="month">Mês</option>
+                                                <option value="week">Semana</option>
                                             </select>
                                         </div>
                                     </div>
@@ -614,6 +620,107 @@
     </div>
 
     <div id="toast" class="toast"></div>
+
+    <!-- Modal de Criação de Evento do Calendário -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEventModal()">&times;</span>
+            <h3>Nova Atividade no Calendário</h3>
+            <form id="event-form">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" id="event-titulo" required>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="event-data" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora de Início</label>
+                    <input type="time" id="event-hora-inicio">
+                </div>
+                <div class="form-group">
+                    <label>Hora de Término</label>
+                    <input type="time" id="event-hora-fim">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Evento</label>
+                    <select id="event-tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="reuniao">Reunião</option>
+                        <option value="tarefa">Tarefa</option>
+                        <option value="lembrete">Lembrete</option>
+                        <option value="treino">Treino</option>
+                        <option value="aula">Aula</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="event-descricao" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="event-lembrete"> Ativar lembrete
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">Salvar Evento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Barra Lateral Global do Planejador -->
+    <div id="global-planner-sidebar" class="global-planner-sidebar">
+        <div class="planner-header">
+            <h3><i class="fas fa-calendar-days"></i> Planejador</h3>
+            <button id="close-global-planner" onclick="closeGlobalPlanner()">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        
+        <div class="planner-sections">
+            <!-- Mini Calendário -->
+            <section class="planner-section">
+                <h4><i class="fas fa-calendar"></i> Calendário</h4>
+                <div id="mini-calendar" class="mini-calendar">
+                    <div class="mini-calendar-header">
+                        <button onclick="miniPrevMonth()"><i class="fas fa-chevron-left"></i></button>
+                        <span id="mini-month-year">Outubro 2025</span>
+                        <button onclick="miniNextMonth()"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="mini-calendar-grid" class="mini-calendar-grid"></div>
+                </div>
+            </section>
+            
+            <!-- Estatísticas de Reservas -->
+            <section class="planner-section">
+                <h4><i class="fas fa-chart-pie"></i> Reservas Hoje</h4>
+                <div id="reservas-stats" class="reservas-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Aulas Agendadas</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Vagas Ocupadas</span>
+                        <span class="stat-value">0%</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Próximas Aulas -->
+            <section class="planner-section">
+                <h4><i class="fas fa-clock"></i> Próximas Atividades</h4>
+                <div id="proximas-aulas" class="proximas-aulas">
+                    <p class="empty-message">Nenhuma atividade próxima</p>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <!-- Botão Fixo Lateral -->
+    <button id="toggle-global-planner" class="planner-toggle-btn" onclick="toggleGlobalPlanner()">
+        <i class="fas fa-calendar-days"></i>
+    </button>
 
     <script src="/static/js/app.js?v=20251010v4"></script>
 </body>
