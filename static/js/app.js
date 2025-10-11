@@ -963,3 +963,281 @@ const originalRenderAgendamentoList = renderAgendamentoList;
 renderAgendamentoList = function() {
     carregarAgendamentos();
 };
+
+// ============================================================
+// NOVAS FUNCIONALIDADES - CALENDÁRIO INTERATIVO E BARRA GLOBAL
+// ============================================================
+
+// Atualizar exibição de mês/ano no calendário
+function updateMonthYearDisplay() {
+    const monthYearElement = document.getElementById('month-year');
+    if (!monthYearElement) return;
+    
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    const mes = meses[currentDate.getMonth()];
+    const ano = currentDate.getFullYear();
+    
+    monthYearElement.textContent = `${mes} ${ano}`;
+}
+
+// Atualizar renderMonthView para incluir clique nas datas e atualizar display
+const originalRenderMonthView = renderMonthView;
+renderMonthView = function() {
+    const header = document.getElementById('calendar-header');
+    const body = document.getElementById('calendar-body');
+    
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    header.innerHTML = weekDays.map(day => `<div>${day}</div>`).join('');
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    let html = '';
+    let day = 1;
+    
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startDay) {
+                html += '<div class="calendar-day other-month"></div>';
+            } else if (day > daysInMonth) {
+                html += '<div class="calendar-day other-month"></div>';
+            } else {
+                const isToday = day === new Date().getDate() && 
+                               month === new Date().getMonth() && 
+                               year === new Date().getFullYear();
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}" onclick="onCalendarDayClick('${dateStr}')">
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-events">
+                            ${day % 3 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
+                            ${day % 5 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
+                        </div>
+                    </div>
+                `;
+                day++;
+            }
+        }
+        if (day > daysInMonth) break;
+    }
+    
+    body.innerHTML = html;
+    updateMonthYearDisplay();
+};
+
+// Atualizar previousMonth e nextMonth para atualizar o display
+const originalPreviousMonth = previousMonth;
+previousMonth = function() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+    updateMonthYearDisplay();
+};
+
+const originalNextMonth = nextMonth;
+nextMonth = function() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+    updateMonthYearDisplay();
+};
+
+const originalGoToToday = goToToday;
+goToToday = function() {
+    currentDate = new Date();
+    renderCalendar();
+    updateMonthYearDisplay();
+};
+
+// Função chamada ao clicar em uma data do calendário
+function onCalendarDayClick(dateStr) {
+    openEventModal(dateStr);
+}
+
+// ===== MODAL DE EVENTO =====
+
+function openEventModal(prefilledDate = null) {
+    const modal = document.getElementById('event-modal');
+    const form = document.getElementById('event-form');
+    
+    if (prefilledDate) {
+        document.getElementById('event-data').value = prefilledDate;
+    } else {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('event-data').value = today;
+    }
+    
+    modal.style.display = 'block';
+}
+
+function closeEventModal() {
+    const modal = document.getElementById('event-modal');
+    const form = document.getElementById('event-form');
+    modal.style.display = 'none';
+    form.reset();
+}
+
+// Submeter formulário de evento
+document.addEventListener('DOMContentLoaded', () => {
+    const eventForm = document.getElementById('event-form');
+    if (eventForm) {
+        eventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const titulo = document.getElementById('event-titulo').value;
+            const data = document.getElementById('event-data').value;
+            const horaInicio = document.getElementById('event-hora-inicio').value;
+            const horaFim = document.getElementById('event-hora-fim').value;
+            const tipo = document.getElementById('event-tipo').value;
+            const descricao = document.getElementById('event-descricao').value;
+            const temLembrete = document.getElementById('event-lembrete').checked;
+            
+            const eventData = {
+                titulo: titulo,
+                data_evento: data,
+                hora_inicio: horaInicio || null,
+                hora_fim: horaFim || null,
+                tipo_evento: tipo,
+                descricao: descricao || '',
+                tem_lembrete: temLembrete
+            };
+            
+            try {
+                const response = await fetch('/calendario/eventos/criar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(eventData)
+                });
+                
+                if (response.ok) {
+                    showToast('Evento criado com sucesso!', 'success');
+                    closeEventModal();
+                    renderCalendar();
+                } else {
+                    const error = await response.json();
+                    showToast(error.detail || 'Erro ao criar evento', 'error');
+                }
+            } catch (error) {
+                showToast('Erro ao criar evento', 'error');
+                console.error('Erro:', error);
+            }
+        });
+    }
+});
+
+// Fechar modal ao clicar fora
+window.addEventListener('click', (event) => {
+    const eventModal = document.getElementById('event-modal');
+    if (event.target === eventModal) {
+        closeEventModal();
+    }
+});
+
+// ===== BARRA LATERAL GLOBAL DO PLANEJADOR =====
+
+let globalPlannerOpen = false;
+
+function toggleGlobalPlanner() {
+    const sidebar = document.getElementById('global-planner-sidebar');
+    globalPlannerOpen = !globalPlannerOpen;
+    
+    if (globalPlannerOpen) {
+        sidebar.classList.add('active');
+        renderMiniCalendar();
+    } else {
+        sidebar.classList.remove('active');
+    }
+}
+
+function closeGlobalPlanner() {
+    const sidebar = document.getElementById('global-planner-sidebar');
+    sidebar.classList.remove('active');
+    globalPlannerOpen = false;
+}
+
+// Fechar ao clicar fora da sidebar
+document.addEventListener('click', (e) => {
+    const sidebar = document.getElementById('global-planner-sidebar');
+    const toggleBtn = document.getElementById('toggle-global-planner');
+    
+    if (globalPlannerOpen && 
+        !sidebar.contains(e.target) && 
+        e.target !== toggleBtn && 
+        !toggleBtn.contains(e.target)) {
+        closeGlobalPlanner();
+    }
+});
+
+// ===== MINI CALENDÁRIO =====
+
+let miniCurrentDate = new Date();
+
+function renderMiniCalendar() {
+    const grid = document.getElementById('mini-calendar-grid');
+    const monthYearSpan = document.getElementById('mini-month-year');
+    
+    if (!grid || !monthYearSpan) return;
+    
+    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
+                   'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    
+    monthYearSpan.textContent = `${meses[miniCurrentDate.getMonth()]} ${miniCurrentDate.getFullYear()}`;
+    
+    const year = miniCurrentDate.getFullYear();
+    const month = miniCurrentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    let html = '';
+    let day = 1;
+    
+    // Dias da semana (cabeçalho)
+    const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    weekDays.forEach(d => {
+        html += `<div style="font-weight: 600; color: var(--text-secondary); font-size: 0.7rem;">${d}</div>`;
+    });
+    
+    // Dias do mês
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startDay) {
+                html += '<div class="mini-calendar-day other-month"></div>';
+            } else if (day > daysInMonth) {
+                html += '<div class="mini-calendar-day other-month"></div>';
+            } else {
+                const isToday = day === new Date().getDate() && 
+                               month === new Date().getMonth() && 
+                               year === new Date().getFullYear();
+                html += `<div class="mini-calendar-day ${isToday ? 'today' : ''}">${day}</div>`;
+                day++;
+            }
+        }
+        if (day > daysInMonth) break;
+    }
+    
+    grid.innerHTML = html;
+}
+
+function miniPrevMonth() {
+    miniCurrentDate.setMonth(miniCurrentDate.getMonth() - 1);
+    renderMiniCalendar();
+}
+
+function miniNextMonth() {
+    miniCurrentDate.setMonth(miniCurrentDate.getMonth() + 1);
+    renderMiniCalendar();
+}
+
+// Inicializar mini calendário quando a barra lateral abrir
+document.addEventListener('DOMContentLoaded', () => {
+    updateMonthYearDisplay();
+});
