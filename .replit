@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["cairo", "cargo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "libiconv", "pkg-config", "qhull", "rustc", "tcl", "tk"]
+packages = ["cargo", "libiconv", "rustc"]
 
 [workflows]
 runButton = "Project"
@@ -39,20 +39,8 @@ localPort = 34031
 externalPort = 3002
 
 [[ports]]
-localPort = 38737
-externalPort = 5173
-
-[[ports]]
-localPort = 43633
-externalPort = 4200
-
-[[ports]]
 localPort = 43709
 externalPort = 3003
-
-[[ports]]
-localPort = 46193
-externalPort = 5000
 
 [[ports]]
 localPort = 46229

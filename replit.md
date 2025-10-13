@@ -1,48 +1,270 @@
 # Myvivio CRM - Gym & Corporate Wellness
 
-## Overview
-Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
+## Visão Geral
+Sistema de gestão inteligente para academias e wellness corporativo, com foco em otimização por IA de engajamento, ROI e produtividade.
 
-## User Preferences
-I prefer detailed explanations. Do not make changes to the folder `Z`. Do not make changes to the file `Y`. I want iterative development. I prefer simple language. I like functional programming. Ask before making major changes.
+## Mudanças Recentes (10/10/2025)
+- **Rebranding completo para Myvivio CRM**: Nome da marca atualizado em toda a interface
+- **Nova paleta de cores**: Implementada paleta profissional (#62b1ca, #1f2746, #333f6e, #ffffff, #000000)
+- **Ícones profissionais**: Todos os emojis substituídos por ícones Font Awesome
+- **Home Dashboard com abas**:
+  - **Aba "Dia após dia"**: Timeline de atividades, widgets de contatos, leads e programas
+  - **Aba "Desempenho"**: Métricas de retenção, usuários, ROI, engajamento e produtividade
+- **Busca personalizada**: "Buscar no Myvivio CRM"
+- **Layout Technogym**: Sidebar de navegação esquerda fixa com 6 páginas
+- **Segurança reforçada**: Todos os endpoints sensíveis protegidos com autenticação JWT
+- **Autenticação moderna**: Login/registro com JSON body (não query params) e Argon2 hash
 
-## System Architecture
-The Myvivio CRM features a full-stack architecture with a FastAPI backend and a vanilla HTML, CSS, and JavaScript frontend, designed as a Single Page Application (SPA).
+## Tecnologias
 
-### UI/UX Decisions
-- **Branding**: Full rebranding to "Myvivio CRM" with a professional aesthetic inspired by Technogym.
-- **Color Palette**: Utilizes a consistent professional palette: Accent Blue (#62b1ca), Dark Blue (#1f2746), Medium Blue (#333f6e), White (#ffffff), Black (#000000). Specific colors for warnings, success, and danger are also defined.
-- **Iconography**: Exclusively uses Font Awesome 6.4.0 icons for a professional look, replacing all emojis.
-- **Layout**: Features a fixed left-hand navigation sidebar with 6 main pages and a dynamic, collapsable "Planner" sidebar on the right.
-- **Dashboard**: The Home dashboard is tab-based, offering "Day-to-day" and "Performance" views with widgets and metrics.
-- **Interactivity**: Includes a dynamic calendar, quick event creation, interactive sidebar elements with smooth animations, and toast notifications for user feedback.
-- **Responsiveness**: Designed to be responsive, with the sidebar adapting to full width on mobile.
+### Backend
+- **Framework**: FastAPI 0.118.2
+- **Servidor**: Uvicorn 0.37.0
+- **Banco de Dados**: SQLite + SQLAlchemy 2.0.43
+- **Autenticação**: JWT (PyJWT 2.10.1) + HTTPBearer
+- **Segurança**: Argon2 (argon2-cffi 25.1.0) + Passlib 1.7.4
+- **Linguagem**: Python 3.11
 
-### Technical Implementations
-- **Backend Framework**: FastAPI for high performance and ease of use.
-- **Frontend**: HTML5, CSS3, and vanilla JavaScript for a lightweight and customizable client-side experience.
-- **Database**: SQLAlchemy ORM with SQLite for development, designed for easy migration to PostgreSQL in production.
-- **Authentication**: JWT-based authentication using PyJWT and HTTPBearer, with Argon2 for secure password hashing.
-- **Data Models**: Comprehensive data models for managing `Unidade` (units), `Usuario` (users), `Visitante` (leads), `Programa`, `Sala` (rooms), `Instrutor` (instructors), `EventoCalendario` (calendar events), `EventoAula` (class events), `ReservaAula` (class bookings), and a critical `Attendance` model.
-- **Attendance System**: A unique "Single Source of Truth" attendance system with validated statuses (presente, falta, justificada), complete metadata, and a unique database constraint (`idx_unique_attendance_reserva`) to prevent duplicates. Includes automatic cleanup and a `DELETE+INSERT` pattern for integrity.
-- **Reporting**: Generation of circular graphs using Matplotlib for occupancy and attendance statistics, and CSV export functionality for various reports.
-- **Email**: Asynchronous email sending capabilities via aiosmtplib.
-- **API Endpoints**: A robust set of API endpoints for authentication, statistics, agenda management, programs, visitors, units, AI metrics, and full CRUD operations for the new calendar, classes, and attendance systems.
-- **Security**: All sensitive endpoints are protected with JWT authentication. Public endpoints are clearly defined.
+### Frontend
+- **HTML5 + CSS3 + JavaScript Vanilla**
+- **Design**: Layout inspirado em CRM Technogym com sidebar de navegação
+- **Paleta de Cores**:
+  - **Accent Blue**: #62b1ca (botões, destaques, links)
+  - **Dark Blue**: #1f2746 (sidebar, cabeçalhos)
+  - **Medium Blue**: #333f6e (backgrounds secundários)
+  - **White**: #ffffff (textos primários, backgrounds)
+  - **Black**: #000000 (textos, ícones)
+  - **Warning**: #f39c12 (alertas, programas expirados)
+  - **Success**: #27ae60 (confirmações)
+  - **Danger**: #e74c3c (apenas toasts de erro do sistema)
+- **Ícones**: Font Awesome 6.4.0 (totalmente substituindo emojis)
+- **Navegação**: 6 páginas principais com ícones profissionais
 
-### Feature Specifications
-- **Comprehensive Calendar System**: CRUD operations for events, filtering, reminders, and completion tracking.
-- **Class Scheduling & Booking**: Management of classes with instructors, rooms, capacity limits, recurrence, and a full booking/cancellation system.
-- **Engagement Metrics**: Tracking of engagement rates, ROI, productivity indices, and prediction of churn risk, all structured for AI optimization.
-- **Admin Tools**: Endpoint for manual attendance duplicate cleanup (`/admin/attendance/limpar-duplicatas`).
+## Estrutura do Projeto
 
-## External Dependencies
-- **Backend Framework**: FastAPI (0.118.2)
-- **ASGI Server**: Uvicorn (0.37.0)
-- **Database ORM**: SQLAlchemy (2.0.43)
-- **Authentication**: PyJWT (2.10.1)
-- **Password Hashing**: Argon2 (argon2-cffi 25.1.0) and Passlib (1.7.4)
-- **Charting**: Matplotlib (3.10.7)
-- **Email Client**: aiosmtplib (4.0.2)
-- **Reporting/PDF**: ReportLab (4.4.4)
-- **Frontend Icons**: Font Awesome (6.4.0)
+```
+.
+├── metavida_app.py          # Backend FastAPI
+├── gym_wellness.db          # Banco SQLite (gerado automaticamente)
+├── templates/
+│   └── index.html           # Frontend SPA com navegação e abas
+├── static/
+│   ├── css/
+│   │   └── style.css        # Estilos profissionais Myvivio
+│   └── js/
+│       └── app.js           # Lógica JavaScript (tabs, navegação)
+├── pyproject.toml           # Dependências Python
+└── replit.md                # Esta documentação
+```
+
+## Modelos de Dados
+
+### Unidade
+- Academias/unidades de wellness corporativo
+- Métricas de risco de desistência
+
+### Usuario
+- Tipos: administrador, gerente, instrutor, membro
+- Rastreamento de atividade e engajamento
+
+### Visitante
+- Leads/prospects
+- Controle de conversão
+
+### Programa
+- Status: expirado, não atribuído, atribuído
+- Gerenciamento de programas e turmas
+
+### Agenda
+- Atividades diárias dos usuários
+- Histórico de execução
+- Tipos: treino, aula, avaliação, consultoria, reunião
+
+### MetricaEngajamento
+- Taxa de engajamento
+- ROI (Retorno sobre Investimento)
+- Produtividade
+- Usuários ativos
+
+## API Endpoints
+
+### Autenticação
+- `POST /registrar` - Criar novo usuário
+- `POST /login` - Login e geração de token JWT
+
+### Estatísticas
+- `GET /stats/overview` - Visão geral de todas as métricas
+- `GET /stats/unidade/{unidade_id}` - Estatísticas específicas da unidade
+
+### Agendas
+- `GET /agendas/historico` - Listar agendas do usuário (requer token)
+- `POST /agendas/criar` - Criar nova atividade na agenda (requer token)
+- `PUT /agendas/{agenda_id}/concluir` - Marcar agenda como concluída (requer token)
+
+### Programas
+- `GET /programas` - Listar todos os programas
+- `POST /programas/criar` - Criar novo programa
+
+### Visitantes
+- `POST /visitantes/registrar` - Registrar novo visitante/lead
+
+### Unidades
+- `GET /unidades` - Listar todas as unidades
+- `POST /unidades/criar` - Criar nova unidade
+
+### Métricas IA
+- `GET /metricas/ia?unidade_id=X` - Obter métricas para otimização por IA
+
+### Frontend
+- `GET /` - Interface Web completa (SPA)
+- `GET /docs` - Documentação Swagger UI
+- `GET /redoc` - Documentação ReDoc
+
+## Recursos Principais
+
+### Navegação (Sidebar Esquerda)
+- **Logo**: Espaço para logo Myvivio no topo
+- **Busca**: Campo de busca "Buscar no Myvivio CRM"
+- **Menu Principal** (com ícones Font Awesome):
+  - <i class="fa-solid fa-rocket"></i> Iniciar - Ações rápidas e bem-vindo
+  - <i class="fa-solid fa-house"></i> Home - Dashboard com métricas e estatísticas
+  - <i class="fa-solid fa-calendar-days"></i> Planejador - Agendas e atividades
+  - <i class="fa-solid fa-users"></i> Pessoas - Lista de usuários e visitantes
+  - <i class="fa-solid fa-dumbbell"></i> Treinamento - Programas e treinos
+  - <i class="fa-solid fa-gear"></i> Configuração - Configurações do sistema
+
+### Página Home (Dashboard com Abas)
+
+#### Aba "Dia após dia" (Layout 2 colunas)
+**Coluna Esquerda:**
+- **Atividades**: Timeline com tarefas "Para fazer" e "Feito"
+  - Cards de atividades com status visual
+  - Marcação de conclusão
+
+**Coluna Direita:**
+- **Contatos**: Widgets com estatísticas de contatos (verde/amarelo/vermelho)
+- **Leads**: Estatísticas de leads e conversões
+- **Programas**: Visão geral rápida dos programas
+
+#### Aba "Desempenho"
+- **Seção Retenção**:
+  - Card destacado com risco de desistência
+  - Indicador de tendência
+  - Botão "VER MAIS"
+
+- **Seção Usuários e Visitantes**:
+  - Total de usuários
+  - Usuários ativos
+  - Visitantes
+
+- **Cards de Métricas de Performance**:
+  - Engajamento
+  - ROI
+  - Produtividade
+  - Membros ativos
+
+### Página Planejador
+- Lista de agendas diárias
+- Botão para adicionar novas atividades
+- Marcação de conclusão de atividades
+
+### Página Treinamento
+- Estatísticas de programas (expirados, não atribuídos, atribuídos)
+- Grid de programas disponíveis
+
+### Sistema de Agendas
+- Criação de atividades diárias
+- Tipos de atividade personalizáveis
+- Controle de duração
+- Marcação de conclusão
+- Histórico completo
+
+### Gestão de Programas
+- Controle de status
+- Usuários matriculados
+- Datas de início/fim
+
+## Preparação para IA
+
+O sistema está estruturado para otimização por IA com:
+- **Métricas de Engajamento**: Taxa de participação dos usuários
+- **ROI**: Retorno sobre investimento calculado
+- **Produtividade**: Índices de eficiência
+- **Risco de Desistência**: Predição de churn
+- **Histórico de Atividades**: Dados para análise comportamental
+
+## Como Executar
+
+```bash
+# Instalar dependências (automático no Replit)
+# O servidor inicia automaticamente
+
+# Ou manualmente:
+uvicorn metavida_app:app --host 0.0.0.0 --port 5000
+```
+
+## Próximos Passos
+
+1. Integração com algoritmos de ML para predição de churn
+2. Sistema de recomendação personalizado por IA
+3. Análise preditiva de ROI
+4. Dashboard de relatórios avançados
+5. API para integração com wearables e dispositivos fitness
+6. Implementação de gráficos e visualizações avançadas
+7. Sistema de notificações em tempo real
+
+## Notas de Desenvolvimento
+
+- Token JWT expira em 8 horas
+- Banco de dados SQLite para desenvolvimento (migrar para PostgreSQL em produção)
+- CORS habilitado para desenvolvimento (restringir em produção)
+- Senhas criptografadas com Argon2
+- Paleta de cores mantida consistente em toda a aplicação
+- Uso exclusivo de ícones Font Awesome para interface profissional
+
+## Design System
+
+### Cores
+- **Primária (Accent Blue)**: #62b1ca - Botões principais, links, destaques
+- **Secundária (Dark Blue)**: #1f2746 - Sidebar, headers, fundos escuros
+- **Terciária (Medium Blue)**: #333f6e - Fundos secundários, cards
+- **Neutras**: #ffffff (backgrounds), #000000 (textos)
+- **Feedback**: Success (#27ae60), Warning (#f39c12), Danger (#e74c3c - apenas erros)
+
+### Tipografia
+- Família: System fonts (sans-serif)
+- Tamanhos: 0.85rem a 2.5rem
+- Pesos: 400 (normal), 600 (semibold), 700 (bold)
+
+### Componentes
+- Cards com sombra suave (0 2px 8px rgba(0,0,0,0.1))
+- Bordas arredondadas (8px a 12px)
+- Transições suaves (0.3s)
+- Hover states com elevação
+
+## Segurança
+
+### Endpoints Protegidos (requerem autenticação JWT)
+- Todas as estatísticas (`/stats/*`)
+- Todas as métricas IA (`/metricas/*`)
+- Todas as agendas (`/agendas/*`)
+- Gestão de programas (`/programas/*`)
+- Gestão de unidades (`/unidades/*`)
+
+### Endpoints Públicos (sem autenticação)
+- `/registrar` - Registro de novos usuários
+- `/login` - Autenticação
+- `/visitantes/registrar` - Captura de leads (por design)
+- `/` - Interface web
+- `/docs`, `/redoc` - Documentação API
+
+### Produção
+⚠️ **IMPORTANTE**: Configurar variável de ambiente `SESSION_SECRET` com valor seguro em produção
+
+## Branding - Myvivio CRM
+
+- **Nome**: Myvivio CRM
+- **Slogan**: Sistema de Gestão Inteligente
+- **Identidade Visual**: Design profissional inspirado em Technogym
+- **Público-alvo**: Academias e programas de wellness corporativo
+- **Diferencial**: Otimização por IA para engajamento e ROI
