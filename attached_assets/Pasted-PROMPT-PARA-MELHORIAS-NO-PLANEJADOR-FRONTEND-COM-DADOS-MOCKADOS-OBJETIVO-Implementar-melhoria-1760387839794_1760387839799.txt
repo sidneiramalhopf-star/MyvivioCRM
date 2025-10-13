@@ -1,0 +1,308 @@
+PROMPT PARA MELHORIAS NO PLANEJADOR - FRONTEND COM DADOS MOCKADOS
+🎯 OBJETIVO
+Implementar melhorias no módulo de Planejador com dados simulados para validar toda a experiência do usuário antes da integração com backend.
+
+1. CORREÇÃO: Tab "Nova Atividade" no Planejador
+Problema: Botão "Salvar Atividade" está fora da área visível.
+
+Solução Frontend:
+
+Ajustar altura do modal/formulário para caber na viewport
+Adicionar max-height com overflow-y: auto no container do formulário
+Garantir que o botão "Salvar" fique sempre visível (sticky footer)
+Testar em resoluções: 1920x1080, 1366x768, tablet (768px), mobile (375px)
+Arquivos:
+
+static/css/style.css → classes do modal
+static/js/app.js → validações do formulário
+Dados mockados:
+
+Por enquanto, salvar atividades no localStorage com estrutura:
+{
+  "id": "uuid",
+  "titulo": "Yoga Matinal",
+  "data": "2025-10-15",
+  "horario_inicio": "07:00",
+  "horario_fim": "08:00",
+  "instrutor": "João Silva",
+  "sala": "Sala 1",
+  "vagas_totais": 30
+}
+2. MODAL "Informações da Aula" (1 clique)
+Trigger: Clicar em qualquer aula no calendário.
+
+Estrutura do Modal:
+
+Header:
+Nome da aula (ex: "GINÁSIO")
+Nome do instrutor (ex: "Ramalho Sidnei")
+Data e horário (ex: "13 de outubro de 2025, 07:00 - 09:00")
+Local/Sala (ex: "GINÁSIO")
+Botão "RESERVAR" (azul #62b1ca)
+Botão fechar (X)
+4 Círculos de Estatísticas (progress circles):
+Vagas totais (cinza): 21/30
+Presentes (verde #27ae60): 21/21
+Ausentes (laranja #f39c12): 0/21
+Lista de espera (amarelo): 0
+Tabela de Inscritos:
+Colunas: Avatar circular | Nome | Data de inscrição | Ações
+Lista scrollável com scroll interno
+Ícones de ação (marcar presença, remover)
+Dados Mockados (criar em static/js/mockData.js):
+
+const aulasDetalhes = {
+  "aula_1": {
+    nome: "GINÁSIO",
+    instrutor: "Ramalho Sidnei",
+    data: "2025-10-13",
+    horario_inicio: "07:00",
+    horario_fim: "09:00",
+    sala: "GINÁSIO",
+    vagas_totais: 30,
+    vagas_ocupadas: 21,
+    presentes: 21,
+    ausentes: 0,
+    lista_espera: 0,
+    inscritos: [
+      {
+        id: 1,
+        nome: "Maria Silva",
+        avatar: "MS",
+        data_inscricao: "2025-10-10",
+        presente: true
+      },
+      // ... mais 20 inscritos mockados
+    ]
+  }
+}
+Implementação:
+
+Criar modal-info-aula.html (template)
+Estilizar círculos com CSS puro ou SVG
+Popular dados via JavaScript ao clicar na aula
+Animação de abertura suave
+3. TAB "Penalidades" (Sistema de Faltas)
+Localização: Nova tab ao lado de "Calendário" na seção "Reserva da aula".
+
+Layout:
+Topo:
+
+Campo de busca: "Buscar membro penalizado..."
+Contador: "3 membros com penalidades ativas"
+Lista de Penalizados:
+Cada card contém:
+
+Avatar circular com iniciais (ex: "BF")
+Nome completo (ex: "Brito Maria")
+Status visual:
+1 falta: Badge amarelo "Faltas 1/2 ⚠️"
+2 faltas: Badge vermelho "BLOQUEADO 🚫" + "Liberação em 5 dias"
+Botão "Ver Detalhes"
+Modal de Detalhes da Falta:
+Mensagem principal:
+"[Nome] acumulou X falta(s) em 7 dias"
+
+Cards de Aulas Faltadas:
+Para cada falta:
+
+Nome da aula (ex: "PILATES")
+Instrutor (ex: "Patrício Susana")
+Data e horário
+Local
+Tag: "Falta confirmada em DD/MM/YYYY"
+Ações:
+
+Botão "ELIMINAR FALTA" (azul #62b1ca) - apenas para admins
+Botão "Fechar"
+Dados Mockados:
+
+const penalidades = [
+  {
+    id: 1,
+    usuario: {
+      nome: "Brito Maria",
+      avatar: "BF",
+      id: 101
+    },
+    faltas: [
+      {
+        aula: "PILATES",
+        instrutor: "Patrício Susana",
+        data: "2025-10-10",
+        horario: "18:00 - 19:00",
+        sala: "Sala 2"
+      }
+    ],
+    total_faltas: 1,
+    bloqueado: false,
+    dias_restantes_bloqueio: 0
+  },
+  {
+    id: 2,
+    usuario: {
+      nome: "Silva João",
+      avatar: "BY",
+      id: 102
+    },
+    faltas: [
+      {
+        aula: "YOGA",
+        instrutor: "Ana Costa",
+        data: "2025-10-08",
+        horario: "07:00 - 08:00",
+        sala: "Sala 1"
+      },
+      {
+        aula: "GINÁSIO",
+        instrutor: "Ramalho Sidnei",
+        data: "2025-10-11",
+        horario: "19:00 - 20:00",
+        sala: "GINÁSIO"
+      }
+    ],
+    total_faltas: 2,
+    bloqueado: true,
+    dias_restantes_bloqueio: 5
+  }
+]
+Funcionalidades JavaScript:
+
+Busca em tempo real por nome
+Filtrar por status (todos, 1 falta, bloqueados)
+Simular eliminação de falta (atualizar array mockado)
+Toast de confirmação ao eliminar
+4. ÍCONE CALENDÁRIO FLUTUANTE (Agendamento Rápido)
+Localização: Botão flutuante no canto inferior direito.
+
+Ação: Ao clicar, expandir sidebar direita com:
+
+Seção "Agendar Aula Rápida":
+Mini calendário (mostrar data selecionada)
+Dropdown: "Selecionar aula disponível"
+Carregar do array mockado apenas aulas com vagas
+Mostrar: Nome + Horário + Vagas disponíveis
+Botão "AGENDAR AGORA" (azul #62b1ca)
+Validações Frontend:
+
+Verificar se usuário já está inscrito (array mockado)
+Verificar se há vagas disponíveis
+Verificar se usuário está bloqueado por penalidades
+Mostrar erro com mensagem específica
+Toast de Sucesso:
+"✅ Aula agendada com sucesso! Você receberá um lembrete 1h antes."
+
+Dados Mockados:
+
+const aulasDisponiveis = [
+  {
+    id: "aula_2",
+    nome: "YOGA",
+    data: "2025-10-14",
+    horario: "07:00 - 08:00",
+    vagas_disponiveis: 8,
+    instrutor: "Ana Costa"
+  },
+  // ... mais aulas
+]
+const usuarioLogado = {
+  id: 1,
+  nome: "Usuário Teste",
+  inscricoes_ativas: ["aula_1"], // IDs das aulas já inscritas
+  bloqueado: false
+}
+5. FILTROS NA TAB "Mostra"
+Localização: Topo da visualização de calendário/lista.
+
+3 Dropdowns lado a lado:
+"TODAS AS AULAS"
+Opções: Todas | Yoga | Pilates | Ginásio | Natação | etc.
+"TODAS AS SALAS"
+Opções: Todas | Sala 1 | Sala 2 | GINÁSIO | Piscina | etc.
+"TODOS OS INSTRUTORES"
+Opções: Todos | João Silva | Ana Costa | Ramalho Sidnei | etc.
+Comportamento:
+
+Filtros combinados (AND)
+Atualização instantânea da visualização
+Botão "Limpar Filtros" (ícone fas fa-times-circle)
+Contador: "Exibindo X aulas"
+Dados Mockados para Dropdowns:
+
+const filtrosOpcoes = {
+  aulas: ["Todas", "YOGA", "PILATES", "GINÁSIO", "NATAÇÃO", "CROSSFIT"],
+  salas: ["Todas", "Sala 1", "Sala 2", "GINÁSIO", "Piscina", "Área Externa"],
+  instrutores: ["Todos", "João Silva", "Ana Costa", "Ramalho Sidnei", "Patrício Susana"]
+}
+const todasAulas = [
+  {
+    id: "aula_1",
+    tipo: "GINÁSIO",
+    sala: "GINÁSIO",
+    instrutor: "Ramalho Sidnei",
+    data: "2025-10-13",
+    horario: "07:00 - 09:00"
+  },
+  // ... 20+ aulas mockadas
+]
+Função de Filtro:
+
+function aplicarFiltros(tipoAula, sala, instrutor) {
+  let resultado = todasAulas;
+  
+  if (tipoAula !== "Todas") {
+    resultado = resultado.filter(a => a.tipo === tipoAula);
+  }
+  if (sala !== "Todas") {
+    resultado = resultado.filter(a => a.sala === sala);
+  }
+  if (instrutor !== "Todos") {
+    resultado = resultado.filter(a => a.instrutor === instrutor);
+  }
+  
+  renderizarCalendario(resultado);
+  atualizarContador(resultado.length);
+}
+📐 ESPECIFICAÇÕES TÉCNICAS
+Cores Myvivio CRM:
+--azul-primario: #62b1ca;
+--azul-escuro: #1f2746;
+--verde-sucesso: #27ae60;
+--laranja-alerta: #f39c12;
+--vermelho-perigo: #e74c3c;
+--cinza-claro: #ecf0f1;
+Ícones Font Awesome:
+Calendário: fas fa-calendar-days
+Usuários: fas fa-user-circle
+Alerta: fas fa-triangle-exclamation
+Check: fas fa-check-circle
+Filtro: fas fa-filter
+Fechar: fas fa-times
+Responsividade:
+Desktop (> 1024px):
+
+Layout completo, modais centralizados
+Tablet (768px - 1024px):
+
+Modais ocupam 90% da largura
+Círculos de estatísticas em grid 2x2
+Mobile (< 768px):
+
+Tabs viram dropdown/accordion
+Círculos empilham verticalmente
+Tabelas viram cards scrolláveis
+Filtros viram modal full-screen
+🗂️ ESTRUTURA DE ARQUIVOS
+/static
+  /js
+    mockData.js          ← Todos os dados simulados
+    calendario.js        ← Lógica do calendário e filtros
+    modals.js           ← Gerenciamento de modais
+    penalidades.js      ← Lógica da tab penalidades
+    utils.js            ← Funções auxiliares (toast, validações)
+  
+  /css
+    calendar-modal.css  ← Estilos dos modais
+    penalidades.css     ← Estilos da tab penalidades
+    filters.css         ← Estilos dos filtros
+    responsivo.css      ← Media queries
