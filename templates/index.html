@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251011v1">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251013v2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -442,22 +442,77 @@
                                     <div class="planner-header">
                                         <h1><i class="fas fa-clipboard-list"></i> Reserva da aula</h1>
                                         <div class="reservas-controls">
+                                            <div class="reservas-tabs">
+                                                <button class="tab-btn active" onclick="switchReservaTab('calendario', event)">
+                                                    <i class="fas fa-calendar"></i> Calendário
+                                                </button>
+                                                <button class="tab-btn" onclick="switchReservaTab('penalidades', event)">
+                                                    <i class="fas fa-triangle-exclamation"></i> Penalidades
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tab Calendário de Reservas -->
+                                    <div id="reserva-tab-calendario" class="reserva-tab-content active">
+                                        <div class="reservas-controls-row">
                                             <input type="text" class="search-input" placeholder="Buscar" id="search-reservas">
                                             <select class="filter-select">
                                                 <option>Sempre</option>
                                                 <option>Hoje</option>
                                                 <option>Esta Semana</option>
                                             </select>
-                                            <button class="btn-outline"><i class="fas fa-filter"></i> MOSTRA</button>
+                                            <button class="btn-outline" onclick="toggleFiltrosReservas()"><i class="fas fa-filter"></i> MOSTRA</button>
+                                        </div>
+                                        
+                                        <!-- Filtros (oculto por padrão) -->
+                                        <div id="filtros-reservas" class="filtros-container" style="display: none;">
+                                            <div class="filtro-group">
+                                                <label>Aula</label>
+                                                <select id="filtro-aula" onchange="aplicarFiltros()">
+                                                    <option value="Todas">Todas as aulas</option>
+                                                </select>
+                                            </div>
+                                            <div class="filtro-group">
+                                                <label>Sala</label>
+                                                <select id="filtro-sala" onchange="aplicarFiltros()">
+                                                    <option value="Todas">Todas as salas</option>
+                                                </select>
+                                            </div>
+                                            <div class="filtro-group">
+                                                <label>Instrutor</label>
+                                                <select id="filtro-instrutor" onchange="aplicarFiltros()">
+                                                    <option value="Todos">Todos os membros da equipe</option>
+                                                </select>
+                                            </div>
+                                            <button class="btn-limpar-filtros" onclick="limparFiltros()">
+                                                <i class="fas fa-times-circle"></i> Limpar Filtros
+                                            </button>
+                                        </div>
+                                        <div id="resultado-contador" class="resultado-contador"></div>
+                                        
+                                        <div class="week-navigator">
+                                            <button class="btn-icon" onclick="previousWeek()"><i class="fas fa-chevron-left"></i></button>
+                                            <button class="btn-icon"><i class="fas fa-calendar"></i></button>
+                                            <button class="btn-icon" onclick="nextWeek()"><i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn-outline" onclick="goToTodayReservas()">HOJE</button>
+                                        </div>
+                                        <div class="week-calendar" id="week-calendar"></div>
+                                    </div>
+                                    
+                                    <!-- Tab Penalidades -->
+                                    <div id="reserva-tab-penalidades" class="reserva-tab-content">
+                                        <div class="penalidades-header">
+                                            <div class="penalidades-search">
+                                                <i class="fas fa-search"></i>
+                                                <input type="text" id="busca-penalidades" placeholder="Buscar membro penalizado...">
+                                            </div>
+                                            <span id="penalidades-contador" class="penalidades-contador">0 membros com penalidades ativas</span>
+                                        </div>
+                                        <div id="penalidades-list" class="penalidades-list">
+                                            <p class="empty-message">Nenhuma penalidade ativa</p>
                                         </div>
                                     </div>
-                                    <div class="week-navigator">
-                                        <button class="btn-icon" onclick="previousWeek()"><i class="fas fa-chevron-left"></i></button>
-                                        <button class="btn-icon"><i class="fas fa-calendar"></i></button>
-                                        <button class="btn-icon" onclick="nextWeek()"><i class="fas fa-chevron-right"></i></button>
-                                        <button class="btn-outline" onclick="goToTodayReservas()">HOJE</button>
-                                    </div>
-                                    <div class="week-calendar" id="week-calendar"></div>
                                 </div>
 
                                 <!-- Seção Agendamento de Aulas -->
@@ -669,6 +724,61 @@
         </div>
     </div>
 
+    <!-- Modal de Informações da Aula -->
+    <div id="modal-info-aula" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAulaInfoModal()">&times;</span>
+            
+            <div class="aula-header">
+                <div class="aula-info">
+                    <h2 id="aula-nome">GINÁSIO</h2>
+                    <p><i class="fas fa-user"></i> <span id="aula-instrutor">Instrutor</span></p>
+                    <p><i class="fas fa-calendar"></i> <span id="aula-data-horario">Data e horário</span></p>
+                    <p><i class="fas fa-location-dot"></i> <span id="aula-local">Local</span></p>
+                </div>
+                <button class="btn-reservar" onclick="reservarAula()">
+                    <i class="fas fa-plus"></i> RESERVAR
+                </button>
+            </div>
+
+            <!-- Círculos de Estatísticas -->
+            <div class="stats-circles">
+                <div class="circle-stat vagas">
+                    <div class="circle-progress" style="--progress: 70">
+                        <div class="circle-value" id="stat-vagas">21/30</div>
+                    </div>
+                    <div class="circle-label">Vagas Ocupadas</div>
+                </div>
+                <div class="circle-stat presentes">
+                    <div class="circle-progress" style="--progress: 100">
+                        <div class="circle-value" id="stat-presentes">21/21</div>
+                    </div>
+                    <div class="circle-label">Presentes</div>
+                </div>
+                <div class="circle-stat ausentes">
+                    <div class="circle-progress" style="--progress: 0">
+                        <div class="circle-value" id="stat-ausentes">0/21</div>
+                    </div>
+                    <div class="circle-label">Ausentes</div>
+                </div>
+                <div class="circle-stat espera">
+                    <div class="circle-progress" style="--progress: 0">
+                        <div class="circle-value" id="stat-espera">0</div>
+                    </div>
+                    <div class="circle-label">Lista de Espera</div>
+                </div>
+            </div>
+
+            <!-- Lista de Inscritos -->
+            <div class="inscritos-section">
+                <h4>Inscritos</h4>
+                <div class="inscritos-table" id="inscritos-table">
+                    <!-- Lista de inscritos será populada dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra Lateral Global do Planejador -->
     <div id="global-planner-sidebar" class="global-planner-sidebar">
         <div class="planner-header">
@@ -714,6 +824,19 @@
                     <p class="empty-message">Nenhuma atividade próxima</p>
                 </div>
             </section>
+            
+            <!-- Agendamento Rápido -->
+            <section class="planner-section">
+                <div class="agendamento-rapido">
+                    <h4><i class="fas fa-bolt"></i> Agendar Aula Rápida</h4>
+                    <select id="aula-rapida-select">
+                        <option value="">Selecionar aula...</option>
+                    </select>
+                    <button id="btn-agendar-rapido" class="btn-agendar-rapido" disabled onclick="agendarAulaRapida()">
+                        Agendar Agora
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
     
@@ -722,7 +845,18 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251011v1"></script>
-    <script src="/static/js/app.js?v=20251011v1"></script>
+    <script src="/static/js/mockData.js?v=20251013v2"></script>
+    <script src="/static/js/app.js?v=20251013v2"></script>
+    
+    <script>
+        // DEMO: Adicionar botão temporário para testar o modal de informações da aula
+        window.addEventListener('DOMContentLoaded', () => {
+            const btnDemo = document.createElement('button');
+            btnDemo.textContent = 'DEMO: Ver Info Aula GINÁSIO';
+            btnDemo.style.cssText = 'position: fixed; bottom: 100px; right: 20px; z-index: 9999; padding: 15px; background: #62b1ca; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            btnDemo.onclick = () => abrirInfoAula('aula_1');
+            document.body.appendChild(btnDemo);
+        });
+    </script>
 </body>
 </html>

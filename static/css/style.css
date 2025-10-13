@@ -2641,3 +2641,84 @@ body {
         height: 82px;
     }
 }
+
+/* Tabs de Reserva de Aulas */
+.reservas-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    color: var(--accent-blue);
+}
+
+.tab-btn.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+}
+
+.reserva-tab-content {
+    display: none;
+}
+
+.reserva-tab-content.active {
+    display: block;
+}
+
+.reservas-controls-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem 0;
+}
+
+.reservas-controls-row .search-input {
+    flex: 1;
+    max-width: 300px;
+}
+
+.filtros-container {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsivo para tabs */
+@media (max-width: 768px) {
+    .reservas-tabs {
+        width: 100%;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .reservas-controls-row {
+        flex-wrap: wrap;
+    }
+}

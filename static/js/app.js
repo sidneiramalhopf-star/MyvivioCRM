@@ -1237,4 +1237,495 @@ function miniNextMonth() {
     renderMiniCalendar();
 }
 
+// ===== FUNCIONALIDADES DO PLANEJADOR APRIMORADO =====
+
+// Modal de Informações da Aula
+let aulaAtualId = null;
+
+function abrirInfoAula(aulaId) {
+    if (!window.mockData || !window.mockData.aulasDetalhes[aulaId]) {
+        showToast('Aula não encontrada', 'error');
+        return;
+    }
+    
+    const aula = window.mockData.aulasDetalhes[aulaId];
+    aulaAtualId = aulaId;
+    
+    // Preencher dados do cabeçalho
+    document.getElementById('aula-nome').textContent = aula.nome;
+    document.getElementById('aula-instrutor').textContent = aula.instrutor;
+    
+    const dataFormatada = new Date(aula.data).toLocaleDateString('pt-BR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+    document.getElementById('aula-data-horario').textContent = 
+        `${dataFormatada}, ${aula.horario_inicio} - ${aula.horario_fim}`;
+    document.getElementById('aula-local').textContent = aula.sala;
+    
+    // Calcular porcentagens
+    const percVagas = Math.round((aula.vagas_ocupadas / aula.vagas_totais) * 100);
+    const percPresentes = aula.vagas_ocupadas > 0 ? 
+        Math.round((aula.presentes / aula.vagas_ocupadas) * 100) : 0;
+    const percAusentes = aula.vagas_ocupadas > 0 ? 
+        Math.round((aula.ausentes / aula.vagas_ocupadas) * 100) : 0;
+    
+    // Atualizar círculos
+    document.getElementById('stat-vagas').textContent = 
+        `${aula.vagas_ocupadas}/${aula.vagas_totais}`;
+    document.querySelector('.circle-stat.vagas .circle-progress').style.setProperty('--progress', percVagas);
+    
+    document.getElementById('stat-presentes').textContent = 
+        `${aula.presentes}/${aula.vagas_ocupadas}`;
+    document.querySelector('.circle-stat.presentes .circle-progress').style.setProperty('--progress', percPresentes);
+    
+    document.getElementById('stat-ausentes').textContent = 
+        `${aula.ausentes}/${aula.vagas_ocupadas}`;
+    document.querySelector('.circle-stat.ausentes .circle-progress').style.setProperty('--progress', percAusentes);
+    
+    document.getElementById('stat-espera').textContent = aula.lista_espera;
+    document.querySelector('.circle-stat.espera .circle-progress').style.setProperty('--progress', 
+        aula.lista_espera > 0 ? 50 : 0);
+    
+    // Popular lista de inscritos
+    const inscritosTable = document.getElementById('inscritos-table');
+    inscritosTable.innerHTML = aula.inscritos.map(inscrito => `
+        <div class="inscrito-item">
+            <div class="inscrito-avatar">${inscrito.avatar}</div>
+            <div class="inscrito-nome">${inscrito.nome}</div>
+            <div class="inscrito-data">${new Date(inscrito.data_inscricao).toLocaleDateString('pt-BR')}</div>
+            <div class="inscrito-acoes">
+                <button class="btn-icon" title="${inscrito.presente ? 'Presente' : 'Ausente'}">
+                    <i class="fas fa-${inscrito.presente ? 'check-circle' : 'times-circle'}"></i>
+                </button>
+                <button class="btn-icon" title="Remover">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Mostrar modal
+    document.getElementById('modal-info-aula').style.display = 'flex';
+}
+
+function closeAulaInfoModal() {
+    document.getElementById('modal-info-aula').style.display = 'none';
+    aulaAtualId = null;
+}
+
+function reservarAula() {
+    if (!aulaAtualId) return;
+    
+    const usuario = window.mockData.usuarioLogado;
+    
+    // Verificar se já está inscrito
+    if (usuario.inscricoes_ativas.includes(aulaAtualId)) {
+        showToast('Você já está inscrito nesta aula!', 'error');
+        return;
+    }
+    
+    // Verificar se está bloqueado
+    if (usuario.bloqueado) {
+        showToast('Você está bloqueado devido a faltas não justificadas', 'error');
+        return;
+    }
+    
+    const aula = window.mockData.aulasDetalhes[aulaAtualId];
+    
+    // Verificar vagas
+    if (aula.vagas_ocupadas >= aula.vagas_totais) {
+        showToast('Aula lotada! Você foi adicionado à lista de espera', 'error');
+        return;
+    }
+    
+    // Simular reserva
+    usuario.inscricoes_ativas.push(aulaAtualId);
+    showToast('✅ Aula reservada com sucesso!', 'success');
+    closeAulaInfoModal();
+}
+
+// Agendamento Rápido
+function carregarAulasDisponiveis() {
+    const select = document.getElementById('aula-rapida-select');
+    if (!select) return;
+    
+    const aulasDisponiveis = window.mockData.aulasDisponiveis || [];
+    const usuario = window.mockData.usuarioLogado;
+    
+    select.innerHTML = '<option value="">Selecionar aula...</option>';
+    
+    aulasDisponiveis.forEach(aula => {
+        const jaInscrito = usuario.inscricoes_ativas.includes(aula.id);
+        const option = document.createElement('option');
+        option.value = aula.id;
+        option.textContent = `${aula.nome} - ${aula.horario_inicio} (${aula.vagas_disponiveis} vagas) ${jaInscrito ? '✓ Inscrito' : ''}`;
+        option.disabled = jaInscrito || aula.vagas_disponiveis === 0;
+        select.appendChild(option);
+    });
+    
+    select.addEventListener('change', () => {
+        const btn = document.getElementById('btn-agendar-rapido');
+        btn.disabled = !select.value;
+    });
+}
+
+function agendarAulaRapida() {
+    const select = document.getElementById('aula-rapida-select');
+    const aulaId = select.value;
+    
+    if (!aulaId) return;
+    
+    const usuario = window.mockData.usuarioLogado;
+    const aula = window.mockData.aulasDisponiveis.find(a => a.id === aulaId);
+    
+    if (!aula) {
+        showToast('Aula não encontrada', 'error');
+        return;
+    }
+    
+    if (usuario.bloqueado) {
+        showToast('Você está bloqueado devido a faltas não justificadas', 'error');
+        return;
+    }
+    
+    if (usuario.inscricoes_ativas.includes(aulaId)) {
+        showToast('Você já está inscrito nesta aula!', 'error');
+        return;
+    }
+    
+    if (aula.vagas_disponiveis === 0) {
+        showToast('Esta aula não tem mais vagas disponíveis', 'error');
+        return;
+    }
+    
+    // Simular agendamento
+    usuario.inscricoes_ativas.push(aulaId);
+    aula.vagas_disponiveis--;
+    
+    showToast(`✅ Aula ${aula.nome} agendada com sucesso! Você receberá um lembrete 1h antes.`, 'success');
+    
+    // Recarregar lista
+    carregarAulasDisponiveis();
+    
+    // Resetar seleção
+    select.value = '';
+    document.getElementById('btn-agendar-rapido').disabled = true;
+}
+
+// Penalidades
+function carregarPenalidades() {
+    const container = document.getElementById('penalidades-list');
+    if (!container) return;
+    
+    const penalidades = window.mockData.penalidades || [];
+    
+    if (penalidades.length === 0) {
+        container.innerHTML = '<p class="empty-message">Nenhuma penalidade ativa</p>';
+        return;
+    }
+    
+    container.innerHTML = penalidades.map(pen => {
+        const bloqueado = pen.bloqueado;
+        const badgeClass = bloqueado ? 'bloqueado' : 'alerta';
+        const badgeText = bloqueado ? 
+            `BLOQUEADO 🚫 - Liberação em ${pen.dias_restantes_bloqueio} dias` : 
+            `Faltas ${pen.total_faltas}/2 ⚠️`;
+        
+        return `
+            <div class="penalidade-card ${bloqueado ? 'bloqueado' : ''}">
+                <div class="penalidade-usuario">
+                    <div class="penalidade-avatar">${pen.usuario.avatar}</div>
+                    <div class="penalidade-dados">
+                        <h4>${pen.usuario.nome}</h4>
+                        <div class="penalidade-status">
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-ver-detalhes" onclick="verDetalhesPenalidade(${pen.id})">
+                    Ver Detalhes
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    // Atualizar contador
+    const contador = document.getElementById('penalidades-contador');
+    if (contador) {
+        contador.textContent = `${penalidades.length} ${penalidades.length === 1 ? 'membro com penalidade ativa' : 'membros com penalidades ativas'}`;
+    }
+}
+
+function verDetalhesPenalidade(penId) {
+    const penalidade = window.mockData.penalidades.find(p => p.id === penId);
+    if (!penalidade) return;
+    
+    // Criar modal dinamicamente
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'modal-detalhes-falta';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalFalta()">&times;</span>
+            <h3>Detalhes da Penalidade</h3>
+            
+            <div class="falta-mensagem">
+                <p>${penalidade.usuario.nome} acumulou ${penalidade.total_faltas} falta(s) em 7 dias</p>
+            </div>
+            
+            <div class="faltas-cards">
+                ${penalidade.faltas.map((falta, idx) => `
+                    <div class="falta-card">
+                        <div class="falta-card-header">
+                            <div>
+                                <h4>${falta.aula}</h4>
+                                <p><i class="fas fa-user"></i> ${falta.instrutor}</p>
+                                <p><i class="fas fa-calendar"></i> ${new Date(falta.data).toLocaleDateString('pt-BR')}, ${falta.horario}</p>
+                                <p><i class="fas fa-location-dot"></i> ${falta.sala}</p>
+                            </div>
+                            <span class="falta-tag">Falta confirmada</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <button class="btn-eliminar-falta" onclick="eliminarPenalidade(${penId})">
+                <i class="fas fa-trash"></i> ELIMINAR FALTA
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function fecharModalFalta() {
+    const modal = document.getElementById('modal-detalhes-falta');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function eliminarPenalidade(penId) {
+    const idx = window.mockData.penalidades.findIndex(p => p.id === penId);
+    if (idx >= 0) {
+        window.mockData.penalidades.splice(idx, 1);
+        showToast('Penalidade eliminada com sucesso', 'success');
+        fecharModalFalta();
+        carregarPenalidades();
+    }
+}
+
+function buscarPenalidades(termo) {
+    const container = document.getElementById('penalidades-list');
+    if (!container) return;
+    
+    const penalidades = window.mockData.penalidades || [];
+    const filtradas = penalidades.filter(pen => 
+        pen.usuario.nome.toLowerCase().includes(termo.toLowerCase())
+    );
+    
+    if (filtradas.length === 0) {
+        container.innerHTML = '<p class="empty-message">Nenhuma penalidade encontrada</p>';
+        return;
+    }
+    
+    // Renderizar penalidades filtradas (mesmo código da função carregarPenalidades)
+    container.innerHTML = filtradas.map(pen => {
+        const bloqueado = pen.bloqueado;
+        const badgeClass = bloqueado ? 'bloqueado' : 'alerta';
+        const badgeText = bloqueado ? 
+            `BLOQUEADO 🚫 - Liberação em ${pen.dias_restantes_bloqueio} dias` : 
+            `Faltas ${pen.total_faltas}/2 ⚠️`;
+        
+        return `
+            <div class="penalidade-card ${bloqueado ? 'bloqueado' : ''}">
+                <div class="penalidade-usuario">
+                    <div class="penalidade-avatar">${pen.usuario.avatar}</div>
+                    <div class="penalidade-dados">
+                        <h4>${pen.usuario.nome}</h4>
+                        <div class="penalidade-status">
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-ver-detalhes" onclick="verDetalhesPenalidade(${pen.id})">
+                    Ver Detalhes
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+// Filtros de Aulas
+let filtrosAtivos = {
+    aula: 'Todas',
+    sala: 'Todas',
+    instrutor: 'Todos'
+};
+
+function carregarFiltros() {
+    const filtros = window.mockData.filtrosOpcoes;
+    if (!filtros) return;
+    
+    // Carregar dropdown de aulas
+    const selectAula = document.getElementById('filtro-aula');
+    if (selectAula) {
+        selectAula.innerHTML = filtros.aulas.map(aula => 
+            `<option value="${aula}">${aula}</option>`
+        ).join('');
+    }
+    
+    // Carregar dropdown de salas
+    const selectSala = document.getElementById('filtro-sala');
+    if (selectSala) {
+        selectSala.innerHTML = filtros.salas.map(sala => 
+            `<option value="${sala}">${sala}</option>`
+        ).join('');
+    }
+    
+    // Carregar dropdown de instrutores
+    const selectInstrutor = document.getElementById('filtro-instrutor');
+    if (selectInstrutor) {
+        selectInstrutor.innerHTML = filtros.instrutores.map(instrutor => 
+            `<option value="${instrutor}">${instrutor}</option>`
+        ).join('');
+    }
+}
+
+function aplicarFiltros() {
+    const selectAula = document.getElementById('filtro-aula');
+    const selectSala = document.getElementById('filtro-sala');
+    const selectInstrutor = document.getElementById('filtro-instrutor');
+    
+    if (!selectAula || !selectSala || !selectInstrutor) return;
+    
+    filtrosAtivos.aula = selectAula.value;
+    filtrosAtivos.sala = selectSala.value;
+    filtrosAtivos.instrutor = selectInstrutor.value;
+    
+    let resultado = [...window.mockData.todasAulas];
+    
+    if (filtrosAtivos.aula !== 'Todas') {
+        resultado = resultado.filter(a => a.tipo === filtrosAtivos.aula);
+    }
+    if (filtrosAtivos.sala !== 'Todas') {
+        resultado = resultado.filter(a => a.sala === filtrosAtivos.sala);
+    }
+    if (filtrosAtivos.instrutor !== 'Todos') {
+        resultado = resultado.filter(a => a.instrutor === filtrosAtivos.instrutor);
+    }
+    
+    // Atualizar contador
+    const contador = document.getElementById('resultado-contador');
+    if (contador) {
+        contador.textContent = `Exibindo ${resultado.length} ${resultado.length === 1 ? 'aula' : 'aulas'}`;
+    }
+    
+    // Aqui você pode atualizar a visualização do calendário com as aulas filtradas
+    // Por exemplo, renderizando apenas as aulas que passaram no filtro
+    showToast(`Filtros aplicados: ${resultado.length} aulas encontradas`, 'success');
+}
+
+function limparFiltros() {
+    const selectAula = document.getElementById('filtro-aula');
+    const selectSala = document.getElementById('filtro-sala');
+    const selectInstrutor = document.getElementById('filtro-instrutor');
+    
+    if (selectAula) selectAula.value = 'Todas';
+    if (selectSala) selectSala.value = 'Todas';
+    if (selectInstrutor) selectInstrutor.value = 'Todos';
+    
+    filtrosAtivos = {
+        aula: 'Todas',
+        sala: 'Todas',
+        instrutor: 'Todos'
+    };
+    
+    aplicarFiltros();
+}
+
+// Inicialização das novas funcionalidades
+function initPlanejadorAprimorado() {
+    // Carregar aulas disponíveis para agendamento rápido
+    carregarAulasDisponiveis();
+    
+    // Carregar filtros se existirem
+    if (document.getElementById('filtro-aula')) {
+        carregarFiltros();
+    }
+    
+    // Carregar penalidades se existirem
+    if (document.getElementById('penalidades-list')) {
+        carregarPenalidades();
+    }
+    
+    // Adicionar event listener para busca de penalidades
+    const buscaPenalidades = document.getElementById('busca-penalidades');
+    if (buscaPenalidades) {
+        buscaPenalidades.addEventListener('input', (e) => {
+            buscarPenalidades(e.target.value);
+        });
+    }
+    
+    // Adicionar event listeners para filtros
+    const filtroAula = document.getElementById('filtro-aula');
+    const filtroSala = document.getElementById('filtro-sala');
+    const filtroInstrutor = document.getElementById('filtro-instrutor');
+    
+    if (filtroAula) filtroAula.addEventListener('change', aplicarFiltros);
+    if (filtroSala) filtroSala.addEventListener('change', aplicarFiltros);
+    if (filtroInstrutor) filtroInstrutor.addEventListener('change', aplicarFiltros);
+}
+
+// Chamar inicialização quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPlanejadorAprimorado);
+} else {
+    initPlanejadorAprimorado();
+}
+
+// Controle de Tabs de Reserva
+function switchReservaTab(tab, event) {
+    // Remover active de todos os botões
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => btn.classList.remove('active'));
+    
+    // Adicionar active ao botão clicado
+    if (event) {
+        event.currentTarget.classList.add('active');
+    }
+    
+    // Esconder todos os conteúdos de tab
+    const tabContents = document.querySelectorAll('.reserva-tab-content');
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    // Mostrar o conteúdo da tab selecionada
+    const selectedTab = document.getElementById(`reserva-tab-${tab}`);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Se for tab de penalidades, carregar dados
+    if (tab === 'penalidades') {
+        carregarPenalidades();
+    }
+}
+
+// Toggle dos filtros
+function toggleFiltrosReservas() {
+    const filtrosContainer = document.getElementById('filtros-reservas');
+    if (!filtrosContainer) return;
+    
+    if (filtrosContainer.style.display === 'none' || filtrosContainer.style.display === '') {
+        filtrosContainer.style.display = 'flex';
+        carregarFiltros(); // Carregar opções dos filtros
+    } else {
+        filtrosContainer.style.display = 'none';
+    }
+}
+
 // Funções de navegação do calendário já estão conectadas via onclick no HTML
