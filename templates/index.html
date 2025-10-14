@@ -398,13 +398,13 @@
                                         <i class="fas fa-calendar"></i>
                                         <span>Calendário</span>
                                     </button>
-                                    <button class="planner-menu-item" onclick="switchPlannerView('reservas', event)">
-                                        <i class="fas fa-clipboard-list"></i>
-                                        <span>Reserva de aulas</span>
+                                    <button class="planner-menu-item" onclick="switchPlannerView('aulas-andamento', event)">
+                                        <i class="fas fa-list"></i>
+                                        <span>Aulas em Andamento</span>
                                     </button>
                                     <button class="planner-menu-item" onclick="switchPlannerView('agendamento', event)">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <span>Agendamento de aulas</span>
+                                        <i class="fas fa-calendar-plus"></i>
+                                        <span>Agendamento de Aulas</span>
                                     </button>
                                 </div>
                             </div>
@@ -437,170 +437,116 @@
                                     </div>
                                 </div>
 
-                                <!-- Seção Reserva de Aulas -->
-                                <div id="planner-reservas" class="planner-view">
+                                <!-- Seção Aulas em Andamento -->
+                                <div id="planner-aulas-andamento" class="planner-view">
                                     <div class="planner-header">
-                                        <h1><i class="fas fa-clipboard-list"></i> Reserva da aula</h1>
-                                        <div class="reservas-controls">
-                                            <div class="reservas-tabs">
-                                                <button class="tab-btn active" onclick="switchReservaTab('calendario', event)">
-                                                    <i class="fas fa-calendar"></i> Calendário
-                                                </button>
-                                                <button class="tab-btn" onclick="switchReservaTab('penalidades', event)">
-                                                    <i class="fas fa-triangle-exclamation"></i> Penalidades
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Tab Calendário de Reservas -->
-                                    <div id="reserva-tab-calendario" class="reserva-tab-content active">
-                                        <div class="reservas-controls-row">
-                                            <input type="text" class="search-input" placeholder="Buscar" id="search-reservas">
-                                            <select class="filter-select">
-                                                <option>Sempre</option>
-                                                <option>Hoje</option>
-                                                <option>Esta Semana</option>
+                                        <h1><i class="fas fa-list"></i> Aulas em Andamento</h1>
+                                        <div class="aulas-controls">
+                                            <input type="text" class="search-input" placeholder="Buscar aula..." id="search-aulas-andamento">
+                                            <select class="filter-select" id="filtro-status-aula">
+                                                <option value="todas">Todas as aulas</option>
+                                                <option value="hoje">Hoje</option>
+                                                <option value="semana">Esta Semana</option>
                                             </select>
-                                            <button class="btn-outline" onclick="toggleFiltrosReservas()"><i class="fas fa-filter"></i> MOSTRA</button>
-                                        </div>
-                                        
-                                        <!-- Filtros (oculto por padrão) -->
-                                        <div id="filtros-reservas" class="filtros-container" style="display: none;">
-                                            <div class="filtro-group">
-                                                <label>Aula</label>
-                                                <select id="filtro-aula" onchange="aplicarFiltros()">
-                                                    <option value="Todas">Todas as aulas</option>
-                                                </select>
-                                            </div>
-                                            <div class="filtro-group">
-                                                <label>Sala</label>
-                                                <select id="filtro-sala" onchange="aplicarFiltros()">
-                                                    <option value="Todas">Todas as salas</option>
-                                                </select>
-                                            </div>
-                                            <div class="filtro-group">
-                                                <label>Instrutor</label>
-                                                <select id="filtro-instrutor" onchange="aplicarFiltros()">
-                                                    <option value="Todos">Todos os membros da equipe</option>
-                                                </select>
-                                            </div>
-                                            <button class="btn-limpar-filtros" onclick="limparFiltros()">
-                                                <i class="fas fa-times-circle"></i> Limpar Filtros
-                                            </button>
-                                        </div>
-                                        <div id="resultado-contador" class="resultado-contador"></div>
-                                        
-                                        <!-- Controles do Calendário Semanal -->
-                                        <div class="week-controls">
-                                            <div class="week-navigator">
-                                                <button class="btn-icon" onclick="previousWeekSemanal()"><i class="fas fa-chevron-left"></i></button>
-                                                <h3 id="semana-atual">14-20 Outubro 2025</h3>
-                                                <button class="btn-icon" onclick="nextWeekSemanal()"><i class="fas fa-chevron-right"></i></button>
-                                                <button class="btn-outline" onclick="goToTodaySemanal()">HOJE</button>
-                                            </div>
-                                            <button class="btn-primary" onclick="abrirModalAula('criar')">
-                                                <i class="fas fa-plus"></i> CRIAR AULA
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Grid do Calendário Semanal -->
-                                        <div class="calendario-semanal-container">
-                                            <div class="calendario-semanal" id="calendario-semanal">
-                                                <!-- Header com dias da semana -->
-                                                <div class="calendario-header">
-                                                    <div class="hora-coluna">Hora</div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">DOM</div>
-                                                        <div class="dia-numero" id="dia-0">20</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">SEG</div>
-                                                        <div class="dia-numero" id="dia-1">14</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">TER</div>
-                                                        <div class="dia-numero" id="dia-2">15</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">QUA</div>
-                                                        <div class="dia-numero" id="dia-3">16</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">QUI</div>
-                                                        <div class="dia-numero" id="dia-4">17</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">SEX</div>
-                                                        <div class="dia-numero" id="dia-5">18</div>
-                                                    </div>
-                                                    <div class="dia-coluna">
-                                                        <div class="dia-nome">SÁB</div>
-                                                        <div class="dia-numero" id="dia-6">19</div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Grid com horários e células -->
-                                                <div class="calendario-grid" id="calendario-grid">
-                                                    <!-- Renderizado dinamicamente pelo JavaScript -->
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <!-- Tab Penalidades -->
-                                    <div id="reserva-tab-penalidades" class="reserva-tab-content">
-                                        <div class="penalidades-header">
-                                            <div class="penalidades-search">
-                                                <i class="fas fa-search"></i>
-                                                <input type="text" id="busca-penalidades" placeholder="Buscar membro penalizado...">
-                                            </div>
-                                            <span id="penalidades-contador" class="penalidades-contador">0 membros com penalidades ativas</span>
-                                        </div>
-                                        <div id="penalidades-list" class="penalidades-list">
-                                            <p class="empty-message">Nenhuma penalidade ativa</p>
-                                        </div>
+                                    <!-- Lista de Aulas em Cards -->
+                                    <div id="aulas-andamento-list" class="aulas-andamento-grid">
+                                        <!-- Renderizado dinamicamente pelo JavaScript -->
                                     </div>
                                 </div>
 
                                 <!-- Seção Agendamento de Aulas -->
                                 <div id="planner-agendamento" class="planner-view">
                                     <div class="planner-header">
-                                        <h1><i class="fas fa-plus-circle"></i> Agendamento de aulas</h1>
+                                        <h1><i class="fas fa-calendar-plus"></i> Agendamento de Aulas</h1>
                                         <div class="agendamento-controls">
-                                            <input type="text" class="search-input" placeholder="Buscar" id="search-agendamento">
-                                            <button class="btn-outline"><i class="fas fa-eye-slash"></i> OCULTAR</button>
+                                            <input type="text" class="search-input" placeholder="Buscar aula..." id="search-agendamento">
+                                            <button class="btn-outline" onclick="toggleFiltrosAgendamento()"><i class="fas fa-filter"></i> FILTROS</button>
                                         </div>
                                     </div>
-                                    <div class="filters-row">
-                                        <select class="filter-select">
-                                            <option>Todas as salas</option>
-                                        </select>
-                                        <select class="filter-select">
-                                            <option>Todos os tipos</option>
-                                        </select>
-                                        <select class="filter-select">
-                                            <option>Todos os salas</option>
-                                        </select>
-                                        <select class="filter-select">
-                                            <option>Todos os membros da equipe</option>
-                                        </select>
-                                        <select class="filter-select">
-                                            <option>Sempre</option>
-                                        </select>
+                                    
+                                    <!-- Filtros (oculto por padrão) -->
+                                    <div id="filtros-agendamento" class="filtros-container" style="display: none;">
+                                        <div class="filtro-group">
+                                            <label>Tipo de Aula</label>
+                                            <select id="filtro-tipo-agendamento">
+                                                <option value="Todos">Todos os tipos</option>
+                                            </select>
+                                        </div>
+                                        <div class="filtro-group">
+                                            <label>Sala</label>
+                                            <select id="filtro-sala-agendamento">
+                                                <option value="Todas">Todas as salas</option>
+                                            </select>
+                                        </div>
+                                        <div class="filtro-group">
+                                            <label>Instrutor</label>
+                                            <select id="filtro-instrutor-agendamento">
+                                                <option value="Todos">Todos os instrutores</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn-limpar-filtros" onclick="limparFiltrosAgendamento()">
+                                            <i class="fas fa-times-circle"></i> Limpar Filtros
+                                        </button>
                                     </div>
-                                    <div class="agendamento-navigator">
-                                        <button class="btn-icon" onclick="previousDayAgenda()"><i class="fas fa-chevron-left"></i></button>
-                                        <button class="btn-icon"><i class="fas fa-calendar"></i></button>
-                                        <button class="btn-icon" onclick="nextDayAgenda()"><i class="fas fa-chevron-right"></i></button>
-                                        <button class="btn-outline" onclick="goToTodayAgendamento()">HOJE</button>
-                                        <div class="view-toggle">
-                                            <button class="toggle-btn active">Dia</button>
-                                            <button class="toggle-btn">Semana (compactada)</button>
-                                            <button class="toggle-btn">Semana</button>
+                                    
+                                    <!-- Controles de Navegação Semanal -->
+                                    <div class="week-controls">
+                                        <div class="week-navigator">
+                                            <button class="btn-icon" onclick="previousWeekAgendamento()"><i class="fas fa-chevron-left"></i></button>
+                                            <h3 id="semana-agendamento">14-20 Outubro 2025</h3>
+                                            <button class="btn-icon" onclick="nextWeekAgendamento()"><i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn-outline" onclick="goToTodayAgendamento()">HOJE</button>
+                                        </div>
+                                        <button class="btn-primary" onclick="abrirModalAulaAgendamento('criar')">
+                                            <i class="fas fa-plus"></i> CRIAR AULA
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Grid do Calendário Semanal 24h -->
+                                    <div class="calendario-semanal-container">
+                                        <div class="calendario-semanal-24h" id="calendario-agendamento">
+                                            <!-- Header com dias da semana -->
+                                            <div class="calendario-header">
+                                                <div class="hora-coluna">Hora</div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">DOM</div>
+                                                    <div class="dia-numero" id="dia-agend-0">20</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">SEG</div>
+                                                    <div class="dia-numero" id="dia-agend-1">14</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">TER</div>
+                                                    <div class="dia-numero" id="dia-agend-2">15</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">QUA</div>
+                                                    <div class="dia-numero" id="dia-agend-3">16</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">QUI</div>
+                                                    <div class="dia-numero" id="dia-agend-4">17</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">SEX</div>
+                                                    <div class="dia-numero" id="dia-agend-5">18</div>
+                                                </div>
+                                                <div class="dia-coluna">
+                                                    <div class="dia-nome">SÁB</div>
+                                                    <div class="dia-numero" id="dia-agend-6">19</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Grid com 24 horários -->
+                                            <div class="calendario-grid-24h" id="calendario-grid-agendamento">
+                                                <!-- Renderizado dinamicamente pelo JavaScript -->
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="agendamento-list" id="agendamento-list"></div>
                                 </div>
                             </div>
                         </div>
