@@ -527,10 +527,10 @@ function switchPlannerView(view, evt) {
     // Carregar dados específicos
     if (view === 'calendario') {
         renderCalendar();
-    } else if (view === 'reservas') {
-        renderWeekCalendar();
+    } else if (view === 'aulas-andamento') {
+        renderAulasEmAndamento();
     } else if (view === 'agendamento') {
-        renderAgendamentoList();
+        renderCalendarioAgendamento24h();
     }
 }
 
@@ -1729,6 +1729,238 @@ function toggleFiltrosReservas() {
 }
 
 // Funções de navegação do calendário já estão conectadas via onclick no HTML
+
+// ===== AULAS EM ANDAMENTO =====
+
+function renderAulasEmAndamento() {
+    const container = document.getElementById('aulas-andamento-list');
+    if (!container || !window.mockData) return;
+    
+    const aulas = window.mockData.aulasSemanais || [];
+    const hoje = new Date();
+    const hojeStr = formatarDataLocal(hoje);
+    
+    // Filtrar apenas aulas de hoje ou futuras
+    const aulasAtivas = aulas.filter(aula => aula.data >= hojeStr);
+    
+    if (aulasAtivas.length === 0) {
+        container.innerHTML = `
+            <div class="aulas-empty-state">
+                <i class="fas fa-calendar-xmark"></i>
+                <h3>Nenhuma aula em andamento</h3>
+                <p>Não há aulas agendadas no momento</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = aulasAtivas.map(aula => {
+        const percentual = Math.round((aula.inscritos / aula.capacidade) * 100);
+        const status = aula.data === hojeStr ? 'ativa' : 'agendada';
+        const tipoData = window.mockData.tiposAula.find(t => t.tipo === aula.tipo);
+        const cor = tipoData ? tipoData.cor : '#62b1ca';
+        
+        return `
+            <div class="aula-card" onclick="abrirModalAula('editar', '${aula.id}')">
+                <div class="aula-card-header">
+                    <div class="aula-card-tipo" style="color: ${cor}">${aula.tipo}</div>
+                    <div class="aula-card-status ${status}">${status === 'ativa' ? 'Hoje' : 'Agendada'}</div>
+                </div>
+                <div class="aula-card-info">
+                    <div class="aula-card-info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>${aula.horario_inicio} - ${aula.horario_fim}</span>
+                    </div>
+                    <div class="aula-card-info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>${formatarDataBR(aula.data)}</span>
+                    </div>
+                    <div class="aula-card-info-item">
+                        <i class="fas fa-user"></i>
+                        <span>${aula.instrutor}</span>
+                    </div>
+                    <div class="aula-card-info-item">
+                        <i class="fas fa-door-open"></i>
+                        <span>${aula.sala}</span>
+                    </div>
+                </div>
+                <div class="aula-card-capacidade">
+                    <div class="aula-card-capacidade-texto">Ocupação</div>
+                    <div class="aula-card-capacidade-numeros">
+                        ${aula.inscritos}<span>/${aula.capacidade}</span>
+                    </div>
+                </div>
+                <div class="aula-card-progress">
+                    <div class="aula-card-progress-bar" style="width: ${percentual}%; background: ${cor}"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatarDataBR(dataStr) {
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+// ===== AGENDAMENTO DE AULAS - GRID 24H =====
+
+let semanaAgendamento = new Date();
+
+function renderCalendarioAgendamento24h() {
+    const grid = document.getElementById('calendario-grid-agendamento');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const horarios24h = [];
+    for (let h = 0; h < 24; h++) {
+        horarios24h.push(`${String(h).padStart(2, '0')}:00`);
+    }
+    
+    const inicio = getStartOfWeek(semanaAgendamento);
+    atualizarHeaderAgendamento(inicio);
+    
+    // Para cada horário
+    horarios24h.forEach(horario => {
+        // Coluna de hora
+        const horaDiv = document.createElement('div');
+        horaDiv.className = 'hora-celula';
+        horaDiv.textContent = horario;
+        grid.appendChild(horaDiv);
+        
+        // 7 colunas de dias
+        for (let dia = 0; dia < 7; dia++) {
+            const dataCelula = new Date(inicio);
+            dataCelula.setDate(inicio.getDate() + dia);
+            const dataFormatada = formatarDataLocal(dataCelula);
+            
+            const celulaDiv = document.createElement('div');
+            celulaDiv.className = 'dia-celula';
+            celulaDiv.dataset.dia = dia;
+            celulaDiv.dataset.horario = horario;
+            celulaDiv.dataset.date = dataFormatada;
+            celulaDiv.onclick = () => clicarCelulaAgendamento(dia, horario, dataFormatada);
+            grid.appendChild(celulaDiv);
+        }
+    });
+    
+    renderAulasAgendamento();
+}
+
+function atualizarHeaderAgendamento(inicio) {
+    const fim = new Date(inicio);
+    fim.setDate(inicio.getDate() + 6);
+    
+    const mesInicio = inicio.toLocaleDateString('pt-BR', { month: 'long' });
+    const mesFim = fim.toLocaleDateString('pt-BR', { month: 'long' });
+    const ano = inicio.getFullYear();
+    
+    const textoSemana = mesInicio === mesFim 
+        ? `${inicio.getDate()}-${fim.getDate()} ${mesInicio} ${ano}`
+        : `${inicio.getDate()} ${mesInicio} - ${fim.getDate()} ${mesFim} ${ano}`;
+    
+    const headerEl = document.getElementById('semana-agendamento');
+    if (headerEl) headerEl.textContent = textoSemana;
+    
+    // Atualizar números dos dias
+    for (let i = 0; i < 7; i++) {
+        const data = new Date(inicio);
+        data.setDate(inicio.getDate() + i);
+        const el = document.getElementById(`dia-agend-${i}`);
+        if (el) el.textContent = data.getDate();
+    }
+}
+
+function renderAulasAgendamento() {
+    if (!window.mockData || !window.mockData.aulasSemanais) return;
+    
+    const inicio = getStartOfWeek(semanaAgendamento);
+    const fim = getEndOfWeek(semanaAgendamento);
+    
+    const inicioStr = formatarDataLocal(inicio);
+    const fimStr = formatarDataLocal(fim);
+    
+    const aulas = window.mockData.aulasSemanais.filter(aula => {
+        return aula.data >= inicioStr && aula.data <= fimStr;
+    });
+    
+    // Limpar blocos antigos
+    document.querySelectorAll('.aula-bloco').forEach(bloco => bloco.remove());
+    
+    aulas.forEach(aula => {
+        const tipoData = window.mockData.tiposAula.find(t => t.tipo === aula.tipo);
+        const cor = tipoData ? tipoData.cor : '#62b1ca';
+        
+        const celula = document.querySelector(
+            `.dia-celula[data-date="${aula.data}"][data-horario="${aula.horario_inicio}"]`
+        );
+        
+        if (celula) {
+            const blocoDiv = document.createElement('div');
+            blocoDiv.className = 'aula-bloco';
+            blocoDiv.style.background = `linear-gradient(135deg, ${cor} 0%, ${cor}dd 100%)`;
+            blocoDiv.onclick = (e) => {
+                e.stopPropagation();
+                abrirModalAulaAgendamento('editar', aula.id);
+            };
+            
+            blocoDiv.innerHTML = `
+                <div>
+                    <div class="aula-bloco-tipo">${aula.tipo}</div>
+                    <div class="aula-bloco-horario">${aula.horario_inicio} - ${aula.horario_fim}</div>
+                </div>
+                <div>
+                    <div class="aula-bloco-instrutor">${aula.instrutor}</div>
+                    <div class="aula-bloco-capacidade">
+                        <i class="fas fa-users"></i> ${aula.inscritos}/${aula.capacidade}
+                    </div>
+                </div>
+            `;
+            
+            celula.appendChild(blocoDiv);
+        }
+    });
+}
+
+function clicarCelulaAgendamento(dia, horario, data) {
+    console.log('Criar aula:', {dia, horario, data});
+    abrirModalAulaAgendamento('criar', null, {data, horario});
+}
+
+function previousWeekAgendamento() {
+    semanaAgendamento.setDate(semanaAgendamento.getDate() - 7);
+    renderCalendarioAgendamento24h();
+}
+
+function nextWeekAgendamento() {
+    semanaAgendamento.setDate(semanaAgendamento.getDate() + 7);
+    renderCalendarioAgendamento24h();
+}
+
+function goToTodayAgendamento() {
+    semanaAgendamento = new Date();
+    renderCalendarioAgendamento24h();
+}
+
+function toggleFiltrosAgendamento() {
+    const filtros = document.getElementById('filtros-agendamento');
+    if (filtros) {
+        filtros.style.display = filtros.style.display === 'none' ? 'flex' : 'none';
+    }
+}
+
+function limparFiltrosAgendamento() {
+    document.getElementById('filtro-tipo-agendamento').value = 'Todos';
+    document.getElementById('filtro-sala-agendamento').value = 'Todas';
+    document.getElementById('filtro-instrutor-agendamento').value = 'Todos';
+    renderAulasAgendamento();
+}
+
+function abrirModalAulaAgendamento(modo, aulaId = null, dadosIniciais = null) {
+    // Reutilizar modal existente ou criar novo
+    abrirModalAula(modo, aulaId, dadosIniciais);
+}
 
 // ===== CALENDÁRIO SEMANAL =====
 
