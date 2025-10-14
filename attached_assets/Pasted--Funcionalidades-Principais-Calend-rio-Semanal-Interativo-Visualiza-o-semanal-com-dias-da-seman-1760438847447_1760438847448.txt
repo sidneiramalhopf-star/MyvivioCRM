@@ -1,0 +1,57 @@
+ Funcionalidades Principais
+Calendário Semanal Interativo
+
+Visualização semanal com dias da semana e horários
+Navegação entre semanas (anterior/próxima)
+Clique em qualquer horário vazio para criar nova aula
+Exibição de aulas agendadas com informações: nome, horário, instrutor, capacidade
+Filtros no Topo (Funcional)
+
+Dropdown "Todas as aulas" - filtrar por tipo de aula
+Dropdown "Todos os membros de equipe" - filtrar por instrutor
+Dropdown "Sempre" - filtrar por período
+Botão "OCULTAR" para esconder/mostrar filtros
+Botão "+" para Criar Agendamento
+
+Botão fixo que abre modal de criação
+Mesmo modal que abre ao clicar no calendário
+Modal Grande de Criação/Edição
+
+Barra lateral esquerda com navegação:
+Aula, Modo, Sala, Agendamento, Reservar, Instruções
+Barra de rolagem funcional
+Área principal (direita) com formulários:
+Seção "Aula": dropdown + botão "+ AULA" para adicionar nova
+Seção "Instrutor": dropdown + botão "+ INSTRUTOR"
+Seção "Modo": dropdown + botão "+ MODO"
+Seção "Sala": dropdown + botão "+ SALA"
+Seção "Agendamento": seletores de data/hora
+Seção "Reservar": configurações de capacidade
+Seção "Instruções": campo de texto
+Modal bem amplo (800px+) para melhor usabilidade
+Botão "CRIAR" no canto inferior direito
+🎨 Design & Estilo
+Cores: Roxo/azul (primária), branco, cinza claro
+Sidebar: Fundo escuro com logo TechnoGym e menu lateral
+Tipografia: Moderna, clean, legível
+Componentes: Dropdowns, botões arredondados, cards para aulas
+Layout: Fiel às capturas de tela fornecidas
+⚙️ Requisitos Técnicos
+Frontend: React + Tailwind CSS + Shadcn UI
+Calendário: React Big Calendar ou similar
+Estado: Zustand ou Context API
+Dados: Mock data em localStorage (SEM BACKEND)
+Funcionalidades: CRUD completo simulado no frontend
+Persistência: LocalStorage para testes
+📝 Dados Mock Necessários
+Lista de aulas (GINÁSIO, GAP, STUDIO, etc.)
+Lista de instrutores
+Lista de salas/estúdios
+Modos de aula
+Agendamentos de exemplo
+✅ Comportamentos Esperados
+Criar aula: adiciona no calendário e localStorage
+Editar aula: clique na aula existente abre modal preenchido
+Deletar aula: opção no modal de edição
+Filtros: atualizam visualização em tempo real
+Validações: campos obrigatórios, conflitos de horário
