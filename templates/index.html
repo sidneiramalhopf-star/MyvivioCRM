@@ -491,13 +491,61 @@
                                         </div>
                                         <div id="resultado-contador" class="resultado-contador"></div>
                                         
-                                        <div class="week-navigator">
-                                            <button class="btn-icon" onclick="previousWeek()"><i class="fas fa-chevron-left"></i></button>
-                                            <button class="btn-icon"><i class="fas fa-calendar"></i></button>
-                                            <button class="btn-icon" onclick="nextWeek()"><i class="fas fa-chevron-right"></i></button>
-                                            <button class="btn-outline" onclick="goToTodayReservas()">HOJE</button>
+                                        <!-- Controles do Calendário Semanal -->
+                                        <div class="week-controls">
+                                            <div class="week-navigator">
+                                                <button class="btn-icon" onclick="previousWeekSemanal()"><i class="fas fa-chevron-left"></i></button>
+                                                <h3 id="semana-atual">14-20 Outubro 2025</h3>
+                                                <button class="btn-icon" onclick="nextWeekSemanal()"><i class="fas fa-chevron-right"></i></button>
+                                                <button class="btn-outline" onclick="goToTodaySemanal()">HOJE</button>
+                                            </div>
+                                            <button class="btn-primary" onclick="abrirModalAula('criar')">
+                                                <i class="fas fa-plus"></i> CRIAR AULA
+                                            </button>
                                         </div>
-                                        <div class="week-calendar" id="week-calendar"></div>
+                                        
+                                        <!-- Grid do Calendário Semanal -->
+                                        <div class="calendario-semanal-container">
+                                            <div class="calendario-semanal" id="calendario-semanal">
+                                                <!-- Header com dias da semana -->
+                                                <div class="calendario-header">
+                                                    <div class="hora-coluna">Hora</div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">DOM</div>
+                                                        <div class="dia-numero" id="dia-0">20</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">SEG</div>
+                                                        <div class="dia-numero" id="dia-1">14</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">TER</div>
+                                                        <div class="dia-numero" id="dia-2">15</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">QUA</div>
+                                                        <div class="dia-numero" id="dia-3">16</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">QUI</div>
+                                                        <div class="dia-numero" id="dia-4">17</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">SEX</div>
+                                                        <div class="dia-numero" id="dia-5">18</div>
+                                                    </div>
+                                                    <div class="dia-coluna">
+                                                        <div class="dia-nome">SÁB</div>
+                                                        <div class="dia-numero" id="dia-6">19</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Grid com horários e células -->
+                                                <div class="calendario-grid" id="calendario-grid">
+                                                    <!-- Renderizado dinamicamente pelo JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <!-- Tab Penalidades -->
@@ -840,13 +888,175 @@
         </div>
     </div>
     
+    <!-- Modal Grande de Criação/Edição de Aula -->
+    <div id="modal-aula" class="modal modal-grande">
+        <div class="modal-aula-content">
+            <span class="close" onclick="closeModalAula()">&times;</span>
+            
+            <div class="modal-aula-body">
+                <!-- Sidebar de Navegação -->
+                <div class="modal-aula-sidebar">
+                    <h3 id="modal-aula-titulo">Nova Aula</h3>
+                    <nav class="modal-nav">
+                        <button class="nav-item active" data-section="aula" onclick="navegarSecaoModal('aula', event)">
+                            <i class="fas fa-dumbbell"></i> Aula
+                        </button>
+                        <button class="nav-item" data-section="instrutor" onclick="navegarSecaoModal('instrutor', event)">
+                            <i class="fas fa-user"></i> Instrutor
+                        </button>
+                        <button class="nav-item" data-section="modo" onclick="navegarSecaoModal('modo', event)">
+                            <i class="fas fa-laptop"></i> Modo
+                        </button>
+                        <button class="nav-item" data-section="sala" onclick="navegarSecaoModal('sala', event)">
+                            <i class="fas fa-door-open"></i> Sala
+                        </button>
+                        <button class="nav-item" data-section="agendamento" onclick="navegarSecaoModal('agendamento', event)">
+                            <i class="fas fa-calendar-alt"></i> Agendamento
+                        </button>
+                        <button class="nav-item" data-section="capacidade" onclick="navegarSecaoModal('capacidade', event)">
+                            <i class="fas fa-users"></i> Capacidade
+                        </button>
+                        <button class="nav-item" data-section="instrucoes" onclick="navegarSecaoModal('instrucoes', event)">
+                            <i class="fas fa-clipboard"></i> Instruções
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Área Principal do Modal -->
+                <div class="modal-aula-main">
+                    <!-- Seção Aula -->
+                    <div id="section-aula" class="modal-section active">
+                        <h4>Tipo de Aula</h4>
+                        <div class="form-row">
+                            <select id="modal-tipo-aula" class="form-control">
+                                <option value="">Selecione o tipo de aula...</option>
+                            </select>
+                            <button class="btn-add-option" onclick="adicionarTipoAula()">
+                                <i class="fas fa-plus"></i> ADICIONAR AULA
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Instrutor -->
+                    <div id="section-instrutor" class="modal-section">
+                        <h4>Instrutor</h4>
+                        <div class="form-row">
+                            <select id="modal-instrutor" class="form-control">
+                                <option value="">Selecione o instrutor...</option>
+                            </select>
+                            <button class="btn-add-option" onclick="adicionarInstrutor()">
+                                <i class="fas fa-plus"></i> ADICIONAR INSTRUTOR
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Modo -->
+                    <div id="section-modo" class="modal-section">
+                        <h4>Modo da Aula</h4>
+                        <div class="form-row">
+                            <select id="modal-modo" class="form-control">
+                                <option value="">Selecione o modo...</option>
+                            </select>
+                            <button class="btn-add-option" onclick="adicionarModo()">
+                                <i class="fas fa-plus"></i> ADICIONAR MODO
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Sala -->
+                    <div id="section-sala" class="modal-section">
+                        <h4>Sala/Estúdio</h4>
+                        <div class="form-row">
+                            <select id="modal-sala" class="form-control">
+                                <option value="">Selecione a sala...</option>
+                            </select>
+                            <button class="btn-add-option" onclick="adicionarSala()">
+                                <i class="fas fa-plus"></i> ADICIONAR SALA
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Agendamento -->
+                    <div id="section-agendamento" class="modal-section">
+                        <h4>Data e Horário</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="date" id="modal-data" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Hora de Início</label>
+                                <input type="time" id="modal-hora-inicio" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Hora de Término</label>
+                                <input type="time" id="modal-hora-fim" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="modal-recorrente">
+                                    Aula recorrente (semanal)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Capacidade -->
+                    <div id="section-capacidade" class="modal-section">
+                        <h4>Configurações de Capacidade</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Capacidade Mínima</label>
+                                <input type="number" id="modal-capacidade-min" class="form-control" min="1" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Capacidade Máxima</label>
+                                <input type="number" id="modal-capacidade-max" class="form-control" min="1" value="20">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="modal-lista-espera">
+                                    Permitir lista de espera
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção Instruções -->
+                    <div id="section-instrucoes" class="modal-section">
+                        <h4>Instruções e Observações</h4>
+                        <div class="form-group">
+                            <label>Descrição da aula</label>
+                            <textarea id="modal-descricao" class="form-control" rows="4" placeholder="Descreva a aula e orientações para os participantes..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações internas</label>
+                            <textarea id="modal-observacoes" class="form-control" rows="3" placeholder="Observações para a equipe..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer com botões de ação -->
+            <div class="modal-aula-footer">
+                <button class="btn-secondary" onclick="closeModalAula()">Cancelar</button>
+                <button class="btn-danger" id="btn-deletar-aula" onclick="deletarAula()" style="display: none;">
+                    <i class="fas fa-trash"></i> Deletar
+                </button>
+                <button class="btn-primary" id="btn-salvar-aula" onclick="salvarAula()">
+                    <i class="fas fa-save"></i> <span id="btn-salvar-texto">CRIAR</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Botão Fixo Lateral -->
     <button id="toggle-global-planner" class="planner-toggle-btn" onclick="toggleGlobalPlanner()">
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251013v2"></script>
-    <script src="/static/js/app.js?v=20251013v2"></script>
+    <script src="/static/js/mockData.js?v=20251014v1"></script>
+    <script src="/static/js/app.js?v=20251014v1"></script>
     
     <script>
         // DEMO: Adicionar botão temporário para testar o modal de informações da aula
