@@ -651,144 +651,9 @@ function goToToday() {
     renderCalendar();
 }
 
-// ===== RESERVA DE AULAS =====
-
-let currentWeek = new Date();
-
-function renderWeekCalendar() {
-    const container = document.getElementById('week-calendar');
-    
-    // Obter início da semana
-    const today = new Date(currentWeek);
-    const dayOfWeek = today.getDay();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek);
-    
-    const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-    
-    // Exemplo de aulas
-    const classes = [
-        { day: 1, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '17/30', type: 'ginasio' },
-        { day: 3, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '6/30', type: 'ginasio' },
-        { day: 4, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '4/30', type: 'ginasio' },
-        { day: 5, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '4/30', type: 'ginasio' },
-        { day: 6, time: '07:00', duration: 60, name: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '1/30', type: 'ginasio' },
-        { day: 6, time: '08:00', duration: 30, name: 'Personal Training 30\'', instructor: 'Lima Bernardo', capacity: '0/1', type: 'personal' },
-        { day: 3, time: '09:00', duration: 30, name: 'Personal Training 30\'', instructor: 'Ramalho Sidnei', capacity: '0/1', type: 'personal' },
-    ];
-    
-    let html = '<div class="week-grid">';
-    
-    // Cabeçalho com dias
-    html += '<div class="week-header time"></div>';
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        const isToday = date.toDateString() === new Date().toDateString();
-        html += `
-            <div class="week-header ${isToday ? 'today' : ''}">
-                ${weekDays[i]}<br>
-                <small>${date.getDate()} Out</small>
-            </div>
-        `;
-    }
-    
-    // Horários
-    const hours = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-    
-    hours.forEach(hour => {
-        html += `<div class="time-slot">${hour}</div>`;
-        
-        for (let day = 0; day < 7; day++) {
-            const dayClasses = classes.filter(c => c.day === day && c.time === hour);
-            html += '<div class="week-cell">';
-            dayClasses.forEach(cls => {
-                html += `
-                    <div class="class-block ${cls.type}">
-                        <div class="class-time">${cls.time} - ${addMinutes(cls.time, cls.duration)}</div>
-                        <div class="class-name">${cls.name}</div>
-                        <div class="class-instructor">${cls.instructor}</div>
-                        <div class="class-capacity">${cls.capacity}</div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-        }
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function addMinutes(time, minutes) {
-    const [hours, mins] = time.split(':').map(Number);
-    const totalMins = hours * 60 + mins + minutes;
-    const newHours = Math.floor(totalMins / 60);
-    const newMins = totalMins % 60;
-    return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}`;
-}
-
-function previousWeek() {
-    currentWeek.setDate(currentWeek.getDate() - 7);
-    renderWeekCalendar();
-}
-
-function nextWeek() {
-    currentWeek.setDate(currentWeek.getDate() + 7);
-    renderWeekCalendar();
-}
-
-function goToTodayReservas() {
-    currentWeek = new Date();
-    renderWeekCalendar();
-}
-
-// ===== AGENDAMENTO DE AULAS =====
-
-let currentAgendaDate = new Date();
-
-function renderAgendamentoList() {
-    const container = document.getElementById('agendamento-list');
-    
-    const agendamentos = [
-        { time: '12:00 - 12:30', title: 'Personal Training 30\' - CP', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/1' },
-        { time: '15:00 - 17:30', title: 'Personal Training 30\' - SR', location: 'GINÁSIO', instructor: 'Ramalho Sidnei', capacity: '0/1' },
-        { time: '17:30 - 18:00', title: 'Personal Training 30\' - CP', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/1' },
-        { time: '18:00 - 20:00', title: 'GINÁSIO', location: 'GINÁSIO', instructor: 'Ferreira Pinto Carlos', capacity: '0/30' }
-    ];
-    
-    let html = '';
-    agendamentos.forEach(item => {
-        html += `
-            <div class="agendamento-item">
-                <div class="agendamento-time">${item.time}</div>
-                <div class="agendamento-info">
-                    <div class="agendamento-title">${item.title}</div>
-                    <div class="agendamento-subtitle">${item.location}</div>
-                    <div class="agendamento-instructor">${item.instructor}</div>
-                </div>
-                <div class="agendamento-capacity">${item.capacity}</div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-}
-
-function previousDayAgenda() {
-    currentAgendaDate.setDate(currentAgendaDate.getDate() - 1);
-    renderAgendamentoList();
-}
-
-function nextDayAgenda() {
-    currentAgendaDate.setDate(currentAgendaDate.getDate() + 1);
-    renderAgendamentoList();
-}
-
-function goToTodayAgendamento() {
-    currentAgendaDate = new Date();
-    renderAgendamentoList();
-}
+// ===== FUNÇÕES ANTIGAS REMOVIDAS =====
+// renderWeekCalendar e renderAgendamentoList foram substituídas pelas novas funções
+// renderAulasEmAndamento e renderCalendarioAgendamento24h
 
 // ============================================================
 // CONEXÃO COM BACKEND - NOVOS ENDPOINTS
@@ -957,17 +822,7 @@ async function verDetalhesAula(aulaId) {
     }
 }
 
-// Atualizar funções existentes para carregar dados do backend
-const originalRenderWeekCalendar = renderWeekCalendar;
-renderWeekCalendar = function() {
-    originalRenderWeekCalendar();
-    carregarAulasDisponiveis();
-};
-
-const originalRenderAgendamentoList = renderAgendamentoList;
-renderAgendamentoList = function() {
-    carregarAgendamentos();
-};
+// Funções antigas removidas - agora usamos renderAulasEmAndamento e renderCalendarioAgendamento24h
 
 // ============================================================
 // NOVAS FUNCIONALIDADES - CALENDÁRIO INTERATIVO E BARRA GLOBAL
