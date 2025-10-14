@@ -32,6 +32,16 @@ The Myvivio CRM features a full-stack architecture with a FastAPI backend and a 
 
 ### Feature Specifications
 - **Comprehensive Calendar System**: CRUD operations for events, filtering, reminders, and completion tracking.
+- **Weekly Calendar Planner** (October 2025):
+  - Interactive grid with 7 days × 17 time slots (6h-22h)
+  - One-click event creation with pre-filled date/time
+  - Large modal (1000px) with 7-section sidebar navigation (Basic Info, Schedule, Instructor, Room, Participants, Recurrence, Notes)
+  - Week navigation (previous/next/today) with real-time header updates
+  - CRUD operations (create, edit, delete) with validations
+  - Advanced filtering by class type, room, instructor
+  - Timezone-safe date handling using `formatarDataLocal()` function (eliminates UTC offset issues)
+  - Color-coded class blocks by type with hover effects
+  - Responsive design (desktop/tablet/mobile)
 - **Class Scheduling & Booking**: Management of classes with instructors, rooms, capacity limits, recurrence, and a full booking/cancellation system.
 - **Engagement Metrics**: Tracking of engagement rates, ROI, productivity indices, and prediction of churn risk, all structured for AI optimization.
 - **Admin Tools**: Endpoint for manual attendance duplicate cleanup (`/admin/attendance/limpar-duplicatas`).
