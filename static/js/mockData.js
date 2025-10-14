@@ -653,6 +653,110 @@ const mockData = {
             inscritos: 10,
             modo: "Presencial",
             recorrente: true
+        },
+        
+        // AULAS HORÁRIOS DIVERSOS (COBERTURA 24H)
+        // Madrugada
+        {
+            id: "sem_20",
+            tipo: "CROSSFIT",
+            instrutor: "João Silva",
+            sala: "Estúdio",
+            dia_semana: 1,
+            data: "2025-10-14",
+            horario_inicio: "06:00",
+            horario_fim: "07:00",
+            capacidade: 20,
+            inscritos: 18,
+            modo: "Presencial",
+            recorrente: true
+        },
+        // Tarde
+        {
+            id: "sem_21",
+            tipo: "YOGA",
+            instrutor: "Ana Costa",
+            sala: "Sala 1",
+            dia_semana: 2,
+            data: "2025-10-15",
+            horario_inicio: "14:00",
+            horario_fim: "15:00",
+            capacidade: 20,
+            inscritos: 15,
+            modo: "Híbrido",
+            recorrente: true
+        },
+        {
+            id: "sem_22",
+            tipo: "PILATES",
+            instrutor: "Patrício Susana",
+            sala: "Sala 2",
+            dia_semana: 3,
+            data: "2025-10-16",
+            horario_inicio: "15:00",
+            horario_fim: "16:00",
+            capacidade: 15,
+            inscritos: 12,
+            modo: "Presencial",
+            recorrente: true
+        },
+        // Noite
+        {
+            id: "sem_23",
+            tipo: "ZUMBA",
+            instrutor: "Mariana Lopes",
+            sala: "Estúdio",
+            dia_semana: 4,
+            data: "2025-10-17",
+            horario_inicio: "19:00",
+            horario_fim: "20:00",
+            capacidade: 30,
+            inscritos: 25,
+            modo: "Presencial",
+            recorrente: true
+        },
+        {
+            id: "sem_24",
+            tipo: "SPINNING",
+            instrutor: "Ricardo Ferreira",
+            sala: "Sala de Spinning",
+            dia_semana: 5,
+            data: "2025-10-18",
+            horario_inicio: "20:00",
+            horario_fim: "21:00",
+            capacidade: 25,
+            inscritos: 22,
+            modo: "Presencial",
+            recorrente: true
+        },
+        // Horários extremos
+        {
+            id: "sem_25",
+            tipo: "TREINO FUNCIONAL",
+            instrutor: "João Silva",
+            sala: "GAP Center",
+            dia_semana: 1,
+            data: "2025-10-14",
+            horario_inicio: "21:00",
+            horario_fim: "22:00",
+            capacidade: 20,
+            inscritos: 16,
+            modo: "Presencial",
+            recorrente: true
+        },
+        {
+            id: "sem_26",
+            tipo: "MEDITAÇÃO",
+            instrutor: "Ana Costa",
+            sala: "Sala 1",
+            dia_semana: 3,
+            data: "2025-10-16",
+            horario_inicio: "22:00",
+            horario_fim: "23:00",
+            capacidade: 15,
+            inscritos: 8,
+            modo: "Online",
+            recorrente: true
         }
     ]
 };
