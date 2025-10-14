@@ -1729,3 +1729,455 @@ function toggleFiltrosReservas() {
 }
 
 // Funções de navegação do calendário já estão conectadas via onclick no HTML
+
+// ===== CALENDÁRIO SEMANAL =====
+
+let semanaAtual = new Date(); // Controla a semana sendo visualizada
+let aulasSemanaisCache = []; // Cache das aulas da semana
+
+// Formatar data local como YYYY-MM-DD (sem problemas de fuso horário)
+function formatarDataLocal(date) {
+    const ano = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const dia = String(date.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+// Renderizar o Calendário Semanal
+function renderCalendarioSemanal() {
+    const grid = document.getElementById('calendario-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const horarios = window.mockData.horariosDisponiveis;
+    const inicio = getStartOfWeek(semanaAtual);
+    
+    // Para cada horário
+    horarios.forEach(horario => {
+        // Coluna de hora
+        const horaDiv = document.createElement('div');
+        horaDiv.className = 'hora-celula';
+        horaDiv.textContent = horario;
+        grid.appendChild(horaDiv);
+        
+        // 7 colunas de dias
+        for (let dia = 0; dia < 7; dia++) {
+            const dataCelula = new Date(inicio);
+            dataCelula.setDate(inicio.getDate() + dia);
+            const dataFormatada = formatarDataLocal(dataCelula);
+            
+            const celulaDiv = document.createElement('div');
+            celulaDiv.className = 'dia-celula';
+            celulaDiv.dataset.dia = dia;
+            celulaDiv.dataset.horario = horario;
+            celulaDiv.dataset.date = dataFormatada; // Adicionar data real
+            celulaDiv.onclick = () => clicarCelulaSemanal(dia, horario, dataFormatada);
+            grid.appendChild(celulaDiv);
+        }
+    });
+    
+    // Renderizar as aulas
+    renderAulasSemanais();
+}
+
+// Renderizar as aulas no grid
+function renderAulasSemanais() {
+    if (!window.mockData || !window.mockData.aulasSemanais) return;
+    
+    const inicio = getStartOfWeek(semanaAtual);
+    const fim = getEndOfWeek(semanaAtual);
+    
+    // Formatar datas para comparação (YYYY-MM-DD) usando data local
+    const inicioStr = formatarDataLocal(inicio);
+    const fimStr = formatarDataLocal(fim);
+    
+    // Filtrar aulas da semana atual (comparar strings de data)
+    const aulas = window.mockData.aulasSemanais.filter(aula => {
+        return aula.data >= inicioStr && aula.data <= fimStr;
+    });
+    
+    aulasSemanaisCache = [...aulas];
+    
+    // Limpar aulas antigas
+    document.querySelectorAll('.aula-bloco').forEach(bloco => bloco.remove());
+    
+    aulas.forEach(aula => {
+        // Buscar célula pela data real, não apenas dia da semana
+        const celula = document.querySelector(`.dia-celula[data-date="${aula.data}"][data-horario="${aula.horario_inicio}"]`);
+        if (!celula) return;
+        
+        const tipoAula = window.mockData.tiposAula.find(t => t.nome === aula.tipo);
+        const cor = tipoAula ? tipoAula.cor : '#62b1ca';
+        
+        const blocoDiv = document.createElement('div');
+        blocoDiv.className = 'aula-bloco';
+        blocoDiv.style.background = `linear-gradient(135deg, ${cor} 0%, ${adjustColor(cor, -20)} 100%)`;
+        blocoDiv.onclick = (e) => {
+            e.stopPropagation();
+            clicarAulaSemanal(aula.id);
+        };
+        
+        const percentual = Math.round((aula.inscritos / aula.capacidade) * 100);
+        
+        blocoDiv.innerHTML = `
+            <div>
+                <div class="aula-bloco-tipo">${aula.tipo}</div>
+                <div class="aula-bloco-horario">${aula.horario_inicio} - ${aula.horario_fim}</div>
+            </div>
+            <div>
+                <div class="aula-bloco-instrutor"><i class="fas fa-user"></i> ${aula.instrutor}</div>
+                <div class="aula-bloco-capacidade"><i class="fas fa-users"></i> ${aula.inscritos}/${aula.capacidade} (${percentual}%)</div>
+            </div>
+        `;
+        
+        celula.appendChild(blocoDiv);
+    });
+}
+
+// Ajustar cor (para gradiente)
+function adjustColor(color, amount) {
+    const num = parseInt(color.replace('#', ''), 16);
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+    const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+
+// Atualizar header da semana
+function atualizarHeaderSemana() {
+    const inicio = getStartOfWeek(semanaAtual);
+    const fim = getEndOfWeek(semanaAtual);
+    
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    const textoSemana = `${inicio.getDate()}-${fim.getDate()} ${meses[inicio.getMonth()]} ${inicio.getFullYear()}`;
+    
+    const semanaAtualEl = document.getElementById('semana-atual');
+    if (semanaAtualEl) {
+        semanaAtualEl.textContent = textoSemana;
+    }
+    
+    // Atualizar números dos dias no header
+    for (let i = 0; i < 7; i++) {
+        const data = new Date(inicio);
+        data.setDate(inicio.getDate() + i);
+        const diaEl = document.getElementById(`dia-${i}`);
+        if (diaEl) {
+            diaEl.textContent = data.getDate();
+        }
+    }
+}
+
+// Obter início da semana
+function getStartOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = day === 0 ? 0 : -day;
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+// Obter fim da semana
+function getEndOfWeek(date) {
+    const start = getStartOfWeek(date);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return end;
+}
+
+// Navegação de semanas
+function previousWeekSemanal() {
+    semanaAtual.setDate(semanaAtual.getDate() - 7);
+    atualizarHeaderSemana();
+    renderCalendarioSemanal();
+}
+
+function nextWeekSemanal() {
+    semanaAtual.setDate(semanaAtual.getDate() + 7);
+    atualizarHeaderSemana();
+    renderCalendarioSemanal();
+}
+
+function goToTodaySemanal() {
+    semanaAtual = new Date();
+    atualizarHeaderSemana();
+    renderCalendarioSemanal();
+}
+
+// Clique em célula vazia (criar aula)
+function clicarCelulaSemanal(dia, horario, dataFormatada) {
+    // Abrir modal de criação com data e horário pré-preenchidos
+    abrirModalAula('criar', { data: dataFormatada, horario_inicio: horario });
+}
+
+// Clique em aula (editar)
+function clicarAulaSemanal(aulaId) {
+    const aula = aulasSemanaisCache.find(a => a.id === aulaId);
+    if (!aula) return;
+    
+    abrirModalAula('editar', aula);
+}
+
+// Inicializar calendário semanal quando estiver na página
+function initCalendarioSemanal() {
+    const calendarioGrid = document.getElementById('calendario-grid');
+    if (calendarioGrid) {
+        atualizarHeaderSemana();
+        renderCalendarioSemanal();
+    }
+}
+
+// Chamar quando mudar para página de reservas
+const originalSwitchPlannerView = window.switchPlannerView;
+window.switchPlannerView = function(view, event) {
+    if (originalSwitchPlannerView) {
+        originalSwitchPlannerView(view, event);
+    }
+    
+    if (view === 'reservas') {
+        setTimeout(() => {
+            initCalendarioSemanal();
+        }, 100);
+    }
+};
+
+// ===== MODAL GRANDE DE AULA =====
+
+let aulaEditando = null; // Armazena a aula sendo editada
+
+// Abrir modal de aula
+function abrirModalAula(modo, dados = {}) {
+    const modal = document.getElementById('modal-aula');
+    const titulo = document.getElementById('modal-aula-titulo');
+    const btnDeletar = document.getElementById('btn-deletar-aula');
+    const btnSalvarTexto = document.getElementById('btn-salvar-texto');
+    
+    if (!modal) return;
+    
+    aulaEditando = modo === 'editar' ? dados : null;
+    
+    // Configurar modal
+    if (modo === 'criar') {
+        titulo.textContent = 'Nova Aula';
+        btnDeletar.style.display = 'none';
+        btnSalvarTexto.textContent = 'CRIAR';
+        limparFormularioAula();
+        
+        // Pré-preencher data e hora se fornecidos
+        if (dados.data) document.getElementById('modal-data').value = dados.data;
+        if (dados.horario_inicio) document.getElementById('modal-hora-inicio').value = dados.horario_inicio;
+    } else {
+        titulo.textContent = 'Editar Aula';
+        btnDeletar.style.display = 'inline-block';
+        btnSalvarTexto.textContent = 'SALVAR';
+        preencherFormularioAula(dados);
+    }
+    
+    // Carregar opções dos dropdowns
+    carregarOpcoesModalAula();
+    
+    modal.style.display = 'flex';
+}
+
+// Fechar modal
+function closeModalAula() {
+    const modal = document.getElementById('modal-aula');
+    if (modal) {
+        modal.style.display = 'none';
+        aulaEditando = null;
+    }
+}
+
+// Navegar entre seções do modal
+function navegarSecaoModal(secao, event) {
+    // Remover active de todos os nav-items
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    
+    // Adicionar active ao clicado
+    if (event) {
+        event.currentTarget.classList.add('active');
+    }
+    
+    // Esconder todas as seções
+    document.querySelectorAll('.modal-section').forEach(section => section.classList.remove('active'));
+    
+    // Mostrar seção selecionada
+    const sectionEl = document.getElementById(`section-${secao}`);
+    if (sectionEl) {
+        sectionEl.classList.add('active');
+    }
+}
+
+// Carregar opções dos dropdowns
+function carregarOpcoesModalAula() {
+    if (!window.mockData) return;
+    
+    // Tipos de aula
+    const selectTipo = document.getElementById('modal-tipo-aula');
+    if (selectTipo && window.mockData.tiposAula) {
+        selectTipo.innerHTML = '<option value="">Selecione o tipo de aula...</option>';
+        window.mockData.tiposAula.forEach(tipo => {
+            const opt = document.createElement('option');
+            opt.value = tipo.nome;
+            opt.textContent = tipo.nome;
+            selectTipo.appendChild(opt);
+        });
+    }
+    
+    // Instrutores
+    const selectInstrutor = document.getElementById('modal-instrutor');
+    if (selectInstrutor && window.mockData.instrutores) {
+        selectInstrutor.innerHTML = '<option value="">Selecione o instrutor...</option>';
+        window.mockData.instrutores.forEach(instrutor => {
+            const opt = document.createElement('option');
+            opt.value = instrutor.nome;
+            opt.textContent = instrutor.nome;
+            selectInstrutor.appendChild(opt);
+        });
+    }
+    
+    // Modos
+    const selectModo = document.getElementById('modal-modo');
+    if (selectModo && window.mockData.modosAula) {
+        selectModo.innerHTML = '<option value="">Selecione o modo...</option>';
+        window.mockData.modosAula.forEach(modo => {
+            const opt = document.createElement('option');
+            opt.value = modo.nome;
+            opt.textContent = `${modo.nome} - ${modo.descricao}`;
+            selectModo.appendChild(opt);
+        });
+    }
+    
+    // Salas
+    const selectSala = document.getElementById('modal-sala');
+    if (selectSala && window.mockData.salas) {
+        selectSala.innerHTML = '<option value="">Selecione a sala...</option>';
+        window.mockData.salas.forEach(sala => {
+            const opt = document.createElement('option');
+            opt.value = sala.nome;
+            opt.textContent = `${sala.nome} (${sala.capacidade} pessoas)`;
+            selectSala.appendChild(opt);
+        });
+    }
+}
+
+// Limpar formulário
+function limparFormularioAula() {
+    document.getElementById('modal-tipo-aula').value = '';
+    document.getElementById('modal-instrutor').value = '';
+    document.getElementById('modal-modo').value = '';
+    document.getElementById('modal-sala').value = '';
+    document.getElementById('modal-data').value = '';
+    document.getElementById('modal-hora-inicio').value = '';
+    document.getElementById('modal-hora-fim').value = '';
+    document.getElementById('modal-recorrente').checked = false;
+    document.getElementById('modal-capacidade-min').value = '1';
+    document.getElementById('modal-capacidade-max').value = '20';
+    document.getElementById('modal-lista-espera').checked = false;
+    document.getElementById('modal-descricao').value = '';
+    document.getElementById('modal-observacoes').value = '';
+}
+
+// Preencher formulário com dados da aula
+function preencherFormularioAula(aula) {
+    document.getElementById('modal-tipo-aula').value = aula.tipo || '';
+    document.getElementById('modal-instrutor').value = aula.instrutor || '';
+    document.getElementById('modal-modo').value = aula.modo || '';
+    document.getElementById('modal-sala').value = aula.sala || '';
+    document.getElementById('modal-data').value = aula.data || '';
+    document.getElementById('modal-hora-inicio').value = aula.horario_inicio || '';
+    document.getElementById('modal-hora-fim').value = aula.horario_fim || '';
+    document.getElementById('modal-recorrente').checked = aula.recorrente || false;
+    document.getElementById('modal-capacidade-max').value = aula.capacidade || '20';
+}
+
+// Salvar aula (criar ou editar)
+function salvarAula() {
+    const dados = {
+        tipo: document.getElementById('modal-tipo-aula').value,
+        instrutor: document.getElementById('modal-instrutor').value,
+        modo: document.getElementById('modal-modo').value,
+        sala: document.getElementById('modal-sala').value,
+        data: document.getElementById('modal-data').value,
+        horario_inicio: document.getElementById('modal-hora-inicio').value,
+        horario_fim: document.getElementById('modal-hora-fim').value,
+        recorrente: document.getElementById('modal-recorrente').checked,
+        capacidade: parseInt(document.getElementById('modal-capacidade-max').value),
+        inscritos: aulaEditando ? aulaEditando.inscritos : 0
+    };
+    
+    // Validações básicas
+    if (!dados.tipo || !dados.instrutor || !dados.sala || !dados.data || !dados.horario_inicio || !dados.horario_fim) {
+        showToast('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    if (aulaEditando) {
+        // Editar aula existente
+        const index = aulasSemanaisCache.findIndex(a => a.id === aulaEditando.id);
+        if (index !== -1) {
+            aulasSemanaisCache[index] = { ...aulaEditando, ...dados };
+            window.mockData.aulasSemanais = [...aulasSemanaisCache];
+            showToast('Aula atualizada com sucesso!', 'success');
+        }
+    } else {
+        // Criar nova aula
+        const novaAula = {
+            id: `sem_${Date.now()}`,
+            ...dados,
+            dia_semana: new Date(dados.data).getDay()
+        };
+        aulasSemanaisCache.push(novaAula);
+        window.mockData.aulasSemanais = [...aulasSemanaisCache];
+        showToast('Aula criada com sucesso!', 'success');
+    }
+    
+    renderAulasSemanais();
+    closeModalAula();
+}
+
+// Deletar aula
+function deletarAula() {
+    if (!aulaEditando) return;
+    
+    if (confirm(`Tem certeza que deseja deletar a aula de ${aulaEditando.tipo}?`)) {
+        aulasSemanaisCache = aulasSemanaisCache.filter(a => a.id !== aulaEditando.id);
+        window.mockData.aulasSemanais = [...aulasSemanaisCache];
+        
+        showToast('Aula deletada com sucesso!', 'success');
+        renderAulasSemanais();
+        closeModalAula();
+    }
+}
+
+// Funções placeholder para adicionar novos itens
+function adicionarTipoAula() {
+    const tipo = prompt('Digite o nome do novo tipo de aula:');
+    if (tipo) {
+        showToast(`Tipo "${tipo}" será adicionado (conectar com backend)`, 'info');
+    }
+}
+
+function adicionarInstrutor() {
+    const nome = prompt('Digite o nome do novo instrutor:');
+    if (nome) {
+        showToast(`Instrutor "${nome}" será adicionado (conectar com backend)`, 'info');
+    }
+}
+
+function adicionarModo() {
+    const modo = prompt('Digite o nome do novo modo:');
+    if (modo) {
+        showToast(`Modo "${modo}" será adicionado (conectar com backend)`, 'info');
+    }
+}
+
+function adicionarSala() {
+    const sala = prompt('Digite o nome da nova sala:');
+    if (sala) {
+        showToast(`Sala "${sala}" será adicionada (conectar com backend)`, 'info');
+    }
+}
