@@ -2046,10 +2046,13 @@ function abrirModalAula(modo, dados = {}) {
     
     aulaEditando = modo === 'editar' ? dados : null;
     
+    const btnCancelarAula = document.getElementById('btn-cancelar-aula-completa');
+    
     // Configurar modal
     if (modo === 'criar') {
         titulo.textContent = 'Nova Aula';
         btnDeletar.style.display = 'none';
+        btnCancelarAula.style.display = 'none';
         btnSalvarTexto.textContent = 'CRIAR';
         limparFormularioAula();
         
@@ -2059,12 +2062,18 @@ function abrirModalAula(modo, dados = {}) {
     } else {
         titulo.textContent = 'Editar Aula';
         btnDeletar.style.display = 'inline-block';
+        btnCancelarAula.style.display = 'inline-block';
         btnSalvarTexto.textContent = 'SALVAR';
         preencherFormularioAula(dados);
+        
+        // Renderizar participantes e atualizar ocupação
+        renderParticipantes();
+        atualizarOcupacao();
     }
     
     // Carregar opções dos dropdowns
     carregarOpcoesModalAula();
+    carregarAlunosSelect();
     
     modal.style.display = 'flex';
 }
@@ -2536,4 +2545,193 @@ function renderPenalidades() {
     });
     
     container.innerHTML = html;
+}
+
+// ============================================================
+// MODAL - GESTÃO DE PARTICIPANTES
+// ============================================================
+
+// Mock de alunos disponíveis (substituir com dados reais do backend)
+const alunosDisponiveis = [
+    { id: 1, nome: 'João Silva', email: 'joao@email.com' },
+    { id: 2, nome: 'Maria Santos', email: 'maria@email.com' },
+    { id: 3, nome: 'Pedro Oliveira', email: 'pedro@email.com' },
+    { id: 4, nome: 'Ana Costa', email: 'ana@email.com' },
+    { id: 5, nome: 'Carlos Mendes', email: 'carlos@email.com' },
+    { id: 6, nome: 'Sofia Rodrigues', email: 'sofia@email.com' },
+    { id: 7, nome: 'Lucas Ferreira', email: 'lucas@email.com' },
+    { id: 8, nome: 'Beatriz Lima', email: 'beatriz@email.com' }
+];
+
+// Carregar lista de alunos no select
+function carregarAlunosSelect() {
+    const select = document.getElementById('modal-select-aluno');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Selecione um aluno...</option>';
+    alunosDisponiveis.forEach(aluno => {
+        const option = document.createElement('option');
+        option.value = aluno.id;
+        option.textContent = `${aluno.nome} (${aluno.email})`;
+        select.appendChild(option);
+    });
+}
+
+// Adicionar aluno à aula
+function adicionarAlunoNaAula() {
+    if (!aulaEditando) {
+        showToast('Selecione uma aula primeiro', 'error');
+        return;
+    }
+    
+    const selectAluno = document.getElementById('modal-select-aluno');
+    const alunoId = parseInt(selectAluno.value);
+    
+    if (!alunoId) {
+        showToast('Selecione um aluno', 'warning');
+        return;
+    }
+    
+    // Verificar capacidade
+    const capacidade = parseInt(document.getElementById('modal-capacidade-max')?.value) || 20;
+    const participantesAtuais = aulaEditando.alunos_inscritos || [];
+    
+    if (participantesAtuais.length >= capacidade) {
+        showToast('Aula já está com capacidade máxima', 'error');
+        return;
+    }
+    
+    // Verificar se já está inscrito
+    if (participantesAtuais.find(p => p.id === alunoId)) {
+        showToast('Aluno já está inscrito nesta aula', 'warning');
+        return;
+    }
+    
+    // Encontrar dados do aluno
+    const aluno = alunosDisponiveis.find(a => a.id === alunoId);
+    if (!aluno) return;
+    
+    // Adicionar à lista
+    if (!aulaEditando.alunos_inscritos) {
+        aulaEditando.alunos_inscritos = [];
+    }
+    aulaEditando.alunos_inscritos.push(aluno);
+    
+    // Atualizar visualização
+    renderParticipantes();
+    atualizarOcupacao();
+    
+    // Limpar select
+    selectAluno.value = '';
+    
+    showToast(`${aluno.nome} adicionado à aula`, 'success');
+}
+
+// Remover aluno da aula
+function removerAlunoNaAula(alunoId) {
+    if (!aulaEditando) return;
+    
+    const aluno = aulaEditando.alunos_inscritos?.find(a => a.id === alunoId);
+    if (!aluno) return;
+    
+    if (confirm(`Remover ${aluno.nome} desta aula?`)) {
+        aulaEditando.alunos_inscritos = aulaEditando.alunos_inscritos.filter(a => a.id !== alunoId);
+        
+        renderParticipantes();
+        atualizarOcupacao();
+        
+        showToast(`${aluno.nome} removido da aula`, 'success');
+    }
+}
+
+// Renderizar lista de participantes
+function renderParticipantes() {
+    const container = document.getElementById('lista-participantes');
+    if (!container || !aulaEditando) return;
+    
+    const participantes = aulaEditando.alunos_inscritos || [];
+    
+    if (participantes.length === 0) {
+        container.innerHTML = `
+            <div class="dia-vazio" style="padding: 2rem; text-align: center;">
+                <i class="fas fa-user-slash"></i>
+                <div>Nenhum aluno inscrito ainda</div>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    participantes.forEach(aluno => {
+        const iniciais = aluno.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        
+        html += `
+            <div class="participante-item">
+                <div class="participante-info">
+                    <div class="participante-avatar">${iniciais}</div>
+                    <div class="participante-dados">
+                        <div class="participante-nome">${aluno.nome}</div>
+                        <div class="participante-email">${aluno.email || ''}</div>
+                    </div>
+                </div>
+                <div class="participante-acoes">
+                    <button class="btn-remover-participante" onclick="removerAlunoNaAula(${aluno.id})">
+                        <i class="fas fa-user-minus"></i> Remover
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Atualizar informação de ocupação
+function atualizarOcupacao() {
+    if (!aulaEditando) return;
+    
+    const participantes = aulaEditando.alunos_inscritos || [];
+    const capacidade = parseInt(document.getElementById('modal-capacidade-max')?.value) || 20;
+    const ocupacao = participantes.length;
+    const percentual = Math.round((ocupacao / capacidade) * 100);
+    
+    // Atualizar badge
+    const badgeAtual = document.getElementById('modal-ocupacao-atual');
+    const badgeMax = document.getElementById('modal-ocupacao-max');
+    if (badgeAtual) badgeAtual.textContent = ocupacao;
+    if (badgeMax) badgeMax.textContent = capacidade;
+    
+    // Atualizar barra
+    const barra = document.getElementById('modal-ocupacao-barra');
+    if (barra) {
+        barra.style.width = `${percentual}%`;
+        
+        // Mudar cor conforme ocupação
+        if (percentual >= 90) {
+            barra.style.background = 'linear-gradient(90deg, #ff6b6b, #ee5a6f)';
+        } else if (percentual >= 70) {
+            barra.style.background = 'linear-gradient(90deg, #ff9800, #f57c00)';
+        } else {
+            barra.style.background = 'linear-gradient(90deg, var(--accent-blue), var(--medium-blue))';
+        }
+    }
+}
+
+// Cancelar aula completa
+function cancelarAulaCompleta() {
+    if (!aulaEditando) return;
+    
+    const participantes = aulaEditando.alunos_inscritos || [];
+    const mensagem = participantes.length > 0 
+        ? `Esta aula tem ${participantes.length} aluno(s) inscrito(s). Tem certeza que deseja cancelá-la? Os alunos serão notificados.`
+        : 'Tem certeza que deseja cancelar esta aula?';
+    
+    if (confirm(mensagem)) {
+        aulaEditando.status = 'cancelada';
+        aulaEditando.alunos_inscritos = [];
+        
+        showToast('Aula cancelada com sucesso', 'success');
+        renderCalendarioSemanalAulas();
+        closeModalAula();
+    }
 }

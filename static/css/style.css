@@ -3736,3 +3736,135 @@ textarea.form-control {
         justify-content: center;
     }
 }
+
+/* ============================================================
+   MODAL - SEÇÃO PARTICIPANTES
+   ============================================================ */
+
+.participantes-info {
+    background: var(--light-gray);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.ocupacao-badge {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark-blue);
+    margin-bottom: 0.75rem;
+    text-align: center;
+}
+
+.ocupacao-progress {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ocupacao-barra-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--medium-blue));
+    transition: width 0.3s ease;
+}
+
+.lista-participantes {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.participante-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.participante-item:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(98, 177, 202, 0.2);
+}
+
+.participante-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.participante-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.participante-dados {
+    display: flex;
+    flex-direction: column;
+}
+
+.participante-nome {
+    font-weight: 600;
+    color: var(--dark-blue);
+}
+
+.participante-email {
+    font-size: 0.85rem;
+    color: var(--gray-text);
+}
+
+.participante-acoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-remover-participante {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-remover-participante:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-warning {
+    background: #ff9800;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-warning:hover {
+    background: #f57c00;
+    transform: translateY(-2px);
+}

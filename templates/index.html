@@ -910,6 +910,9 @@
                         <button class="nav-item" data-section="instrucoes" onclick="navegarSecaoModal('instrucoes', event)">
                             <i class="fas fa-clipboard"></i> Instruções
                         </button>
+                        <button class="nav-item" data-section="participantes" onclick="navegarSecaoModal('participantes', event)">
+                            <i class="fas fa-user-friends"></i> Participantes
+                        </button>
                     </nav>
                 </div>
                 
@@ -1025,12 +1028,41 @@
                             <textarea id="modal-observacoes" class="form-control" rows="3" placeholder="Observações para a equipe..."></textarea>
                         </div>
                     </div>
+                    
+                    <!-- Seção Participantes -->
+                    <div id="section-participantes" class="modal-section">
+                        <h4>Participantes Inscritos</h4>
+                        <div class="participantes-info">
+                            <div class="ocupacao-badge">
+                                <span id="modal-ocupacao-atual">0</span> / <span id="modal-ocupacao-max">20</span> alunos
+                            </div>
+                            <div class="ocupacao-progress">
+                                <div id="modal-ocupacao-barra" class="ocupacao-barra-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row" style="margin: 1.5rem 0;">
+                            <select id="modal-select-aluno" class="form-control">
+                                <option value="">Selecione um aluno...</option>
+                            </select>
+                            <button class="btn-add-option" onclick="adicionarAlunoNaAula()">
+                                <i class="fas fa-user-plus"></i> ADICIONAR ALUNO
+                            </button>
+                        </div>
+                        
+                        <div id="lista-participantes" class="lista-participantes">
+                            <!-- Lista renderizada dinamicamente -->
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- Footer com botões de ação -->
             <div class="modal-aula-footer">
-                <button class="btn-secondary" onclick="closeModalAula()">Cancelar</button>
+                <button class="btn-secondary" onclick="closeModalAula()">Fechar</button>
+                <button class="btn-warning" id="btn-cancelar-aula-completa" onclick="cancelarAulaCompleta()" style="display: none;">
+                    <i class="fas fa-ban"></i> Cancelar Aula
+                </button>
                 <button class="btn-danger" id="btn-deletar-aula" onclick="deletarAula()" style="display: none;">
                     <i class="fas fa-trash"></i> Deletar
                 </button>
