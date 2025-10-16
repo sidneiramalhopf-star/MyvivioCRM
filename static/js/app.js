@@ -2306,91 +2306,120 @@ function switchAulasTab(tab) {
     }
 }
 
-// Renderizar Grade Semanal de Aulas
+// Renderizar Grade Technogym com Slots de 30min
 function renderCalendarioSemanalAulas() {
-    const container = document.getElementById('grade-semanal-aulas');
-    if (!container) return;
-    
     // Obter aulas do mockData
     const aulas = window.mockData?.aulasSemanais || [];
     
     // Calcular início da semana (domingo)
     const inicioSemana = getStartOfWeek(semanaAulasAndamento);
     
-    // Nomes dos dias da semana
+    // Nomes dos dias da semana e meses
     const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     
     // Verificar se é hoje
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    let html = '';
-    
-    // Criar 7 colunas (uma para cada dia)
-    for (let i = 0; i < 7; i++) {
-        const dia = new Date(inicioSemana);
-        dia.setDate(dia.getDate() + i);
+    // 1. Renderizar Header com Dias da Semana
+    const headerContainer = document.getElementById('dias-header-technogym');
+    if (headerContainer) {
+        let headerHtml = '';
         
-        const diaNumero = dia.getDate();
-        const isHoje = dia.getTime() === hoje.getTime();
-        
-        // Filtrar aulas deste dia
-        const aulasDoDia = aulas.filter(aula => {
-            const aulaData = new Date(aula.data);
-            aulaData.setHours(0, 0, 0, 0);
-            return aulaData.getTime() === dia.getTime();
-        }).sort((a, b) => {
-            const horaA = parseInt((a.horario_inicio || a.horario || '00:00').split(':')[0]);
-            const horaB = parseInt((b.horario_inicio || b.horario || '00:00').split(':')[0]);
-            return horaA - horaB;
-        });
-        
-        html += `
-            <div class="dia-coluna-aulas">
-                <div class="dia-header-aulas ${isHoje ? 'hoje' : ''}">
-                    <div class="dia-semana">${diasSemana[i]}</div>
-                    <div class="dia-numero">${diaNumero}</div>
-                </div>
-                <div class="dia-aulas-container">
-        `;
-        
-        if (aulasDoDia.length === 0) {
-            html += `
-                <div class="dia-vazio">
-                    <i class="fas fa-calendar-day"></i>
-                    <div>Sem aulas</div>
+        for (let i = 0; i < 7; i++) {
+            const dia = new Date(inicioSemana);
+            dia.setDate(dia.getDate() + i);
+            
+            const diaNumero = dia.getDate();
+            const mes = meses[dia.getMonth()];
+            const isHoje = dia.getTime() === hoje.getTime();
+            
+            headerHtml += `
+                <div class="dia-header-tech ${isHoje ? 'hoje' : ''}">
+                    <div class="dia-nome-tech">${diasSemana[i]}</div>
+                    <div class="dia-numero-tech">${diaNumero}</div>
+                    <div class="dia-mes-tech">${mes}</div>
                 </div>
             `;
-        } else {
-            aulasDoDia.forEach(aula => {
-                const tipoClass = aula.tipo?.toLowerCase().replace(/\s+/g, '') || 'personal';
-                const icone = getIconeAula(aula.tipo);
-                const ocupados = aula.alunos_inscritos?.length || 0;
-                const capacidade = aula.capacidade || 30;
+        }
+        
+        headerContainer.innerHTML = headerHtml;
+    }
+    
+    // 2. Renderizar Grade com 48 Slots de 30min (0h-23h30)
+    const bodyContainer = document.getElementById('grade-technogym-body');
+    if (!bodyContainer) return;
+    
+    let bodyHtml = '';
+    
+    // Criar 48 linhas (slots de 30min)
+    for (let slot = 0; slot < 48; slot++) {
+        const hora = Math.floor(slot / 2);
+        const minuto = (slot % 2) * 30;
+        const horarioLabel = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+        
+        // Coluna de hora
+        bodyHtml += `<div class="slot-hora">${horarioLabel}</div>`;
+        
+        // 7 colunas de dias
+        for (let diaIndex = 0; diaIndex < 7; diaIndex++) {
+            const dia = new Date(inicioSemana);
+            dia.setDate(dia.getDate() + diaIndex);
+            
+            // Buscar aula que começa neste slot
+            const aulaNoSlot = aulas.find(aula => {
+                const aulaData = new Date(aula.data);
+                aulaData.setHours(0, 0, 0, 0);
                 
-                html += `
-                    <div class="bloco-aula ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aula.id}')">
-                        <div class="bloco-aula-icon">${icone}</div>
-                        <div class="bloco-aula-horario">${aula.horario_inicio || aula.horario} - ${aula.horario_fim || calcularHorarioFim(aula.horario_inicio || aula.horario, aula.duracao || 60)}</div>
-                        <div class="bloco-aula-nome">${aula.tipo || 'Aula'}</div>
-                        <div class="bloco-aula-sala">${aula.sala || 'GINÁSIO'}</div>
-                        <div class="bloco-aula-instrutor">${aula.instrutor || 'Instrutor'}</div>
-                        <div class="bloco-aula-ocupacao">
-                            <span>${ocupados}/${capacidade}</span>
-                            <i class="fas fa-users"></i>
+                if (aulaData.getTime() !== dia.getTime()) return false;
+                
+                const [aulaHora, aulaMin] = (aula.horario_inicio || '00:00').split(':').map(Number);
+                return aulaHora === hora && aulaMin === minuto;
+            });
+            
+            if (aulaNoSlot) {
+                // Calcular duração em slots
+                const duracao = aulaNoSlot.duracao || 60;
+                const numSlots = Math.ceil(duracao / 30);
+                
+                const tipoClass = (aulaNoSlot.tipo || '').toLowerCase().replace(/\s+/g, '');
+                const icone = getIconeAula(aulaNoSlot.tipo);
+                const ocupados = aulaNoSlot.inscritos || aulaNoSlot.alunos_inscritos?.length || 0;
+                const capacidade = aulaNoSlot.capacidade || 30;
+                const horarioFim = aulaNoSlot.horario_fim || calcularHorarioFim(aulaNoSlot.horario_inicio, duracao);
+                
+                bodyHtml += `
+                    <div class="slot-celula has-aula" style="grid-row: span ${numSlots};">
+                        <div class="bloco-aula-tech ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aulaNoSlot.id}')">
+                            <div class="bloco-tech-header">
+                                <span class="bloco-tech-icon">${icone}</span>
+                                <span class="bloco-tech-horario">${aulaNoSlot.horario_inicio} - ${horarioFim}</span>
+                            </div>
+                            <div class="bloco-tech-nome">${aulaNoSlot.tipo || 'Aula'}</div>
+                            <div class="bloco-tech-local">${aulaNoSlot.sala || 'GINÁSIO'}</div>
+                            <div class="bloco-tech-instrutor">${aulaNoSlot.instrutor || 'Instrutor'}</div>
+                            <div class="bloco-tech-ocupacao">${ocupados}/${capacidade}</div>
                         </div>
                     </div>
                 `;
-            });
+                
+                // Pular slots ocupados
+                slot += numSlots - 1;
+                continue;
+            } else {
+                // Slot vazio - clicável para criar aula
+                const dataISO = dia.toISOString().split('T')[0];
+                bodyHtml += `
+                    <div class="slot-celula" onclick="criarAulaNoSlot('${dataISO}', '${horarioLabel}')">
+                        <i class="fas fa-plus slot-vazio-indicator"></i>
+                    </div>
+                `;
+            }
         }
-        
-        html += `
-                </div>
-            </div>
-        `;
     }
     
-    container.innerHTML = html;
+    bodyContainer.innerHTML = bodyHtml;
 }
 
 // Obter ícone da aula por tipo
@@ -2444,6 +2473,15 @@ function abrirSeletorData() {
             renderCalendarioSemanalAulas();
         }
     }
+}
+
+// Criar aula ao clicar em slot vazio
+function criarAulaNoSlot(data, horario) {
+    // Abrir modal de criação com data e hora pré-preenchidas
+    abrirModalAula('criar', null, {
+        data: data,
+        horario_inicio: horario
+    });
 }
 
 // Aplicar filtros
