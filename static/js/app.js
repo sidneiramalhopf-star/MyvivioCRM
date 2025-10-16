@@ -2506,42 +2506,68 @@ function abrirDetalhesAulaAndamento(aulaId) {
 // PENALIDADES
 // ============================================================
 
+// Array de penalidades (simular backend - pode ser movido para mockData depois)
+let penalidadesData = [
+    {
+        id: 1,
+        aluno: 'João Silva',
+        tipo: 'Falta não justificada',
+        aula: 'Yoga',
+        data: '14/10/2025',
+        instrutor: 'Miguel Ricardo',
+        status: 'Ativa'
+    },
+    {
+        id: 2,
+        aluno: 'Maria Santos',
+        tipo: 'Cancelamento tardio',
+        aula: 'Spinning',
+        data: '13/10/2025',
+        instrutor: 'Ana Costa',
+        status: 'Ativa'
+    },
+    {
+        id: 3,
+        aluno: 'Pedro Oliveira',
+        tipo: 'Falta não justificada',
+        aula: 'CrossFit',
+        data: '12/10/2025',
+        instrutor: 'Carlos Mendes',
+        status: 'Resolvida'
+    },
+    {
+        id: 4,
+        aluno: 'Ana Costa',
+        tipo: 'Falta não justificada',
+        aula: 'Pilates',
+        data: '15/10/2025',
+        instrutor: 'Sofia Rodrigues',
+        status: 'Ativa'
+    }
+];
+
 function renderPenalidades() {
     const container = document.getElementById('lista-penalidades');
     if (!container) return;
     
-    // Mock data de penalidades (expandir com dados reais do backend)
-    const penalidades = [
-        {
-            id: 1,
-            aluno: 'João Silva',
-            tipo: 'Falta não justificada',
-            aula: 'Yoga',
-            data: '14/10/2025',
-            instrutor: 'Miguel Ricardo',
-            status: 'Ativa'
-        },
-        {
-            id: 2,
-            aluno: 'Maria Santos',
-            tipo: 'Cancelamento tardio',
-            aula: 'Spinning',
-            data: '13/10/2025',
-            instrutor: 'Ana Costa',
-            status: 'Ativa'
-        },
-        {
-            id: 3,
-            aluno: 'Pedro Oliveira',
-            tipo: 'Falta não justificada',
-            aula: 'CrossFit',
-            data: '12/10/2025',
-            instrutor: 'Carlos Mendes',
-            status: 'Resolvida'
-        }
-    ];
+    // Calcular estatísticas
+    const totalFaltasMes = penalidadesData.filter(p => 
+        p.tipo.includes('Falta') && new Date(p.data.split('/').reverse().join('-')).getMonth() === new Date().getMonth()
+    ).length;
+    const totalAtivas = penalidadesData.filter(p => p.status === 'Ativa').length;
+    const totalResolvidas = penalidadesData.filter(p => p.status === 'Resolvida').length;
     
-    if (penalidades.length === 0) {
+    // Atualizar cards de estatísticas
+    const elemFaltas = document.getElementById('total-faltas-mes');
+    const elemAtivas = document.getElementById('total-penalidades-ativas');
+    const elemResolvidas = document.getElementById('total-resolvidas');
+    
+    if (elemFaltas) elemFaltas.textContent = totalFaltasMes;
+    if (elemAtivas) elemAtivas.textContent = totalAtivas;
+    if (elemResolvidas) elemResolvidas.textContent = totalResolvidas;
+    
+    // Renderizar lista
+    if (penalidadesData.length === 0) {
         container.innerHTML = `
             <div class="dia-vazio">
                 <i class="fas fa-check-circle"></i>
@@ -2553,36 +2579,51 @@ function renderPenalidades() {
     
     let html = '';
     
-    penalidades.forEach(pen => {
+    penalidadesData.forEach(pen => {
+        const tipoClass = pen.tipo.includes('Falta') ? 'falta' : 'cancelamento';
+        const statusClass = pen.status === 'Ativa' ? 'ativa' : 'resolvida';
+        
         html += `
-            <div class="penalidade-item">
-                <div class="penalidade-header">
-                    <div class="penalidade-aluno">${pen.aluno}</div>
-                    <div class="penalidade-status">${pen.status}</div>
+            <div class="penalidade-card ${pen.status === 'Resolvida' ? 'resolvida' : ''}">
+                <div class="penalidade-info">
+                    <div class="penalidade-aluno">
+                        <i class="fas fa-user-circle"></i>
+                        ${pen.aluno}
+                        <span class="penalidade-tipo ${tipoClass}">${pen.tipo}</span>
+                    </div>
+                    <div class="penalidade-detalhes">
+                        <span><i class="fas fa-dumbbell"></i> ${pen.aula}</span>
+                        <span><i class="fas fa-calendar"></i> ${pen.data}</span>
+                        <span><i class="fas fa-user"></i> ${pen.instrutor}</span>
+                    </div>
                 </div>
-                <div class="penalidade-detalhes">
-                    <div class="penalidade-info">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>${pen.tipo}</span>
-                    </div>
-                    <div class="penalidade-info">
-                        <i class="fas fa-dumbbell"></i>
-                        <span>${pen.aula}</span>
-                    </div>
-                    <div class="penalidade-info">
-                        <i class="fas fa-calendar"></i>
-                        <span>${pen.data}</span>
-                    </div>
-                    <div class="penalidade-info">
-                        <i class="fas fa-user"></i>
-                        <span>${pen.instrutor}</span>
-                    </div>
+                <div class="penalidade-acoes">
+                    <div class="penalidade-status ${statusClass}">${pen.status}</div>
+                    <button class="btn-excluir-penalidade" onclick="excluirPenalidade(${pen.id})">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
                 </div>
             </div>
         `;
     });
     
     container.innerHTML = html;
+}
+
+// Excluir penalidade individual
+function excluirPenalidade(id) {
+    const penalidade = penalidadesData.find(p => p.id === id);
+    if (!penalidade) return;
+    
+    if (confirm(`Tem certeza que deseja excluir a penalidade de ${penalidade.aluno}?\n\nTipo: ${penalidade.tipo}\nAula: ${penalidade.aula}\nData: ${penalidade.data}`)) {
+        // Remover do array
+        penalidadesData = penalidadesData.filter(p => p.id !== id);
+        
+        // Re-renderizar
+        renderPenalidades();
+        
+        showToast('Penalidade excluída com sucesso!', 'success');
+    }
 }
 
 // ============================================================
