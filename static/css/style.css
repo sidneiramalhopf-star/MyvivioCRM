@@ -3868,3 +3868,262 @@ textarea.form-control {
     background: #f57c00;
     transform: translateY(-2px);
 }
+
+/* ========== GRADE TECHNOGYM - SLOTS 30MIN ========== */
+
+.grade-technogym-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 1.5rem;
+}
+
+.grade-technogym-header {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    background: var(--light-bg);
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.hora-label-col {
+    padding: 1rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--border-color);
+}
+
+.dias-header-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dia-header-tech {
+    padding: 1rem 0.75rem;
+    text-align: center;
+    border-right: 1px solid var(--border-color);
+}
+
+.dia-header-tech:last-child {
+    border-right: none;
+}
+
+.dia-header-tech.hoje {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-dark));
+    color: white;
+}
+
+.dia-nome-tech {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.dia-numero-tech {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.dia-mes-tech {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 0.15rem;
+}
+
+.grade-technogym-scroll {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.grade-technogym-body {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+}
+
+.slot-hora {
+    padding: 0.75rem 0.5rem;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-celula {
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    min-height: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    padding: 4px;
+}
+
+.slot-celula:hover:not(.has-aula) {
+    background: rgba(98, 177, 202, 0.05);
+}
+
+.slot-celula:last-child {
+    border-right: none;
+}
+
+/* Blocos de Aula Technogym Style */
+.bloco-aula-tech {
+    background: linear-gradient(135deg, #e8f4f8, #d5e9f0);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bloco-aula-tech:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.bloco-aula-tech.yoga {
+    background: linear-gradient(135deg, #e1bee7, #f3e5f5);
+    border-left-color: #9c27b0;
+}
+
+.bloco-aula-tech.spinning {
+    background: linear-gradient(135deg, #ffcdd2, #ffebee);
+    border-left-color: #f44336;
+}
+
+.bloco-aula-tech.pilates {
+    background: linear-gradient(135deg, #f8bbd0, #fce4ec);
+    border-left-color: #e91e63;
+}
+
+.bloco-aula-tech.crossfit {
+    background: linear-gradient(135deg, #b3e5fc, #e1f5fe);
+    border-left-color: #03a9f4;
+}
+
+.bloco-aula-tech.funcional {
+    background: linear-gradient(135deg, #c8e6c9, #e8f5e9);
+    border-left-color: #4caf50;
+}
+
+.bloco-aula-tech.personal {
+    background: linear-gradient(135deg, #d1c4e9, #ede7f6);
+    border-left-color: #673ab7;
+}
+
+.bloco-aula-tech.ginasio {
+    background: linear-gradient(135deg, #ffe0b2, #fff3e0);
+    border-left-color: #ff9800;
+}
+
+.bloco-tech-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bloco-tech-icon {
+    font-size: 1rem;
+}
+
+.bloco-tech-horario {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.bloco-tech-nome {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+.bloco-tech-local {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.bloco-tech-instrutor {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.bloco-tech-ocupacao {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: auto;
+    padding-top: 4px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.slot-vazio-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.slot-celula:hover:not(.has-aula) .slot-vazio-indicator {
+    opacity: 0.3;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+    .grade-technogym-body {
+        grid-template-columns: 70px repeat(7, 1fr);
+    }
+    
+    .hora-label-col {
+        grid-template-columns: 70px 1fr;
+    }
+    
+    .bloco-tech-nome,
+    .bloco-tech-local,
+    .bloco-tech-instrutor {
+        font-size: 0.65rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .grade-technogym-scroll {
+        max-height: 450px;
+    }
+    
+    .dias-header-grid {
+        font-size: 0.75rem;
+    }
+    
+    .bloco-aula-tech {
+        padding: 6px;
+    }
+}

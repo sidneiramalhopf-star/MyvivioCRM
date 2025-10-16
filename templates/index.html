@@ -485,9 +485,22 @@
                                             </button>
                                         </div>
                                         
-                                        <!-- Grade Semanal de Aulas -->
-                                        <div class="grade-semanal-aulas" id="grade-semanal-aulas">
-                                            <!-- Será renderizado dinamicamente -->
+                                        <!-- Grade Semanal de Aulas Estilo Technogym -->
+                                        <div class="grade-technogym-container">
+                                            <!-- Header com dias da semana (fixo) -->
+                                            <div class="grade-technogym-header">
+                                                <div class="hora-label-col">Hora</div>
+                                                <div id="dias-header-technogym" class="dias-header-grid">
+                                                    <!-- Será preenchido dinamicamente com QUI 9 out, SEX 10 out, etc -->
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Grid scrollável com slots de 30min -->
+                                            <div class="grade-technogym-scroll">
+                                                <div id="grade-technogym-body" class="grade-technogym-body">
+                                                    <!-- Será renderizado dinamicamente: 48 linhas (0h-23h, slots de 30min) × 7 colunas -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
