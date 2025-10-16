@@ -2470,7 +2470,7 @@ function abrirSeletorData() {
 // Criar aula ao clicar em slot vazio
 function criarAulaNoSlot(data, horario) {
     // Abrir modal de criação com data e hora pré-preenchidas
-    abrirModalAula('criar', null, {
+    abrirModalAula('criar', {
         data: data,
         horario_inicio: horario
     });
