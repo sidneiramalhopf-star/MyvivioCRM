@@ -2340,8 +2340,8 @@ function renderCalendarioSemanalAulas() {
             aulaData.setHours(0, 0, 0, 0);
             return aulaData.getTime() === dia.getTime();
         }).sort((a, b) => {
-            const horaA = parseInt(a.horario.split(':')[0]);
-            const horaB = parseInt(b.horario.split(':')[0]);
+            const horaA = parseInt((a.horario_inicio || a.horario || '00:00').split(':')[0]);
+            const horaB = parseInt((b.horario_inicio || b.horario || '00:00').split(':')[0]);
             return horaA - horaB;
         });
         
@@ -2371,7 +2371,7 @@ function renderCalendarioSemanalAulas() {
                 html += `
                     <div class="bloco-aula ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aula.id}')">
                         <div class="bloco-aula-icon">${icone}</div>
-                        <div class="bloco-aula-horario">${aula.horario} - ${calcularHorarioFim(aula.horario, aula.duracao || 60)}</div>
+                        <div class="bloco-aula-horario">${aula.horario_inicio || aula.horario} - ${aula.horario_fim || calcularHorarioFim(aula.horario_inicio || aula.horario, aula.duracao || 60)}</div>
                         <div class="bloco-aula-nome">${aula.tipo || 'Aula'}</div>
                         <div class="bloco-aula-sala">${aula.sala || 'GINÁSIO'}</div>
                         <div class="bloco-aula-instrutor">${aula.instrutor || 'Instrutor'}</div>
