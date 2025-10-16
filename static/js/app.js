@@ -528,7 +528,7 @@ function switchPlannerView(view, evt) {
     if (view === 'calendario') {
         renderCalendar();
     } else if (view === 'aulas-andamento') {
-        renderAulasEmAndamento();
+        renderCalendarioSemanalAulas();
     } else if (view === 'agendamento') {
         renderCalendarioAgendamento24h();
     }
@@ -2267,4 +2267,273 @@ function adicionarSala() {
     if (sala) {
         showToast(`Sala "${sala}" será adicionada (conectar com backend)`, 'info');
     }
+}
+
+// ============================================================
+// AULAS EM ANDAMENTO - GRADE SEMANAL
+// ============================================================
+
+let semanaAulasAndamento = new Date();
+
+// Alternar entre tabs Calendário / Penalidades
+function switchAulasTab(tab) {
+    // Atualizar botões
+    document.querySelectorAll('.aulas-tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.closest('.tab-btn').classList.add('active');
+    
+    // Atualizar conteúdo
+    document.querySelectorAll('.aulas-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    if (tab === 'calendario') {
+        document.getElementById('aulas-tab-calendario').classList.add('active');
+        renderCalendarioSemanalAulas();
+    } else if (tab === 'penalidades') {
+        document.getElementById('aulas-tab-penalidades').classList.add('active');
+        renderPenalidades();
+    }
+}
+
+// Renderizar Grade Semanal de Aulas
+function renderCalendarioSemanalAulas() {
+    const container = document.getElementById('grade-semanal-aulas');
+    if (!container) return;
+    
+    // Obter aulas do mockData
+    const aulas = window.mockData?.aulasSemanais || [];
+    
+    // Calcular início da semana (domingo)
+    const inicioSemana = getStartOfWeek(semanaAulasAndamento);
+    
+    // Nomes dos dias da semana
+    const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    
+    // Verificar se é hoje
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let html = '';
+    
+    // Criar 7 colunas (uma para cada dia)
+    for (let i = 0; i < 7; i++) {
+        const dia = new Date(inicioSemana);
+        dia.setDate(dia.getDate() + i);
+        
+        const diaNumero = dia.getDate();
+        const isHoje = dia.getTime() === hoje.getTime();
+        
+        // Filtrar aulas deste dia
+        const aulasDoDia = aulas.filter(aula => {
+            const aulaData = new Date(aula.data);
+            aulaData.setHours(0, 0, 0, 0);
+            return aulaData.getTime() === dia.getTime();
+        }).sort((a, b) => {
+            const horaA = parseInt(a.horario.split(':')[0]);
+            const horaB = parseInt(b.horario.split(':')[0]);
+            return horaA - horaB;
+        });
+        
+        html += `
+            <div class="dia-coluna-aulas">
+                <div class="dia-header-aulas ${isHoje ? 'hoje' : ''}">
+                    <div class="dia-semana">${diasSemana[i]}</div>
+                    <div class="dia-numero">${diaNumero}</div>
+                </div>
+                <div class="dia-aulas-container">
+        `;
+        
+        if (aulasDoDia.length === 0) {
+            html += `
+                <div class="dia-vazio">
+                    <i class="fas fa-calendar-day"></i>
+                    <div>Sem aulas</div>
+                </div>
+            `;
+        } else {
+            aulasDoDia.forEach(aula => {
+                const tipoClass = aula.tipo?.toLowerCase().replace(/\s+/g, '') || 'personal';
+                const icone = getIconeAula(aula.tipo);
+                const ocupados = aula.alunos_inscritos?.length || 0;
+                const capacidade = aula.capacidade || 30;
+                
+                html += `
+                    <div class="bloco-aula ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aula.id}')">
+                        <div class="bloco-aula-icon">${icone}</div>
+                        <div class="bloco-aula-horario">${aula.horario} - ${calcularHorarioFim(aula.horario, aula.duracao || 60)}</div>
+                        <div class="bloco-aula-nome">${aula.tipo || 'Aula'}</div>
+                        <div class="bloco-aula-sala">${aula.sala || 'GINÁSIO'}</div>
+                        <div class="bloco-aula-instrutor">${aula.instrutor || 'Instrutor'}</div>
+                        <div class="bloco-aula-ocupacao">
+                            <span>${ocupados}/${capacidade}</span>
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+// Obter ícone da aula por tipo
+function getIconeAula(tipo) {
+    const icones = {
+        'Yoga': '🧘',
+        'Spinning': '🚴',
+        'Pilates': '🤸',
+        'CrossFit': '🏋️',
+        'Funcional': '💪',
+        'Musculação': '🏋️',
+        'Personal Training': '👤'
+    };
+    return icones[tipo] || '🏃';
+}
+
+// Calcular horário de fim
+function calcularHorarioFim(inicio, duracao) {
+    const [hora, minuto] = inicio.split(':').map(Number);
+    const totalMinutos = hora * 60 + minuto + duracao;
+    const horaFim = Math.floor(totalMinutos / 60);
+    const minutoFim = totalMinutos % 60;
+    return `${String(horaFim).padStart(2, '0')}:${String(minutoFim).padStart(2, '0')}`;
+}
+
+// Navegação de semana
+function previousWeekAulas() {
+    semanaAulasAndamento.setDate(semanaAulasAndamento.getDate() - 7);
+    renderCalendarioSemanalAulas();
+}
+
+function nextWeekAulas() {
+    semanaAulasAndamento.setDate(semanaAulasAndamento.getDate() + 7);
+    renderCalendarioSemanalAulas();
+}
+
+function goToTodayAulas() {
+    semanaAulasAndamento = new Date();
+    renderCalendarioSemanalAulas();
+}
+
+// Abrir seletor de data
+function abrirSeletorData() {
+    const dataAtual = formatarDataLocal(semanaAulasAndamento);
+    const novaData = prompt('Selecione uma data (DD/MM/AAAA):', dataAtual);
+    
+    if (novaData) {
+        const [dia, mes, ano] = novaData.split('/').map(Number);
+        if (dia && mes && ano) {
+            semanaAulasAndamento = new Date(ano, mes - 1, dia);
+            renderCalendarioSemanalAulas();
+        }
+    }
+}
+
+// Aplicar filtros
+function aplicarFiltrosAulas() {
+    const periodo = document.getElementById('filtro-periodo-aula')?.value;
+    const busca = document.getElementById('search-aulas-andamento')?.value.toLowerCase();
+    
+    // Aplicar filtros (expandir conforme necessário)
+    showToast(`Filtros aplicados: ${periodo}`, 'info');
+    renderCalendarioSemanalAulas();
+}
+
+// Abrir detalhes da aula (reutilizar modal existente)
+function abrirDetalhesAulaAndamento(aulaId) {
+    const aula = aulasSemanaisCache.find(a => a.id === aulaId);
+    if (aula) {
+        abrirModalAulaAgendamento('editar', aula);
+    }
+}
+
+// ============================================================
+// PENALIDADES
+// ============================================================
+
+function renderPenalidades() {
+    const container = document.getElementById('lista-penalidades');
+    if (!container) return;
+    
+    // Mock data de penalidades (expandir com dados reais do backend)
+    const penalidades = [
+        {
+            id: 1,
+            aluno: 'João Silva',
+            tipo: 'Falta não justificada',
+            aula: 'Yoga',
+            data: '14/10/2025',
+            instrutor: 'Miguel Ricardo',
+            status: 'Ativa'
+        },
+        {
+            id: 2,
+            aluno: 'Maria Santos',
+            tipo: 'Cancelamento tardio',
+            aula: 'Spinning',
+            data: '13/10/2025',
+            instrutor: 'Ana Costa',
+            status: 'Ativa'
+        },
+        {
+            id: 3,
+            aluno: 'Pedro Oliveira',
+            tipo: 'Falta não justificada',
+            aula: 'CrossFit',
+            data: '12/10/2025',
+            instrutor: 'Carlos Mendes',
+            status: 'Resolvida'
+        }
+    ];
+    
+    if (penalidades.length === 0) {
+        container.innerHTML = `
+            <div class="dia-vazio">
+                <i class="fas fa-check-circle"></i>
+                <div>Nenhuma penalidade registrada</div>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    penalidades.forEach(pen => {
+        html += `
+            <div class="penalidade-item">
+                <div class="penalidade-header">
+                    <div class="penalidade-aluno">${pen.aluno}</div>
+                    <div class="penalidade-status">${pen.status}</div>
+                </div>
+                <div class="penalidade-detalhes">
+                    <div class="penalidade-info">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>${pen.tipo}</span>
+                    </div>
+                    <div class="penalidade-info">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>${pen.aula}</span>
+                    </div>
+                    <div class="penalidade-info">
+                        <i class="fas fa-calendar"></i>
+                        <span>${pen.data}</span>
+                    </div>
+                    <div class="penalidade-info">
+                        <i class="fas fa-user"></i>
+                        <span>${pen.instrutor}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
 }
