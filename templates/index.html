@@ -441,19 +441,64 @@
                                 <div id="planner-aulas-andamento" class="planner-view">
                                     <div class="planner-header">
                                         <h1><i class="fas fa-list"></i> Aulas em Andamento</h1>
-                                        <div class="aulas-controls">
-                                            <input type="text" class="search-input" placeholder="Buscar aula..." id="search-aulas-andamento">
-                                            <select class="filter-select" id="filtro-status-aula">
-                                                <option value="todas">Todas as aulas</option>
-                                                <option value="hoje">Hoje</option>
-                                                <option value="semana">Esta Semana</option>
-                                            </select>
+                                        
+                                        <!-- Tabs Calendário / Penalidades -->
+                                        <div class="aulas-tabs">
+                                            <button class="tab-btn active" onclick="switchAulasTab('calendario')">
+                                                <i class="fas fa-calendar-week"></i> Calendário
+                                            </button>
+                                            <button class="tab-btn" onclick="switchAulasTab('penalidades')">
+                                                <i class="fas fa-exclamation-triangle"></i> Penalidades
+                                            </button>
                                         </div>
                                     </div>
                                     
-                                    <!-- Lista de Aulas em Cards -->
-                                    <div id="aulas-andamento-list" class="aulas-andamento-grid">
-                                        <!-- Renderizado dinamicamente pelo JavaScript -->
+                                    <!-- Tab Calendário -->
+                                    <div id="aulas-tab-calendario" class="aulas-tab-content active">
+                                        <!-- Controles de Busca e Filtros -->
+                                        <div class="aulas-controles-top">
+                                            <div class="search-filter-group">
+                                                <input type="text" class="search-input" placeholder="Buscar" id="search-aulas-andamento">
+                                                <select class="filter-select" id="filtro-periodo-aula">
+                                                    <option value="sempre">Sempre</option>
+                                                    <option value="hoje">Hoje</option>
+                                                    <option value="semana">Esta Semana</option>
+                                                    <option value="mes">Este Mês</option>
+                                                </select>
+                                                <button class="btn-mostra" onclick="aplicarFiltrosAulas()">
+                                                    <i class="fas fa-filter"></i> MOSTRA
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Navegação Semanal -->
+                                        <div class="week-navigation-aulas">
+                                            <button class="btn-icon" onclick="previousWeekAulas()">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <button class="btn-outline" onclick="goToTodayAulas()">HOJE</button>
+                                            <button class="btn-icon" onclick="nextWeekAulas()">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                            <button class="btn-icon" onclick="abrirSeletorData()" title="Selecionar Data">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Grade Semanal de Aulas -->
+                                        <div class="grade-semanal-aulas" id="grade-semanal-aulas">
+                                            <!-- Será renderizado dinamicamente -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tab Penalidades -->
+                                    <div id="aulas-tab-penalidades" class="aulas-tab-content">
+                                        <div class="penalidades-container">
+                                            <h3><i class="fas fa-exclamation-circle"></i> Faltas e Penalidades</h3>
+                                            <div id="lista-penalidades" class="lista-penalidades">
+                                                <!-- Será renderizado dinamicamente -->
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

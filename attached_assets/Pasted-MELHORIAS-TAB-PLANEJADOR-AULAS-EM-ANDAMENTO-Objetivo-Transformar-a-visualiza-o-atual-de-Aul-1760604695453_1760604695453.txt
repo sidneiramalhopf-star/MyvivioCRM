@@ -1,0 +1,83 @@
+MELHORIAS - TAB PLANEJADOR: AULAS EM ANDAMENTO
+
+Objetivo: Transformar a visualização atual de "Aulas em Andamento" para um formato de grade de calendário semanal inspirado na interface Technogym (imagem anexa), mantendo a identidade visual Myvivio CRM.
+
+1. LAYOUT PRINCIPAL - Grade de Calendário Semanal
+
+Substituir a visualização atual de cards verticais por uma grade horizontal semanal com:
+
+- Cabeçalho de dias: Mostrar 7 colunas (uma por dia)
+  * Linha superior: dia da semana (QUI, SEX, SÁB, DOM, SEG, TER, QUA)
+  * Linha inferior: dia do mês (9 out, 10 out, 11 out, etc.)
+  * Destacar o dia atual com cor diferenciada (#62b1ca)
+
+- Navegação de semana:
+  * Botão seta esquerda (semana anterior)
+  * Botão central "HOJE" (volta para semana atual)
+  * Botão seta direita (próxima semana)
+  * Ícone de calendário clicável para seleção de data específica
+
+2. VISUALIZAÇÃO DAS AULAS
+
+Dentro de cada coluna de dia, exibir as aulas como blocos empilhados verticalmente:
+
+- Informações por bloco de aula:
+  * Horário (ex: 17:00 - 18:00)
+  * Nome da aula (ex: Personal Training)
+  * Local/sala (ex: GINÁSIO)
+  * Instrutor (ex: Miguel Ricardo)
+  * Indicador de ocupação (ex: 0/1 ou 15/30)
+  * Ícone visual do tipo de aula (como na imagem)
+
+- Interatividade:
+  * Hover: destacar bloco com sombra/borda
+  * Click na aula: abrir modal existente "Ver Info Aula GINÁSIO" com detalhes completos
+
+3. MODAL DE DETALHES DA AULA (ampliar funcionalidades existentes)
+
+Ao clicar em uma aula, o modal deve permitir:
+- Visualizar: lista de alunos inscritos
+- Adicionar alunos: botão/campo para inscrever novos participantes
+- Remover alunos: opção de cancelar inscrição individual
+- Cancelar aula: opção para o gestor cancelar toda a sessão
+- Capacidade visual: barra de progresso mostrando ocupação (ex: 21/30 = 70%)
+
+4. TABS SUPERIORES
+
+Adicionar sistema de tabs no topo da seção "Aulas em Andamento":
+- Tab "Calendário" (ativa por padrão) - mostra a grade semanal descrita acima
+- Tab "Penalidades" - nova funcionalidade para:
+  * Exibir lista de faltas não justificadas
+  * Mostrar alunos com penalidades ativas
+  * Permitir aplicar/remover penalidades
+  * Visualizar histórico de infrações
+
+5. FILTROS E BUSCA (manter e melhorar)
+
+Na parte superior, manter:
+- Campo de busca (buscar por aula, instrutor, sala)
+- Dropdown de período (Sempre, Hoje, Esta Semana, Este Mês)
+- Botão "MOSTRA" para aplicar filtros
+- Filtros avançados (tipo de aula, sala, instrutor)
+
+6. ESPECIFICAÇÕES TÉCNICAS
+
+- CSS: Grid responsivo de 7 colunas, blocos de aula com altura dinâmica
+- JavaScript: 
+  * Função renderCalendarioSemanalAulas() para renderizar grade
+  * Função abrirDetalhesAula(aulaId) para modal (reutilizar existente)
+  * Função adicionarAlunoNaAula(aulaId, alunoId) 
+  * Função removerAlunoNaAula(aulaId, alunoId)
+  * Navegação de semana reutilizando lógica existente
+- Backend: Endpoints para adicionar/remover alunos já existem no sistema
+- Cores: Manter paleta Myvivio (#62b1ca, #1f2746, #333f6e)
+- Ícones: Font Awesome 6.4.0 exclusivamente
+
+7. PRIORIDADES
+
+1. Grade de calendário semanal com navegação
+2. Blocos de aula visíveis com todas as informações
+3. Click para abrir modal de detalhes (reutilizar existente)
+4. Funcionalidade de adicionar/remover alunos no modal
+5. Tab "Penalidades" (estrutura básica)
+6. Responsividade mobile
