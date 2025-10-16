@@ -487,18 +487,23 @@
                                         
                                         <!-- Grade Semanal de Aulas Estilo Technogym -->
                                         <div class="grade-technogym-container">
-                                            <!-- Header com dias da semana (fixo) -->
+                                            <!-- Header com dias da semana (fixo) - 8 colunas alinhadas -->
                                             <div class="grade-technogym-header">
                                                 <div class="hora-label-col">Hora</div>
-                                                <div id="dias-header-technogym" class="dias-header-grid">
-                                                    <!-- Será preenchido dinamicamente com QUI 9 out, SEX 10 out, etc -->
-                                                </div>
+                                                <!-- Dias da semana renderizados dinamicamente -->
+                                                <div id="dia-header-0" class="dia-header-tech"></div>
+                                                <div id="dia-header-1" class="dia-header-tech"></div>
+                                                <div id="dia-header-2" class="dia-header-tech"></div>
+                                                <div id="dia-header-3" class="dia-header-tech"></div>
+                                                <div id="dia-header-4" class="dia-header-tech"></div>
+                                                <div id="dia-header-5" class="dia-header-tech"></div>
+                                                <div id="dia-header-6" class="dia-header-tech"></div>
                                             </div>
                                             
-                                            <!-- Grid scrollável com slots de 30min -->
+                                            <!-- Grid scrollável (6h-22h, hora em hora) -->
                                             <div class="grade-technogym-scroll">
                                                 <div id="grade-technogym-body" class="grade-technogym-body">
-                                                    <!-- Será renderizado dinamicamente: 48 linhas (0h-23h, slots de 30min) × 7 colunas -->
+                                                    <!-- Será renderizado dinamicamente: 17 linhas (6h-22h) × 8 colunas (hora + 7 dias) -->
                                                 </div>
                                             </div>
                                         </div>

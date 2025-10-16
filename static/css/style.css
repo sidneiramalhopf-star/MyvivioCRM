@@ -3881,7 +3881,7 @@ textarea.form-control {
 
 .grade-technogym-header {
     display: grid;
-    grid-template-columns: 80px 1fr;
+    grid-template-columns: 80px repeat(7, 1fr);
     background: var(--light-bg);
     border-bottom: 2px solid var(--border-color);
     position: sticky;
@@ -3898,11 +3898,6 @@ textarea.form-control {
     align-items: center;
     justify-content: center;
     border-right: 1px solid var(--border-color);
-}
-
-.dias-header-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
 }
 
 .dia-header-tech {
@@ -3951,10 +3946,10 @@ textarea.form-control {
 }
 
 .slot-hora {
-    padding: 0.75rem 0.5rem;
+    padding: 0;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-align: center;
@@ -3962,12 +3957,13 @@ textarea.form-control {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 60px;
 }
 
 .slot-celula {
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
-    min-height: 50px;
+    height: 60px;
     position: relative;
     cursor: pointer;
     transition: background 0.2s ease;
