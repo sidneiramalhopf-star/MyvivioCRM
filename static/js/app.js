@@ -2306,7 +2306,7 @@ function switchAulasTab(tab) {
     }
 }
 
-// Renderizar Grade Technogym com Slots de 30min
+// Renderizar Grade Technogym - Horários de 6h a 22h (hora em hora)
 function renderCalendarioSemanalAulas() {
     // Obter aulas do mockData
     const aulas = window.mockData?.aulasSemanais || [];
@@ -2322,44 +2322,39 @@ function renderCalendarioSemanalAulas() {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
-    // 1. Renderizar Header com Dias da Semana
-    const headerContainer = document.getElementById('dias-header-technogym');
-    if (headerContainer) {
-        let headerHtml = '';
+    // 1. Renderizar Header com Dias da Semana (8 colunas individuais)
+    for (let i = 0; i < 7; i++) {
+        const headerCell = document.getElementById(`dia-header-${i}`);
+        if (!headerCell) continue;
         
-        for (let i = 0; i < 7; i++) {
-            const dia = new Date(inicioSemana);
-            dia.setDate(dia.getDate() + i);
-            
-            const diaNumero = dia.getDate();
-            const mes = meses[dia.getMonth()];
-            const isHoje = dia.getTime() === hoje.getTime();
-            
-            headerHtml += `
-                <div class="dia-header-tech ${isHoje ? 'hoje' : ''}">
-                    <div class="dia-nome-tech">${diasSemana[i]}</div>
-                    <div class="dia-numero-tech">${diaNumero}</div>
-                    <div class="dia-mes-tech">${mes}</div>
-                </div>
-            `;
-        }
+        const dia = new Date(inicioSemana);
+        dia.setDate(dia.getDate() + i);
         
-        headerContainer.innerHTML = headerHtml;
+        const diaNumero = dia.getDate();
+        const mes = meses[dia.getMonth()];
+        const isHoje = dia.getTime() === hoje.getTime();
+        
+        headerCell.className = `dia-header-tech ${isHoje ? 'hoje' : ''}`;
+        headerCell.innerHTML = `
+            <div class="dia-nome-tech">${diasSemana[i]}</div>
+            <div class="dia-numero-tech">${diaNumero}</div>
+            <div class="dia-mes-tech">${mes}</div>
+        `;
     }
     
-    // 2. Renderizar Grade com 48 Slots de 30min (0h-23h30)
+    // 2. Renderizar Grade com Horários de 6h a 22h (17 linhas)
     const bodyContainer = document.getElementById('grade-technogym-body');
     if (!bodyContainer) return;
     
     let bodyHtml = '';
+    const horaInicio = 6;
+    const horaFim = 22;
     
-    // Criar 48 linhas (slots de 30min)
-    for (let slot = 0; slot < 48; slot++) {
-        const hora = Math.floor(slot / 2);
-        const minuto = (slot % 2) * 30;
-        const horarioLabel = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+    // Criar linhas hora em hora (6h, 7h, 8h... 22h)
+    for (let hora = horaInicio; hora <= horaFim; hora++) {
+        const horarioLabel = `${String(hora).padStart(2, '0')}:00`;
         
-        // Coluna de hora
+        // Coluna de hora (visível à esquerda para o gestor)
         bodyHtml += `<div class="slot-hora">${horarioLabel}</div>`;
         
         // 7 colunas de dias
@@ -2367,34 +2362,35 @@ function renderCalendarioSemanalAulas() {
             const dia = new Date(inicioSemana);
             dia.setDate(dia.getDate() + diaIndex);
             
-            // Buscar aula que começa neste slot
-            const aulaNoSlot = aulas.find(aula => {
+            // Buscar aulas que começam nesta hora (aceita :00 ou :30)
+            const aulasNaHora = aulas.filter(aula => {
                 const aulaData = new Date(aula.data);
                 aulaData.setHours(0, 0, 0, 0);
                 
                 if (aulaData.getTime() !== dia.getTime()) return false;
                 
-                const [aulaHora, aulaMin] = (aula.horario_inicio || '00:00').split(':').map(Number);
-                return aulaHora === hora && aulaMin === minuto;
+                const horarioInicio = aula.horario_inicio || aula.horario || '00:00';
+                const [aulaHora] = horarioInicio.split(':').map(Number);
+                return aulaHora === hora;
             });
             
-            if (aulaNoSlot) {
-                // Calcular duração em slots
-                const duracao = aulaNoSlot.duracao || 60;
-                const numSlots = Math.ceil(duracao / 30);
+            if (aulasNaHora.length > 0) {
+                // Pegar a primeira aula (se houver múltiplas no mesmo horário)
+                const aulaNoSlot = aulasNaHora[0];
                 
                 const tipoClass = (aulaNoSlot.tipo || '').toLowerCase().replace(/\s+/g, '');
                 const icone = getIconeAula(aulaNoSlot.tipo);
                 const ocupados = aulaNoSlot.inscritos || aulaNoSlot.alunos_inscritos?.length || 0;
                 const capacidade = aulaNoSlot.capacidade || 30;
-                const horarioFim = aulaNoSlot.horario_fim || calcularHorarioFim(aulaNoSlot.horario_inicio, duracao);
+                const duracao = aulaNoSlot.duracao || 60;
+                const horarioFim = aulaNoSlot.horario_fim || calcularHorarioFim(aulaNoSlot.horario_inicio || aulaNoSlot.horario, duracao);
                 
                 bodyHtml += `
-                    <div class="slot-celula has-aula" style="grid-row: span ${numSlots};">
+                    <div class="slot-celula has-aula">
                         <div class="bloco-aula-tech ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aulaNoSlot.id}')">
                             <div class="bloco-tech-header">
                                 <span class="bloco-tech-icon">${icone}</span>
-                                <span class="bloco-tech-horario">${aulaNoSlot.horario_inicio} - ${horarioFim}</span>
+                                <span class="bloco-tech-horario">${aulaNoSlot.horario_inicio || aulaNoSlot.horario} - ${horarioFim}</span>
                             </div>
                             <div class="bloco-tech-nome">${aulaNoSlot.tipo || 'Aula'}</div>
                             <div class="bloco-tech-local">${aulaNoSlot.sala || 'GINÁSIO'}</div>
@@ -2403,10 +2399,6 @@ function renderCalendarioSemanalAulas() {
                         </div>
                     </div>
                 `;
-                
-                // Pular slots ocupados
-                slot += numSlots - 1;
-                continue;
             } else {
                 // Slot vazio - clicável para criar aula
                 const dataISO = dia.toISOString().split('T')[0];
