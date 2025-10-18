@@ -23,6 +23,12 @@ Myvivio CRM is an intelligent management system designed for gyms and corporate 
   - Border color matches accent blue (#62b1ca)
   - Subtle hover effect with light background tint
   - Positioned 20px from right edge, aligned with breadcrumb
+- **October 18, 2025**: Fixed sidebar toggle button positioning:
+  - Button now uses position: fixed in ALL states (expanded, collapsed, hidden)
+  - Always positioned at top-right corner (right: 20px, aligned with breadcrumb)
+  - Consistent 32x32px size and transparent style across all states
+  - z-index: 1000 ensures button stays above sidebar content
+  - Eliminated the issue where button appeared on sidebar edge when expanded
 - **October 18, 2025**: **MAJOR REFACTOR** - Implemented unified collapsible sidebar system:
   - Replaced individual sidebars (planner-sidebar, pessoas-drawer) with a single dynamic unified-sidebar
   - Sidebar content updates automatically based on active main tab (Planejador, Pessoas, Treinamento)
