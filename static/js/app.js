@@ -550,7 +550,6 @@ const sidebarConfigs = {
 // Atualizar conteúdo da sidebar unificada baseado na página
 function updateUnifiedSidebar(page) {
     const sidebar = document.getElementById('unified-sidebar');
-    const mainContent = document.getElementById('dashboard-section')?.querySelector('.main-content');
     const sidebarContent = document.getElementById('unified-sidebar-content');
     
     if (!sidebar || !sidebarContent) return;
@@ -559,16 +558,8 @@ function updateUnifiedSidebar(page) {
     const config = sidebarConfigs[page];
     
     if (config) {
-        // Mostrar sidebar
+        // Mostrar sidebar (overlay sobre o conteúdo)
         sidebar.classList.remove('hidden');
-        if (mainContent) {
-            mainContent.classList.add('with-unified-sidebar');
-            if (unifiedSidebarCollapsed) {
-                mainContent.classList.add('sidebar-collapsed');
-            } else {
-                mainContent.classList.remove('sidebar-collapsed');
-            }
-        }
         
         // Construir HTML do conteúdo
         let html = `
@@ -591,32 +582,29 @@ function updateUnifiedSidebar(page) {
     } else {
         // Ocultar sidebar para páginas sem configuração
         sidebar.classList.add('hidden');
-        if (mainContent) {
-            mainContent.classList.remove('with-unified-sidebar');
-            mainContent.classList.remove('sidebar-collapsed');
-        }
     }
 }
 
-// Toggle da sidebar unificada
+// Toggle da sidebar unificada (overlay - não modifica o main-content)
 function toggleUnifiedSidebar() {
     const sidebar = document.getElementById('unified-sidebar');
-    const mainContent = document.getElementById('dashboard-section')?.querySelector('.main-content');
     
     if (!sidebar) return;
     
+    // Se está hidden, mostra expandida
+    if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+        unifiedSidebarCollapsed = false;
+        return;
+    }
+    
+    // Se está expandida ou colapsada, alterna entre os estados
     unifiedSidebarCollapsed = !unifiedSidebarCollapsed;
     
     if (unifiedSidebarCollapsed) {
         sidebar.classList.add('collapsed');
-        if (mainContent) {
-            mainContent.classList.add('sidebar-collapsed');
-        }
     } else {
         sidebar.classList.remove('collapsed');
-        if (mainContent) {
-            mainContent.classList.remove('sidebar-collapsed');
-        }
     }
 }
 
