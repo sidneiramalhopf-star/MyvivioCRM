@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251018v5">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251018v6">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -648,30 +648,228 @@
                     </div>
 
                     <div id="page-pessoas" class="page-content">
-                        <div class="page-header">
-                            <h1><i class="fas fa-users"></i> Pessoas</h1>
-                            <button class="btn-primary">
-                                <i class="fas fa-user-plus"></i> Adicionar Pessoa
+                        <div class="pessoas-container">
+                            <!-- Hidden Drawer Sidebar -->
+                            <div class="pessoas-drawer" id="pessoas-drawer">
+                                <div class="pessoas-drawer-header">
+                                    <h3>Pessoas</h3>
+                                </div>
+                                <div class="pessoas-drawer-tabs">
+                                    <div class="pessoas-drawer-tab active" onclick="abrirPessoasTab('contatos')">
+                                        Contatos
+                                    </div>
+                                    <div class="pessoas-drawer-tab" onclick="abrirPessoasTab('equipe')">
+                                        Membros da equipe
+                                    </div>
+                                    <div class="pessoas-drawer-tab" onclick="abrirPessoasTab('suporte')">
+                                        Suporte Vivio
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Toggle Button -->
+                            <button class="pessoas-drawer-toggle" id="pessoas-drawer-toggle" onclick="togglePessoasDrawer()">
+                                <i class="fas fa-chevron-right"></i>
                             </button>
-                        </div>
-                        <div class="people-section">
-                            <div class="table-container">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nome</th>
-                                            <th>Email</th>
-                                            <th>Tipo</th>
-                                            <th>Status</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pessoas-table">
-                                        <tr>
-                                            <td colspan="5" class="empty-message">Carregando...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                            <!-- Main Content -->
+                            <div class="pessoas-main-content" id="pessoas-main-content">
+                                <!-- Tab Contatos -->
+                                <div class="pessoas-tab-content active" id="tab-contatos">
+                                    <div class="contatos-header">
+                                        <h2>Contatos</h2>
+                                        <div class="contatos-actions">
+                                            <div class="search-input">
+                                                <i class="fas fa-search"></i>
+                                                <input type="text" placeholder="Buscar">
+                                            </div>
+                                            <select class="filter-select">
+                                                <option>Filtros rápidos</option>
+                                            </select>
+                                            <button class="btn-filter">
+                                                <i class="fas fa-filter"></i> TODOS OS FILTROS
+                                            </button>
+                                            <button class="btn-primary">
+                                                <i class="fas fa-plus"></i> CONTATO
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contatos-stats">
+                                        <div class="stat-item active">
+                                            <span class="stat-number">1242</span>
+                                            <span class="stat-label">contatos</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Todos os clientes presentes</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Meus contatos</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="contatos-toolbar">
+                                        <div class="toolbar-left">
+                                            <button class="btn-icon-toolbar">
+                                                <i class="far fa-envelope"></i>
+                                            </button>
+                                            <button class="btn-icon-toolbar">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                        </div>
+                                        <div class="toolbar-right">
+                                            <select class="sort-select">
+                                                <option>Lista por último acesso</option>
+                                            </select>
+                                            <button class="btn-icon-toolbar">
+                                                <i class="fas fa-arrow-down-z-a"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contatos-table-container">
+                                        <table class="contatos-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nome</th>
+                                                    <th>Risco de abandono</th>
+                                                    <th>Atividades a fazer</th>
+                                                    <th>Tipo</th>
+                                                    <th>Último acesso</th>
+                                                    <th>Última interação</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="contatos-table-body">
+                                                <tr>
+                                                    <td>
+                                                        <div class="contato-info">
+                                                            <div class="avatar">FR</div>
+                                                            <span>Ferreira Rogério</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="badge badge-baixo">BAIXO</span></td>
+                                                    <td>1</td>
+                                                    <td>Aluno</td>
+                                                    <td>17 de out de 2025</td>
+                                                    <td>4 semanas atrás</td>
+                                                    <td>
+                                                        <button class="btn-menu">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="contato-info">
+                                                            <div class="avatar">PA</div>
+                                                            <span>Pereira Ana</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="badge badge-alto">ALTO</span></td>
+                                                    <td>1</td>
+                                                    <td>Aluno</td>
+                                                    <td>17 de out de 2025</td>
+                                                    <td>11 meses atrás</td>
+                                                    <td>
+                                                        <button class="btn-menu">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="contato-info">
+                                                            <div class="avatar badge-avatar">LM</div>
+                                                            <span>Lincho Marta</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="badge badge-alto">ALTO</span></td>
+                                                    <td>1</td>
+                                                    <td>Aluno</td>
+                                                    <td>17 de out de 2025</td>
+                                                    <td>ontem</td>
+                                                    <td>
+                                                        <button class="btn-menu">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="contato-info">
+                                                            <div class="avatar">SA</div>
+                                                            <span>Silva Dos Anjos Miguel</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="badge badge-baixo">BAIXO</span></td>
+                                                    <td>0</td>
+                                                    <td>Ex-membro</td>
+                                                    <td>17 de out de 2025</td>
+                                                    <td>4 dias atrás</td>
+                                                    <td>
+                                                        <button class="btn-menu">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="contato-info">
+                                                            <div class="avatar">SD</div>
+                                                            <span>Silva Duarte</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><span class="badge badge-alto">ALTO</span></td>
+                                                    <td>0</td>
+                                                    <td>Aluno</td>
+                                                    <td>17 de out de 2025</td>
+                                                    <td>21 semanas atrás</td>
+                                                    <td>
+                                                        <button class="btn-menu">
+                                                            <i class="fas fa-ellipsis-h"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Membros da Equipe -->
+                                <div class="pessoas-tab-content" id="tab-equipe">
+                                    <div class="page-header">
+                                        <h2>Membros da Equipe</h2>
+                                        <button class="btn-primary">
+                                            <i class="fas fa-user-plus"></i> Adicionar Membro
+                                        </button>
+                                    </div>
+                                    <div class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <p>Nenhum membro da equipe cadastrado</p>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Suporte Vivio -->
+                                <div class="pessoas-tab-content" id="tab-suporte">
+                                    <div class="page-header">
+                                        <h2>Suporte Vivio</h2>
+                                    </div>
+                                    <div class="suporte-content">
+                                        <div class="suporte-card">
+                                            <i class="fas fa-headset"></i>
+                                            <h3>Central de Ajuda</h3>
+                                            <p>Acesse nossa base de conhecimento e tire suas dúvidas</p>
+                                            <button class="btn-secondary">Acessar</button>
+                                        </div>
+                                        <div class="suporte-card">
+                                            <i class="fas fa-comments"></i>
+                                            <h3>Chat ao Vivo</h3>
+                                            <p>Fale com nosso time de suporte em tempo real</p>
+                                            <button class="btn-secondary">Iniciar Chat</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1129,6 +1327,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251018v1"></script>
-    <script src="/static/js/app.js?v=20251018v1"></script>
+    <script src="/static/js/app.js?v=20251018v6"></script>
 </body>
 </html>

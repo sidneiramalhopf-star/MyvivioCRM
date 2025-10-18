@@ -2806,3 +2806,34 @@ function cancelarAulaCompleta() {
         closeModalAula();
     }
 }
+
+// ============================================
+// PESSOAS - HIDDEN DRAWER SIDEBAR
+// ============================================
+
+// Toggle da sidebar de Pessoas
+function togglePessoasDrawer() {
+    const drawer = document.getElementById('pessoas-drawer');
+    const toggle = document.getElementById('pessoas-drawer-toggle');
+    
+    if (drawer && toggle) {
+        drawer.classList.toggle('hidden');
+    }
+}
+
+// Abrir tab específica de Pessoas
+function abrirPessoasTab(tabName) {
+    // Atualizar tabs da drawer
+    const drawerTabs = document.querySelectorAll('.pessoas-drawer-tab');
+    drawerTabs.forEach(tab => tab.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // Atualizar conteúdo
+    const tabContents = document.querySelectorAll('.pessoas-tab-content');
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+}
