@@ -114,7 +114,7 @@ const mockData = {
             id: "sem_1",
             nome: "GINÁSIO",
             instrutor: "Ramalho Sidnei",
-            data: "2025-10-14",
+            data: "2025-10-13",
             horario_inicio: "07:00",
             horario_fim: "09:00",
             sala: "GINÁSIO",
@@ -152,7 +152,7 @@ const mockData = {
             id: "sem_2",
             nome: "YOGA",
             instrutor: "Ana Costa",
-            data: "2025-10-14",
+            data: "2025-10-13",
             horario_inicio: "18:00",
             horario_fim: "19:00",
             sala: "Sala 1",
@@ -183,7 +183,7 @@ const mockData = {
             id: "sem_3",
             nome: "PILATES",
             instrutor: "Patrício Susana",
-            data: "2025-10-16",
+            data: "2025-10-14",
             horario_inicio: "09:00",
             horario_fim: "10:00",
             sala: "Sala 2",
@@ -471,22 +471,23 @@ const mockData = {
         { id: 3, nome: "Híbrido", descricao: "Aula presencial com transmissão online" }
     ],
 
-    // Aulas semanais (semana atual: 14-20 Outubro 2025)
+    // Aulas semanais (semana atual: 12-18 Outubro 2025)
     aulasSemanais: [
-        // SEGUNDA (14/10)
+        // SEGUNDA (13/10)
         {
             id: "sem_1",
             tipo: "GINÁSIO",
             instrutor: "Ramalho Sidnei",
             sala: "GINÁSIO",
             dia_semana: 1, // Segunda
-            data: "2025-10-14",
+            data: "2025-10-13",
             horario_inicio: "07:00",
             horario_fim: "09:00",
             capacidade: 30,
             inscritos: 22,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 120
         },
         {
             id: "sem_2",
@@ -494,7 +495,7 @@ const mockData = {
             instrutor: "Ana Costa",
             sala: "Sala 1",
             dia_semana: 1,
-            data: "2025-10-14",
+            data: "2025-10-13",
             horario_inicio: "18:00",
             horario_fim: "19:00",
             capacidade: 20,
@@ -508,29 +509,31 @@ const mockData = {
             instrutor: "Rita Oliveira",
             sala: "STUDIO",
             dia_semana: 1,
-            data: "2025-10-14",
+            data: "2025-10-13",
             horario_inicio: "19:30",
             horario_fim: "20:15",
             capacidade: 25,
             inscritos: 18,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 45
         },
         
-        // TERÇA (15/10)
+        // TERÇA (14/10)
         {
             id: "sem_4",
             tipo: "NATAÇÃO",
             instrutor: "Carlos Mendes",
             sala: "Piscina",
             dia_semana: 2,
-            data: "2025-10-15",
+            data: "2025-10-14",
             horario_inicio: "06:00",
             horario_fim: "07:00",
             capacidade: 12,
             inscritos: 10,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 60
         },
         {
             id: "sem_5",
@@ -538,13 +541,14 @@ const mockData = {
             instrutor: "Patrício Susana",
             sala: "Sala 2",
             dia_semana: 2,
-            data: "2025-10-15",
+            data: "2025-10-14",
             horario_inicio: "09:00",
             horario_fim: "10:00",
             capacidade: 15,
             inscritos: 12,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 60
         },
         {
             id: "sem_6",
@@ -552,29 +556,31 @@ const mockData = {
             instrutor: "João Silva",
             sala: "Área Externa",
             dia_semana: 2,
-            data: "2025-10-15",
+            data: "2025-10-14",
             horario_inicio: "19:00",
             horario_fim: "20:00",
             capacidade: 18,
             inscritos: 15,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 60
         },
         
-        // QUARTA (16/10)
+        // QUARTA (15/10)
         {
             id: "sem_7",
             tipo: "GINÁSIO",
             instrutor: "Marco Santos",
             sala: "GINÁSIO",
             dia_semana: 3,
-            data: "2025-10-16",
+            data: "2025-10-15",
             horario_inicio: "07:00",
             horario_fim: "09:00",
             capacidade: 30,
             inscritos: 25,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 120
         },
         {
             id: "sem_8",
@@ -582,13 +588,14 @@ const mockData = {
             instrutor: "Ana Costa",
             sala: "Sala 1",
             dia_semana: 3,
-            data: "2025-10-16",
+            data: "2025-10-15",
             horario_inicio: "12:00",
             horario_fim: "13:00",
             capacidade: 20,
             inscritos: 14,
             modo: "Online",
-            recorrente: true
+            recorrente: true,
+            duracao: 60
         },
         {
             id: "sem_9",
@@ -596,29 +603,31 @@ const mockData = {
             instrutor: "Patrício Susana",
             sala: "STUDIO",
             dia_semana: 3,
-            data: "2025-10-16",
+            data: "2025-10-15",
             horario_inicio: "18:30",
             horario_fim: "19:15",
             capacidade: 25,
             inscritos: 20,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 45
         },
         
-        // QUINTA (17/10)
+        // QUINTA (16/10)
         {
             id: "sem_10",
             tipo: "FUNCIONAL",
             instrutor: "Rita Oliveira",
             sala: "Área Externa",
             dia_semana: 4,
-            data: "2025-10-17",
+            data: "2025-10-16",
             horario_inicio: "06:30",
             horario_fim: "07:30",
             capacidade: 18,
             inscritos: 12,
             modo: "Presencial",
-            recorrente: true
+            recorrente: true,
+            duracao: 60
         },
         {
             id: "sem_11",
@@ -626,7 +635,7 @@ const mockData = {
             instrutor: "Ana Costa",
             sala: "Sala 2",
             dia_semana: 4,
-            data: "2025-10-17",
+            data: "2025-10-16",
             horario_inicio: "18:00",
             horario_fim: "19:00",
             capacidade: 15,
