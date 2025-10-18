@@ -347,6 +347,22 @@ function displayAgendas(agendas) {
     `).join('');
 }
 
+// Trocar entre visualizações de Treinamento
+function switchTreinamentoView(view, evt) {
+    // Remove active de todos os botões da sidebar unificada
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    // Ativa o botão clicado (se houver evento)
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    }
+    
+    // Por enquanto, apenas carrega programas (pode ser expandido no futuro)
+    if (view === 'programas') {
+        loadProgramas();
+    }
+}
+
 async function loadProgramas() {
     if (!authToken) return;
     
