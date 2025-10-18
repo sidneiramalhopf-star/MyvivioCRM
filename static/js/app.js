@@ -492,6 +492,111 @@ window.onclick = function(event) {
 let currentDate = new Date();
 let viewMode = 'week';
 let sidebarCollapsed = false;
+let unifiedSidebarCollapsed = false;
+
+// ============================================
+// UNIFIED SIDEBAR - Controle Dinâmico
+// ============================================
+
+// Configuração do conteúdo da sidebar para cada página
+const sidebarConfigs = {
+    planejador: {
+        title: 'Planejador',
+        items: [
+            { id: 'calendario', icon: 'fa-calendar', label: 'Calendário', action: 'switchPlannerView' },
+            { id: 'aulas-andamento', icon: 'fa-list', label: 'Aulas em Andamento', action: 'switchPlannerView' },
+            { id: 'agendamento', icon: 'fa-calendar-plus', label: 'Agendamento de Aulas', action: 'switchPlannerView' }
+        ]
+    },
+    pessoas: {
+        title: 'Pessoas',
+        items: [
+            { id: 'contatos', icon: 'fa-address-book', label: 'Contatos', action: 'abrirPessoasTab' },
+            { id: 'equipe', icon: 'fa-users', label: 'Membros da equipe', action: 'abrirPessoasTab' },
+            { id: 'suporte', icon: 'fa-headset', label: 'Suporte Vivio', action: 'abrirPessoasTab' }
+        ]
+    },
+    treinamento: {
+        title: 'Treinamento',
+        items: [
+            { id: 'programas', icon: 'fa-dumbbell', label: 'Programas', action: 'switchTreinamentoView' },
+            { id: 'exercicios', icon: 'fa-running', label: 'Exercícios', action: 'switchTreinamentoView' }
+        ]
+    }
+};
+
+// Atualizar conteúdo da sidebar unificada baseado na página
+function updateUnifiedSidebar(page) {
+    const sidebar = document.getElementById('unified-sidebar');
+    const mainContent = document.getElementById('dashboard-section')?.querySelector('.main-content');
+    const sidebarContent = document.getElementById('unified-sidebar-content');
+    
+    if (!sidebar || !sidebarContent) return;
+    
+    // Verificar se a página tem configuração de sidebar
+    const config = sidebarConfigs[page];
+    
+    if (config) {
+        // Mostrar sidebar
+        sidebar.classList.remove('hidden');
+        if (mainContent) {
+            mainContent.classList.add('with-unified-sidebar');
+            if (unifiedSidebarCollapsed) {
+                mainContent.classList.add('sidebar-collapsed');
+            } else {
+                mainContent.classList.remove('sidebar-collapsed');
+            }
+        }
+        
+        // Construir HTML do conteúdo
+        let html = `
+            <div class="unified-sidebar-header">
+                <h3>${config.title}</h3>
+            </div>
+        `;
+        
+        config.items.forEach((item, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            html += `
+                <button class="unified-menu-item ${activeClass}" onclick="${item.action}('${item.id}', event)">
+                    <i class="fas ${item.icon}"></i>
+                    <span>${item.label}</span>
+                </button>
+            `;
+        });
+        
+        sidebarContent.innerHTML = html;
+    } else {
+        // Ocultar sidebar para páginas sem configuração
+        sidebar.classList.add('hidden');
+        if (mainContent) {
+            mainContent.classList.remove('with-unified-sidebar');
+            mainContent.classList.remove('sidebar-collapsed');
+        }
+    }
+}
+
+// Toggle da sidebar unificada
+function toggleUnifiedSidebar() {
+    const sidebar = document.getElementById('unified-sidebar');
+    const mainContent = document.getElementById('dashboard-section')?.querySelector('.main-content');
+    
+    if (!sidebar) return;
+    
+    unifiedSidebarCollapsed = !unifiedSidebarCollapsed;
+    
+    if (unifiedSidebarCollapsed) {
+        sidebar.classList.add('collapsed');
+        if (mainContent) {
+            mainContent.classList.add('sidebar-collapsed');
+        }
+    } else {
+        sidebar.classList.remove('collapsed');
+        if (mainContent) {
+            mainContent.classList.remove('sidebar-collapsed');
+        }
+    }
+}
 
 // Toggle Sidebar
 function togglePlannerSidebar() {
