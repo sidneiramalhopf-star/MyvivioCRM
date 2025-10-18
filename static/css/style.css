@@ -221,17 +221,21 @@ body {
     z-index: 900;
 }
 
+/* Quando colapsada, esconde completamente mostrando apenas o botão */
 .unified-sidebar.collapsed {
-    width: 60px;
+    width: auto;
+    height: auto;
+    left: auto;
+    right: 20px;
+    top: 20px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
-.unified-sidebar.collapsed .unified-sidebar-content span {
+.unified-sidebar.collapsed .unified-sidebar-header,
+.unified-sidebar.collapsed .unified-sidebar-content {
     display: none;
-}
-
-.unified-sidebar.collapsed .unified-menu-item {
-    justify-content: center;
-    padding: 1rem;
 }
 
 /* Quando escondida, mostra apenas um botão pequeno */
@@ -279,8 +283,26 @@ body {
     transition: transform 0.3s ease;
 }
 
+/* Botão quando colapsada - igual ao hidden */
+.unified-sidebar.collapsed .unified-sidebar-toggle {
+    position: static;
+    width: 40px;
+    height: 40px;
+    background: var(--accent-blue);
+    border-radius: 8px;
+    right: auto;
+    top: auto;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(98, 177, 202, 0.3);
+}
+
+.unified-sidebar.collapsed .unified-sidebar-toggle:hover {
+    background: var(--dark-bg);
+    box-shadow: 0 4px 12px rgba(98, 177, 202, 0.5);
+}
+
 .unified-sidebar.collapsed .unified-sidebar-toggle i {
-    transform: rotate(180deg);
+    transform: none;
 }
 
 /* Botão pequeno quando sidebar está hidden */
