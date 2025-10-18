@@ -1130,16 +1130,5 @@
 
     <script src="/static/js/mockData.js?v=20251016v2"></script>
     <script src="/static/js/app.js?v=20251016v2"></script>
-    
-    <script>
-        // DEMO: Adicionar botão temporário para testar o modal de informações da aula
-        window.addEventListener('DOMContentLoaded', () => {
-            const btnDemo = document.createElement('button');
-            btnDemo.textContent = 'DEMO: Ver Info Aula GINÁSIO';
-            btnDemo.style.cssText = 'position: fixed; bottom: 100px; right: 20px; z-index: 9999; padding: 15px; background: #62b1ca; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-            btnDemo.onclick = () => abrirInfoAula('aula_1');
-            document.body.appendChild(btnDemo);
-        });
-    </script>
 </body>
 </html>
