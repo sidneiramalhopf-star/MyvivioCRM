@@ -60,6 +60,9 @@ function navigateTo(event, page) {
     if (pageElement) {
         pageElement.classList.add('active');
         
+        // Atualizar sidebar unificada
+        updateUnifiedSidebar(page);
+        
         if (page === 'home') {
             loadDashboardData();
         } else if (page === 'planejador') {
@@ -89,6 +92,9 @@ function navigateToPage(page) {
     const pageElement = document.getElementById(`page-${page}`);
     if (pageElement) {
         pageElement.classList.add('active');
+        
+        // Atualizar sidebar unificada
+        updateUnifiedSidebar(page);
         
         if (page === 'home') {
             loadDashboardData();
@@ -611,18 +617,18 @@ function togglePlannerSidebar() {
 
 // Trocar entre visualizações do Planejador
 function switchPlannerView(view, evt) {
-    // Remove active de todos os botões
-    document.querySelectorAll('.planner-menu-item').forEach(btn => btn.classList.remove('active'));
+    // Remove active de todos os botões da sidebar unificada
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
     
     // Remove active de todas as views
     document.querySelectorAll('.planner-view').forEach(v => v.classList.remove('active'));
     
     // Ativa o botão clicado (se houver evento)
     if (evt) {
-        evt.target.closest('.planner-menu-item').classList.add('active');
+        evt.target.closest('.unified-menu-item').classList.add('active');
     } else {
         // Se não houver evento, ativa o botão correspondente
-        const button = document.querySelector(`.planner-menu-item[onclick*="${view}"]`);
+        const button = document.querySelector(`.unified-menu-item[onclick*="${view}"]`);
         if (button) button.classList.add('active');
     }
     
@@ -2927,11 +2933,18 @@ function togglePessoasDrawer() {
 }
 
 // Abrir tab específica de Pessoas
-function abrirPessoasTab(tabName) {
-    // Atualizar tabs da drawer
-    const drawerTabs = document.querySelectorAll('.pessoas-drawer-tab');
-    drawerTabs.forEach(tab => tab.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+function abrirPessoasTab(tabName, evt) {
+    // Atualizar menu items da sidebar unificada
+    const unifiedMenuItems = document.querySelectorAll('.unified-menu-item');
+    unifiedMenuItems.forEach(item => item.classList.remove('active'));
+    
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    } else {
+        // Se não houver evento, ativa o botão correspondente
+        const button = document.querySelector(`.unified-menu-item[onclick*="${tabName}"]`);
+        if (button) button.classList.add('active');
+    }
     
     // Atualizar conteúdo
     const tabContents = document.querySelectorAll('.pessoas-tab-content');
