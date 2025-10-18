@@ -226,7 +226,7 @@ body {
     width: auto;
     height: auto;
     left: auto;
-    right: 30px;
+    right: 20px;
     top: var(--sidebar-button-top, 80px);
     background: transparent;
     border: none;
@@ -243,7 +243,7 @@ body {
     width: auto;
     height: auto;
     left: auto;
-    right: 30px;
+    right: 20px;
     top: var(--sidebar-button-top, 80px);
     background: transparent;
     border: none;
@@ -283,48 +283,62 @@ body {
     transition: transform 0.3s ease;
 }
 
-/* Botão quando colapsada - igual ao hidden */
+/* Botão quando colapsada - menor e sem background */
 .unified-sidebar.collapsed .unified-sidebar-toggle {
     position: static;
-    width: 40px;
-    height: 40px;
-    background: var(--accent-blue);
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    border-radius: 6px;
     right: auto;
     top: auto;
     transform: none;
-    box-shadow: 0 2px 8px rgba(98, 177, 202, 0.3);
+    box-shadow: none;
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle:hover {
-    background: var(--dark-bg);
-    box-shadow: 0 4px 12px rgba(98, 177, 202, 0.5);
+    background: rgba(98, 177, 202, 0.1);
+    border-color: var(--dark-bg);
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle i {
     transform: none;
+    color: var(--accent-blue);
+    font-size: 0.9rem;
 }
 
-/* Botão pequeno quando sidebar está hidden */
+.unified-sidebar.collapsed .unified-sidebar-toggle:hover i {
+    color: var(--dark-bg);
+}
+
+/* Botão pequeno quando sidebar está hidden - menor e sem background */
 .unified-sidebar.hidden .unified-sidebar-toggle {
     position: static;
-    width: 40px;
-    height: 40px;
-    background: var(--accent-blue);
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    border-radius: 6px;
     right: auto;
     top: auto;
     transform: none;
-    box-shadow: 0 2px 8px rgba(98, 177, 202, 0.3);
+    box-shadow: none;
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle:hover {
-    background: var(--dark-bg);
-    box-shadow: 0 4px 12px rgba(98, 177, 202, 0.5);
+    background: rgba(98, 177, 202, 0.1);
+    border-color: var(--dark-bg);
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle i {
     transform: none;
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+}
+
+.unified-sidebar.hidden .unified-sidebar-toggle:hover i {
+    color: var(--dark-bg);
 }
 
 .unified-sidebar-content {

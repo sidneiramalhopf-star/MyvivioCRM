@@ -17,6 +17,12 @@ Myvivio CRM is an intelligent management system designed for gyms and corporate 
   - Debounced updates (50ms) for performance
   - Double requestAnimationFrame ensures layout is rendered before positioning
   - CSS custom property --sidebar-button-top with 80px fallback
+- **October 18, 2025**: Visual refinement of sidebar toggle button:
+  - Reduced size from 40x40px to 32x32px
+  - Removed background fill (now transparent with 2px border)
+  - Border color matches accent blue (#62b1ca)
+  - Subtle hover effect with light background tint
+  - Positioned 20px from right edge, aligned with breadcrumb
 - **October 18, 2025**: **MAJOR REFACTOR** - Implemented unified collapsible sidebar system:
   - Replaced individual sidebars (planner-sidebar, pessoas-drawer) with a single dynamic unified-sidebar
   - Sidebar content updates automatically based on active main tab (Planejador, Pessoas, Treinamento)
