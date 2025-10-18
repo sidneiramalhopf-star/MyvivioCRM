@@ -11,6 +11,12 @@ Myvivio CRM is an intelligent management system designed for gyms and corporate 
   - No margin adjustments to main-content - pure overlay behavior
   - Smooth transitions between hidden → expanded → collapsed states
 - **October 18, 2025**: Sidebar collapsed state refined - when recolhida, esconde completamente mostrando apenas o botão de toggle (40x40px)
+- **October 18, 2025**: Dynamic button positioning implemented:
+  - Button position calculated using getBoundingClientRect to align with breadcrumb
+  - Event listeners for resize, orientationchange, and scroll maintain alignment
+  - Debounced updates (50ms) for performance
+  - Double requestAnimationFrame ensures layout is rendered before positioning
+  - CSS custom property --sidebar-button-top with 80px fallback
 - **October 18, 2025**: **MAJOR REFACTOR** - Implemented unified collapsible sidebar system:
   - Replaced individual sidebars (planner-sidebar, pessoas-drawer) with a single dynamic unified-sidebar
   - Sidebar content updates automatically based on active main tab (Planejador, Pessoas, Treinamento)
