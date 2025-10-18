@@ -108,14 +108,14 @@ body {
 
 .form-group label {
     font-weight: 600;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 .form-group input, .form-group select, .form-group textarea {
     padding: 0.75rem;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     transition: border-color 0.3s;
     font-family: inherit;
 }
@@ -158,7 +158,7 @@ body {
 }
 
 .logo-text {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: white;
 }
@@ -192,7 +192,7 @@ body {
 }
 
 .nav-item i {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     width: 24px;
 }
 
@@ -242,7 +242,7 @@ body {
     padding: 0.75rem 1rem 0.75rem 3rem;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     transition: border-color 0.3s;
 }
 
@@ -261,7 +261,7 @@ body {
     position: relative;
     background: transparent;
     border: none;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     cursor: pointer;
     padding: 0.5rem;
@@ -278,7 +278,7 @@ body {
     right: 0;
     background: var(--accent-blue);
     color: white;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     padding: 0.2rem 0.4rem;
     border-radius: 10px;
     font-weight: 600;
@@ -327,14 +327,14 @@ body {
 }
 
 .page-header h1 {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .page-subtitle {
     color: var(--text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .view-tabs {
@@ -381,7 +381,7 @@ body {
 }
 
 .action-card i {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
     color: var(--accent-blue);
     margin-bottom: 1rem;
 }
@@ -393,12 +393,12 @@ body {
 
 .action-card p {
     color: var(--text-secondary);
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 /* Metrics Section */
 .metrics-section h2 {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     margin-bottom: 1rem;
     color: var(--text-primary);
 }
@@ -432,7 +432,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
 }
 
 .stat-icon.warning {
@@ -467,13 +467,13 @@ body {
 }
 
 .big-number {
-    font-size: 1.9rem;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .number {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -481,7 +481,7 @@ body {
 .trend {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
@@ -491,14 +491,14 @@ body {
 }
 
 .stat-label {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
     font-weight: 600;
 }
 
 .stat-meta {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 1rem;
 }
@@ -511,7 +511,7 @@ body {
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     transition: all 0.3s;
 }
 
@@ -542,7 +542,7 @@ body {
 }
 
 .metric-card h3 {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     margin-bottom: 1rem;
     color: var(--text-secondary);
 }
@@ -552,13 +552,13 @@ body {
 }
 
 .metric-value {
-    font-size: 1.9rem;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--accent-blue);
 }
 
 .metric-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -600,12 +600,12 @@ body {
 
 .agenda-titulo {
     font-weight: 700;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-primary);
 }
 
 .agenda-tipo {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     padding: 0.35rem 0.75rem;
     background: var(--accent-blue);
     color: white;
@@ -614,7 +614,7 @@ body {
 }
 
 .agenda-descricao {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 1rem;
     line-height: 1.5;
@@ -624,7 +624,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -639,7 +639,7 @@ body {
     padding: 0.4rem 1rem;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     transition: all 0.3s;
 }
@@ -663,12 +663,12 @@ body {
 }
 
 .program-stat .count {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
 .program-stat .label {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -722,13 +722,13 @@ body {
 }
 
 .program-status {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
 .program-usuarios {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--accent-blue);
 }
@@ -795,7 +795,7 @@ body {
 
 .config-card p {
     color: var(--text-secondary);
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 /* Buttons */
@@ -808,7 +808,7 @@ body {
     transition: all 0.3s;
     background: var(--accent-blue);
     color: white;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -845,7 +845,7 @@ body {
 .close {
     color: var(--text-secondary);
     float: right;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: bold;
     cursor: pointer;
     line-height: 1;
@@ -924,7 +924,7 @@ body {
 }
 
 .section-header h2 {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -978,7 +978,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .stat-icon-circle.blue {
@@ -992,13 +992,13 @@ body {
 }
 
 .stat-number {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .stat-text {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1012,14 +1012,14 @@ body {
 }
 
 .timeline-header h3 {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-secondary);
     letter-spacing: 0.5px;
 }
 
 .timeline-count {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1037,20 +1037,20 @@ body {
 }
 
 .activity-time {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 0.25rem;
 }
 
 .activity-title {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .activity-details {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1075,12 +1075,12 @@ body {
 }
 
 .program-label {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
 }
 
 .program-meta {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
@@ -1097,13 +1097,13 @@ body {
 }
 
 .status-number {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .status-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1117,7 +1117,7 @@ body {
     border: none;
     color: var(--accent-blue);
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     cursor: pointer;
     padding: 0.5rem;
     transition: opacity 0.3s;
@@ -1147,7 +1147,7 @@ body {
     background: var(--light-bg);
     border-radius: 6px;
     margin-bottom: 1rem;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -1158,14 +1158,14 @@ body {
 }
 
 .contacts-card h3 {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .contacts-meta {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
 }
@@ -1190,7 +1190,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     flex-shrink: 0;
 }
 
@@ -1209,14 +1209,14 @@ body {
 }
 
 .contact-number {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .contact-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1227,7 +1227,7 @@ body {
     background: transparent;
     color: var(--text-primary);
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
@@ -1246,14 +1246,14 @@ body {
 }
 
 .leads-widget h3 {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .leads-meta {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
 }
@@ -1273,19 +1273,19 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     color: var(--warning-color);
 }
 
 .lead-number {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .lead-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1369,7 +1369,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .sidebar-toggle:hover {
@@ -1391,13 +1391,13 @@ body {
     gap: 1rem;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
     text-align: left;
 }
 
 .planner-menu-item i {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     width: 24px;
 }
 
@@ -1435,7 +1435,7 @@ body {
 }
 
 .planner-header h1 {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--text-primary);
     display: flex;
     align-items: center;
@@ -1472,7 +1472,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background: white;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     cursor: pointer;
 }
 
@@ -1480,7 +1480,7 @@ body {
     padding: 0.5rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     width: 200px;
 }
 
@@ -1539,12 +1539,12 @@ body {
 }
 
 .calendar-day-number {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 .calendar-events {
     margin-top: 0.25rem;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .calendar-event-dot {
@@ -1577,7 +1577,7 @@ body {
     background: white;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     transition: all 0.3s;
 }
 
@@ -1613,7 +1613,7 @@ body {
     padding: 1rem;
     text-align: center;
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .week-header.time {
@@ -1629,7 +1629,7 @@ body {
     background: white;
     padding: 0.5rem;
     text-align: center;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
@@ -1646,7 +1646,7 @@ body {
     padding: 0.5rem;
     border-radius: 4px;
     margin-bottom: 0.25rem;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: transform 0.2s;
 }
@@ -1664,7 +1664,7 @@ body {
 }
 
 .class-time {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     opacity: 0.9;
 }
 
@@ -1674,12 +1674,12 @@ body {
 }
 
 .class-instructor {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     opacity: 0.8;
 }
 
 .class-capacity {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     margin-top: 0.25rem;
     background: rgba(255, 255, 255, 0.2);
     padding: 0.125rem 0.25rem;
@@ -1724,7 +1724,7 @@ body {
 
 .agendamento-time {
     width: 120px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -1739,12 +1739,12 @@ body {
 }
 
 .agendamento-subtitle {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
 .agendamento-instructor {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1752,7 +1752,7 @@ body {
     padding: 0.25rem 0.75rem;
     background: var(--light-bg);
     border-radius: 4px;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -1795,7 +1795,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .btn-icon-accent:hover {
@@ -1806,7 +1806,7 @@ body {
 
 /* Exibição de Mês/Ano */
 .month-year-display {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
     min-width: 150px;
@@ -1866,7 +1866,7 @@ body {
 
 .global-planner-sidebar .planner-header h3 {
     margin: 0;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1876,7 +1876,7 @@ body {
     background: transparent;
     border: none;
     color: white;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     cursor: pointer;
     width: 32px;
     height: 32px;
@@ -1903,7 +1903,7 @@ body {
 }
 
 .planner-section h4 {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 1rem;
@@ -1928,7 +1928,7 @@ body {
     box-shadow: 0 4px 12px rgba(98, 177, 202, 0.4);
     z-index: 999;
     transition: all 0.3s;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .planner-toggle-btn:hover {
@@ -1966,7 +1966,7 @@ body {
 }
 
 .mini-calendar-header span {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -1980,7 +1980,7 @@ body {
 
 .mini-calendar-day {
     padding: 0.4rem;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
@@ -2018,12 +2018,12 @@ body {
 }
 
 .stat-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
 .stat-value {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--accent-blue);
 }
@@ -2043,13 +2043,13 @@ body {
 }
 
 .proxima-aula-item h5 {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .proxima-aula-item p {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin: 0;
 }
@@ -2100,7 +2100,7 @@ body {
 }
 
 .aula-info h2 {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--dark-bg);
     margin-bottom: 0.5rem;
 }
@@ -2108,7 +2108,7 @@ body {
 .aula-info p {
     color: var(--text-secondary);
     margin: 0.25rem 0;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .aula-info p i {
@@ -2176,13 +2176,13 @@ body {
 .circle-value {
     position: relative;
     z-index: 1;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .circle-label {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     text-align: center;
 }
@@ -2210,7 +2210,7 @@ body {
 }
 
 .inscritos-section h4 {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--dark-bg);
     margin-bottom: 1rem;
 }
@@ -2249,7 +2249,7 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 .inscrito-nome {
@@ -2258,7 +2258,7 @@ body {
 }
 
 .inscrito-data {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -2306,7 +2306,7 @@ body {
     padding: 0.75rem 1rem 0.75rem 2.5rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .penalidades-search i {
@@ -2318,7 +2318,7 @@ body {
 }
 
 .penalidades-contador {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -2365,11 +2365,11 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .penalidade-dados h4 {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
@@ -2383,7 +2383,7 @@ body {
 .badge {
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
@@ -2403,7 +2403,7 @@ body {
     border: none;
     padding: 0.5rem 1.25rem;
     border-radius: 6px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -2449,13 +2449,13 @@ body {
 }
 
 .falta-card h4 {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--dark-bg);
     margin-bottom: 0.25rem;
 }
 
 .falta-card p {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin: 0.25rem 0;
 }
@@ -2465,7 +2465,7 @@ body {
     color: #721c24;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
@@ -2505,7 +2505,7 @@ body {
 }
 
 .filtro-group label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
@@ -2515,7 +2515,7 @@ body {
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 6px;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -2531,7 +2531,7 @@ body {
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -2546,7 +2546,7 @@ body {
 }
 
 .resultado-contador {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -2560,7 +2560,7 @@ body {
 }
 
 .agendamento-rapido h4 {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--dark-bg);
     margin-bottom: 1rem;
     display: flex;
@@ -2574,7 +2574,7 @@ body {
     border: 1px solid #ddd;
     border-radius: 6px;
     margin-bottom: 1rem;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 .btn-agendar-rapido {
@@ -2745,7 +2745,7 @@ body {
 .week-navigator h3 {
     margin: 0;
     color: var(--dark-blue);
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     min-width: 200px;
     text-align: center;
@@ -2789,7 +2789,7 @@ body {
 }
 
 .dia-nome {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 0.25rem;
@@ -2797,7 +2797,7 @@ body {
 }
 
 .dia-numero {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
@@ -2810,7 +2810,7 @@ body {
 .hora-celula {
     padding: 0.5rem;
     text-align: center;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 500;
     border-right: 1px solid #e0e0e0;
@@ -2865,26 +2865,26 @@ body {
 
 .aula-bloco-tipo {
     font-weight: 700;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.25rem;
 }
 
 .aula-bloco-horario {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     opacity: 0.95;
     font-weight: 500;
 }
 
 .aula-bloco-instrutor {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     opacity: 0.9;
     margin-top: 0.25rem;
 }
 
 .aula-bloco-capacidade {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     opacity: 0.85;
     display: flex;
     align-items: center;
@@ -2943,7 +2943,7 @@ body {
 }
 
 .aula-card-tipo {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
     text-transform: uppercase;
@@ -2953,7 +2953,7 @@ body {
 .aula-card-status {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -2980,7 +2980,7 @@ body {
     align-items: center;
     gap: 0.75rem;
     color: var(--text-secondary);
-    font-size: 0.6rem;
+    font-size: 0.8rem;
 }
 
 .aula-card-info-item i {
@@ -2997,12 +2997,12 @@ body {
 }
 
 .aula-card-capacidade-texto {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
 .aula-card-capacidade-numeros {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--accent-blue);
 }
@@ -3036,7 +3036,7 @@ body {
 }
 
 .aulas-empty-state i {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
     color: #ccc;
     margin-bottom: 1rem;
 }
@@ -3094,7 +3094,7 @@ body {
 
 .modal-aula-sidebar h3 {
     margin: 0 0 1.5rem 0;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     padding: 0 0.5rem;
 }
@@ -3117,7 +3117,7 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     text-align: left;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 500;
 }
 
@@ -3166,7 +3166,7 @@ body {
 .modal-section h4 {
     margin: 0 0 1.5rem 0;
     color: var(--dark-blue);
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
@@ -3216,7 +3216,7 @@ body {
     padding: 0.75rem 1rem;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-family: inherit;
     transition: border-color 0.3s;
 }
@@ -3286,7 +3286,7 @@ textarea.form-control {
     
     .hora-coluna,
     .hora-celula {
-        font-size: 0.55rem;
+        font-size: 0.75rem;
     }
     
     .aula-bloco {
@@ -3294,13 +3294,13 @@ textarea.form-control {
     }
     
     .aula-bloco-tipo {
-        font-size: 0.55rem;
+        font-size: 0.75rem;
     }
     
     .aula-bloco-horario,
     .aula-bloco-instrutor,
     .aula-bloco-capacidade {
-        font-size: 0.55rem;
+        font-size: 0.75rem;
     }
 }
 
@@ -3392,7 +3392,7 @@ textarea.form-control {
     color: var(--medium-blue);
     border-radius: 8px;
     font-weight: 600;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -3503,14 +3503,14 @@ textarea.form-control {
 }
 
 .dia-semana {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.25rem;
 }
 
 .dia-numero {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
 }
 
@@ -3578,36 +3578,36 @@ textarea.form-control {
 
 /* Conteúdo do Bloco */
 .bloco-aula-icon {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     margin-bottom: 0.5rem;
 }
 
 .bloco-aula-horario {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
 .bloco-aula-nome {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
 
 .bloco-aula-sala {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     opacity: 0.9;
     margin-bottom: 0.25rem;
 }
 
 .bloco-aula-instrutor {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     opacity: 0.9;
     margin-bottom: 0.5rem;
 }
 
 .bloco-aula-ocupacao {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
     display: flex;
     justify-content: space-between;
@@ -3621,11 +3621,11 @@ textarea.form-control {
     text-align: center;
     padding: 2rem 1rem;
     color: var(--gray-text);
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .dia-vazio i {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     margin-bottom: 0.5rem;
     opacity: 0.3;
 }
@@ -3675,13 +3675,13 @@ textarea.form-control {
 .penalidade-aluno {
     font-weight: 700;
     color: var(--dark-blue);
-    font-size: 0.55rem;
+    font-size: 0.75rem;
 }
 
 .penalidade-status {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     background: var(--danger-color);
     color: white;
@@ -3699,7 +3699,7 @@ textarea.form-control {
     align-items: center;
     gap: 0.5rem;
     color: var(--gray-text);
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .penalidade-info i {
@@ -3749,7 +3749,7 @@ textarea.form-control {
 }
 
 .ocupacao-badge {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--dark-blue);
     margin-bottom: 0.75rem;
@@ -3810,7 +3810,7 @@ textarea.form-control {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .participante-dados {
@@ -3824,7 +3824,7 @@ textarea.form-control {
 }
 
 .participante-email {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--gray-text);
 }
 
@@ -3841,7 +3841,7 @@ textarea.form-control {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
@@ -3893,7 +3893,7 @@ textarea.form-control {
     padding: 1rem;
     font-weight: 700;
     color: var(--text-secondary);
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3916,7 +3916,7 @@ textarea.form-control {
 }
 
 .dia-nome-tech {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3924,12 +3924,12 @@ textarea.form-control {
 }
 
 .dia-numero-tech {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
 .dia-mes-tech {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     opacity: 0.7;
     margin-top: 0.15rem;
 }
@@ -3949,7 +3949,7 @@ textarea.form-control {
     padding: 0;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-align: center;
@@ -4041,36 +4041,36 @@ textarea.form-control {
 }
 
 .bloco-tech-icon {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .bloco-tech-horario {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .bloco-tech-nome {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-top: 2px;
 }
 
 .bloco-tech-local {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 
 .bloco-tech-instrutor {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
 .bloco-tech-ocupacao {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-top: auto;
@@ -4086,7 +4086,7 @@ textarea.form-control {
     opacity: 0;
     transition: opacity 0.2s ease;
     color: var(--primary-color);
-    font-size: 1.15rem;
+    font-size: 1.3rem;
 }
 
 .slot-celula:hover:not(.has-aula) .slot-vazio-indicator {
@@ -4106,7 +4106,7 @@ textarea.form-control {
     .bloco-tech-nome,
     .bloco-tech-local,
     .bloco-tech-instrutor {
-        font-size: 0.55rem;
+        font-size: 0.75rem;
     }
 }
 
@@ -4116,7 +4116,7 @@ textarea.form-control {
     }
     
     .dias-header-grid {
-        font-size: 0.55rem;
+        font-size: 0.75rem;
     }
     
     .bloco-aula-tech {
@@ -4156,7 +4156,7 @@ textarea.form-control {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
 }
 
 .stat-info {
@@ -4164,13 +4164,13 @@ textarea.form-control {
 }
 
 .stat-label {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
 .stat-value {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -4210,7 +4210,7 @@ textarea.form-control {
 }
 
 .penalidade-aluno {
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-primary);
     display: flex;
@@ -4222,7 +4222,7 @@ textarea.form-control {
     display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -4240,7 +4240,7 @@ textarea.form-control {
 .penalidade-detalhes {
     display: flex;
     gap: 1.5rem;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -4264,7 +4264,7 @@ textarea.form-control {
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -4281,7 +4281,7 @@ textarea.form-control {
 .penalidade-status {
     padding: 0.4rem 0.8rem;
     border-radius: 6px;
-    font-size: 0.55rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-align: center;
 }
@@ -4306,6 +4306,6 @@ textarea.form-control {
     }
     
     .stat-value {
-        font-size: 1.15rem;
+        font-size: 1.3rem;
     }
 }
