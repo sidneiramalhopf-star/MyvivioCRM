@@ -2387,7 +2387,7 @@ function renderCalendarioSemanalAulas() {
                 
                 bodyHtml += `
                     <div class="slot-celula has-aula">
-                        <div class="bloco-aula-tech ${tipoClass}" onclick="abrirDetalhesAulaAndamento('${aulaNoSlot.id}')">
+                        <div class="bloco-aula-tech ${tipoClass}" onclick="abrirInfoAula('${aulaNoSlot.id}')">
                             <div class="bloco-tech-header">
                                 <span class="bloco-tech-icon">${icone}</span>
                                 <span class="bloco-tech-horario">${aulaNoSlot.horario_inicio || aulaNoSlot.horario} - ${horarioFim}</span>
