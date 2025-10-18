@@ -10,6 +10,7 @@ Myvivio CRM is an intelligent management system designed for gyms and corporate 
   - Hidden state completely hides sidebar content (header and menu items) - only toggle button visible
   - No margin adjustments to main-content - pure overlay behavior
   - Smooth transitions between hidden → expanded → collapsed states
+- **October 18, 2025**: Sidebar collapsed state refined - when recolhida, esconde completamente mostrando apenas o botão de toggle (40x40px)
 - **October 18, 2025**: **MAJOR REFACTOR** - Implemented unified collapsible sidebar system:
   - Replaced individual sidebars (planner-sidebar, pessoas-drawer) with a single dynamic unified-sidebar
   - Sidebar content updates automatically based on active main tab (Planejador, Pessoas, Treinamento)
