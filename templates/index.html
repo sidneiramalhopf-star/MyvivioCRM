@@ -105,6 +105,16 @@
                     </nav>
                 </aside>
 
+                <!-- Sidebar Colapsável Unificada -->
+                <div class="unified-sidebar" id="unified-sidebar">
+                    <div class="unified-sidebar-toggle" onclick="toggleUnifiedSidebar()">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="unified-sidebar-content" id="unified-sidebar-content">
+                        <!-- Conteúdo dinâmico será inserido aqui baseado na tab ativa -->
+                    </div>
+                </div>
+
                 <div class="main-content">
                     <header class="top-header">
                         <div class="search-bar">
@@ -388,27 +398,6 @@
 
                     <div id="page-planejador" class="page-content">
                         <div class="planner-container">
-                            <!-- Sidebar Colapsável -->
-                            <div class="planner-sidebar" id="planner-sidebar">
-                                <div class="sidebar-toggle" onclick="togglePlannerSidebar()">
-                                    <i class="fas fa-bars"></i>
-                                </div>
-                                <div class="sidebar-content">
-                                    <button class="planner-menu-item active" onclick="switchPlannerView('calendario', event)">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Calendário</span>
-                                    </button>
-                                    <button class="planner-menu-item" onclick="switchPlannerView('aulas-andamento', event)">
-                                        <i class="fas fa-list"></i>
-                                        <span>Aulas em Andamento</span>
-                                    </button>
-                                    <button class="planner-menu-item" onclick="switchPlannerView('agendamento', event)">
-                                        <i class="fas fa-calendar-plus"></i>
-                                        <span>Agendamento de Aulas</span>
-                                    </button>
-                                </div>
-                            </div>
-
                             <!-- Área Principal -->
                             <div class="planner-main">
                                 <!-- Seção Calendário -->
@@ -649,29 +638,6 @@
 
                     <div id="page-pessoas" class="page-content">
                         <div class="pessoas-container">
-                            <!-- Hidden Drawer Sidebar -->
-                            <div class="pessoas-drawer" id="pessoas-drawer">
-                                <div class="pessoas-drawer-header">
-                                    <h3>Pessoas</h3>
-                                </div>
-                                <div class="pessoas-drawer-tabs">
-                                    <div class="pessoas-drawer-tab active" onclick="abrirPessoasTab('contatos')">
-                                        Contatos
-                                    </div>
-                                    <div class="pessoas-drawer-tab" onclick="abrirPessoasTab('equipe')">
-                                        Membros da equipe
-                                    </div>
-                                    <div class="pessoas-drawer-tab" onclick="abrirPessoasTab('suporte')">
-                                        Suporte Vivio
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Toggle Button -->
-                            <button class="pessoas-drawer-toggle" id="pessoas-drawer-toggle" onclick="togglePessoasDrawer()">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-
                             <!-- Main Content -->
                             <div class="pessoas-main-content" id="pessoas-main-content">
                                 <!-- Tab Contatos -->
