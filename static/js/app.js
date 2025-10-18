@@ -547,6 +547,48 @@ const sidebarConfigs = {
     }
 };
 
+// Posicionar dinamicamente o botão da sidebar colapsada/hidden na altura da breadcrumb
+function positionSidebarButton() {
+    const sidebar = document.getElementById('unified-sidebar');
+    if (!sidebar) return;
+    
+    // Encontrar o page-header (breadcrumb)
+    const pageHeader = document.querySelector('.page-content.active .page-header');
+    
+    if (pageHeader) {
+        const rect = pageHeader.getBoundingClientRect();
+        const topPosition = rect.top;
+        
+        // Definir a posição top dinamicamente
+        sidebar.style.setProperty('--sidebar-button-top', `${topPosition}px`);
+    } else {
+        // Fallback para posição padrão se não houver breadcrumb
+        sidebar.style.setProperty('--sidebar-button-top', '80px');
+    }
+}
+
+// Adicionar listeners para manter o posicionamento atualizado
+let positionDebounceTimer;
+function updateSidebarPosition() {
+    clearTimeout(positionDebounceTimer);
+    positionDebounceTimer = setTimeout(() => {
+        positionSidebarButton();
+    }, 50);
+}
+
+// Inicializar listeners quando o DOM estiver carregado
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('resize', updateSidebarPosition);
+        window.addEventListener('orientationchange', updateSidebarPosition);
+        window.addEventListener('scroll', updateSidebarPosition, { passive: true });
+    });
+} else {
+    window.addEventListener('resize', updateSidebarPosition);
+    window.addEventListener('orientationchange', updateSidebarPosition);
+    window.addEventListener('scroll', updateSidebarPosition, { passive: true });
+}
+
 // Atualizar conteúdo da sidebar unificada baseado na página
 function updateUnifiedSidebar(page) {
     const sidebar = document.getElementById('unified-sidebar');
@@ -579,6 +621,13 @@ function updateUnifiedSidebar(page) {
         });
         
         sidebarContent.innerHTML = html;
+        
+        // Posicionar o botão dinamicamente usando requestAnimationFrame para garantir que o layout foi renderizado
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                positionSidebarButton();
+            });
+        });
     } else {
         // Ocultar sidebar para páginas sem configuração
         sidebar.classList.add('hidden');

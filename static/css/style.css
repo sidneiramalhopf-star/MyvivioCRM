@@ -226,8 +226,8 @@ body {
     width: auto;
     height: auto;
     left: auto;
-    right: 20px;
-    top: 20px;
+    right: 30px;
+    top: var(--sidebar-button-top, 80px);
     background: transparent;
     border: none;
     box-shadow: none;
@@ -243,8 +243,8 @@ body {
     width: auto;
     height: auto;
     left: auto;
-    right: 20px;
-    top: 20px;
+    right: 30px;
+    top: var(--sidebar-button-top, 80px);
     background: transparent;
     border: none;
     box-shadow: none;
