@@ -4,6 +4,20 @@
 Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
+- **October 19, 2025**: **SISTEMA DE MÚLTIPLAS SESSÕES COMPLETO** (Aprovado pelo Arquiteto):
+  - Implementado sistema de tabs clicáveis para navegação entre sessões (`renderizarTabsSessoes()`)
+  - Cada tab mostra nome da sessão + contador de exercícios atualizado em tempo real
+  - Tab ativa destacada com fundo azul (#62b1ca) e texto branco
+  - Função `selecionarSessao()` permite trocar entre sessões com um clique
+  - Estatísticas corrigidas: agora calculam de `sessao.exercicios` (min, kcal, count)
+  - Botão EXPANDIR: esconde biblioteca, filtros e tabs - sessão ocupa tela inteira
+  - Modo expandido mostra "+ EXERCÍCIOS" para retornar ao modo normal
+  - Menu de 3 pontos por sessão: Renomear, Clonar, Excluir com validações
+  - Botão "+ Adicionar Sessão" cria novas sessões com ID incremental
+  - Clone profundo de sessões preserva todos os exercícios independentemente
+  - Todas as operações atualizam tabs e estatísticas automaticamente
+  - Validação de salvamento: exige pelo menos 1 exercício em qualquer sessão
+  - Sistema salva todas as sessões em `programaData.sessoes` com estrutura completa
 - **October 19, 2025**: **CORREÇÕES CRÍTICAS NO SISTEMA DE PROGRAMAS**:
   - Corrigido erro de função inexistente: `mostrarToast` → `showToast` (todas as ocorrências)
   - Corrigida visibilidade da página Programas: agora só aparece ao navegar para TAB Treinamento
