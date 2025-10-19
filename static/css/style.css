@@ -5378,3 +5378,190 @@ textarea.form-control {
     font-size: 0.85rem;
     opacity: 0.7;
 }
+
+/* Sistema de Múltiplas Sessões */
+.sessoes-container {
+    margin-top: 2rem;
+}
+
+.sessao-treino {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.sessao-treino.expandida {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    border-radius: 0;
+    margin: 0;
+    overflow-y: auto;
+    animation: expandir 0.3s ease;
+}
+
+@keyframes expandir {
+    from {
+        transform: scale(0.95);
+        opacity: 0.5;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.sessao-menu {
+    position: relative;
+    margin-left: 1rem;
+}
+
+.btn-more {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-more:hover {
+    background: var(--light-bg);
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 100;
+    margin-top: 0.5rem;
+}
+
+.menu-dropdown button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.menu-dropdown button:hover {
+    background: var(--light-bg);
+}
+
+.menu-dropdown button:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.menu-dropdown button:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.menu-dropdown button.btn-danger {
+    color: #d32f2f;
+}
+
+.menu-dropdown button.btn-danger:hover {
+    background: #ffebee;
+}
+
+.btn-adicionar-sessao {
+    width: 100%;
+    padding: 1rem;
+    background: var(--light-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    color: var(--accent-blue);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    margin-top: 1rem;
+}
+
+.btn-adicionar-sessao:hover {
+    background: #e3f2fd;
+    border-color: var(--accent-blue);
+}
+
+.sessao-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sessao-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Tabs de Sessões */
+.sessoes-wrapper {
+    margin-top: 2rem;
+}
+
+.sessoes-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.sessao-tab {
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.sessao-tab:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.sessao-tab.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.tab-count {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.sessao-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.2);
+}

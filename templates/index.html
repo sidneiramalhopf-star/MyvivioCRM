@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251019v1">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251019v3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -928,30 +928,22 @@
                             </div>
                         </div>
 
-                        <!-- Seção de Treino -->
-                        <div class="sessao-treino">
-                            <div class="sessao-header">
-                                <div class="sessao-info">
-                                    <i class="fas fa-chevron-down"></i>
-                                    <h3>Sessão 1</h3>
-                                    <button class="btn-more"><i class="fas fa-ellipsis-vertical"></i></button>
-                                </div>
-                                <div class="sessao-stats">
-                                    <span>3 exercícios</span>
-                                    <span>0 min</span>
-                                    <span>0 kcal</span>
-                                    <span>0 MOVEs</span>
-                                </div>
-                                <button class="btn-expandir" onclick="expandirSessao()">
-                                    <i class="fas fa-expand"></i> EXPANDIR
-                                </button>
+                        <!-- Seção de Treino com Múltiplas Sessões -->
+                        <div class="sessoes-wrapper">
+                            <!-- Tabs de Sessões -->
+                            <div class="sessoes-tabs" id="sessoes-tabs">
+                                <!-- Tabs serão renderizadas dinamicamente -->
                             </div>
-                            <div class="sessao-exercicios" id="sessao-exercicios">
-                                <!-- Exercícios adicionados aparecerão aqui -->
-                                <div class="sessao-empty">
-                                    <p>Adicione exercícios clicando nos cards acima</p>
-                                </div>
+                            
+                            <!-- Container da Sessão Ativa -->
+                            <div class="sessoes-container" id="sessoes-container">
+                                <!-- Sessão ativa será renderizada aqui -->
                             </div>
+                            
+                            <!-- Botão Adicionar Sessão -->
+                            <button class="btn-adicionar-sessao" onclick="adicionarNovaSessao()">
+                                <i class="fas fa-plus"></i> Adicionar Sessão
+                            </button>
                         </div>
                     </div>
 
@@ -1449,6 +1441,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251018v1"></script>
-    <script src="/static/js/app.js?v=20251019v3"></script>
+    <script src="/static/js/app.js?v=20251019v5"></script>
 </body>
 </html>

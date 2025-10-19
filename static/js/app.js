@@ -3103,7 +3103,10 @@ function criarPrograma(event) {
 
 // Abrir página de builder de programa
 function abrirProgramaBuilder(programaData) {
-    // Limpar sessão anterior e começar do zero
+    // Resetar sistema de sessões
+    sessoes = [{ id: 1, nome: 'Sessão 1', exercicios: [], expandida: false }];
+    sessaoAtiva = 1;
+    modoExpandido = false;
     exerciciosSessao = [];
     
     // Esconder página de programas
@@ -3127,8 +3130,8 @@ function abrirProgramaBuilder(programaData) {
         // Carregar biblioteca de exercícios
         carregarBibliotecaExercicios();
         
-        // Renderizar sessão vazia
-        renderizarSessao();
+        // Renderizar sessões vazias
+        renderizarSessoes();
     }
 }
 
@@ -3145,9 +3148,11 @@ function fecharProgramaBuilder() {
         pageProgramas.style.display = 'block';
     }
     
-    // Limpar estado e renderizar sessão vazia
+    // Resetar sistema de sessões
+    sessoes = [{ id: 1, nome: 'Sessão 1', exercicios: [], expandida: false }];
+    sessaoAtiva = 1;
+    modoExpandido = false;
     exerciciosSessao = [];
-    renderizarSessao();
     
     // Recarregar lista de programas
     carregarProgramas();
@@ -3167,6 +3172,13 @@ const bibliotecaExercicios = [
 
 // Exercícios adicionados à sessão atual
 let exerciciosSessao = [];
+
+// Sistema de múltiplas sessões
+let sessoes = [
+    { id: 1, nome: 'Sessão 1', exercicios: [], expandida: false }
+];
+let sessaoAtiva = 1;
+let modoExpandido = false;
 
 // Carregar biblioteca de exercícios
 function carregarBibliotecaExercicios() {
@@ -3190,11 +3202,15 @@ function adicionarExercicioSessao(exercicioId) {
     const exercicio = bibliotecaExercicios.find(ex => ex.id === exercicioId);
     if (!exercicio) return;
     
-    // Adicionar à lista
-    exerciciosSessao.push({ ...exercicio, ordem: exerciciosSessao.length + 1 });
+    const sessao = sessoes.find(s => s.id === sessaoAtiva);
+    if (!sessao) return;
+    
+    // Adicionar à sessão ativa
+    sessao.exercicios.push({ ...exercicio, ordem: sessao.exercicios.length + 1 });
     
     // Atualizar visualização
-    renderizarSessao();
+    renderizarTabsSessoes(); // Atualizar contador nas tabs
+    renderizarSessaoAtiva();
     
     // Feedback visual
     showToast('Exercício adicionado à sessão!', 'success');
@@ -3261,20 +3277,245 @@ function atualizarStatsSessao() {
     }
 }
 
-// Expandir sessão (placeholder)
-function expandirSessao() {
-    showToast('Modo expandido em breve!', 'info');
+// Renderizar tabs de sessões
+function renderizarTabsSessoes() {
+    const tabsContainer = document.getElementById('sessoes-tabs');
+    if (!tabsContainer) return;
+    
+    tabsContainer.innerHTML = sessoes.map(s => `
+        <button class="sessao-tab ${s.id === sessaoAtiva ? 'active' : ''}" onclick="selecionarSessao(${s.id})">
+            <span>${s.nome}</span>
+            <span class="tab-count">${s.exercicios.length}</span>
+        </button>
+    `).join('');
+}
+
+// Selecionar sessão ativa
+function selecionarSessao(sessaoId) {
+    sessaoAtiva = sessaoId;
+    renderizarTabsSessoes();
+    renderizarSessaoAtiva();
+}
+
+// Renderizar apenas a sessão ativa
+function renderizarSessaoAtiva() {
+    const container = document.getElementById('sessoes-container');
+    if (!container) return;
+    
+    const sessaoObj = sessoes.find(s => s.id === sessaoAtiva);
+    if (!sessaoObj) return;
+    
+    container.innerHTML = `
+        <div class="sessao-treino ${modoExpandido ? 'expandida' : ''}">
+            <div class="sessao-header">
+                <div class="sessao-info">
+                    <i class="fas fa-chevron-down"></i>
+                    <h3>${sessaoObj.nome}</h3>
+                    <div class="sessao-menu">
+                        <button class="btn-more" onclick="toggleMenuSessao(event, ${sessaoObj.id})">
+                            <i class="fas fa-ellipsis-vertical"></i>
+                        </button>
+                        <div class="menu-dropdown" id="menu-sessao-${sessaoObj.id}" style="display: none;">
+                            <button onclick="renomearSessao(${sessaoObj.id})">
+                                <i class="fas fa-edit"></i> Renomear
+                            </button>
+                            <button onclick="clonarSessao(${sessaoObj.id})">
+                                <i class="fas fa-clone"></i> Clonar
+                            </button>
+                            <button onclick="excluirSessao(${sessaoObj.id})" class="btn-danger">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sessao-stats">
+                    <span>${sessaoObj.exercicios.length} exercício${sessaoObj.exercicios.length !== 1 ? 's' : ''}</span>
+                    <span>${sessaoObj.exercicios.reduce((sum, ex) => sum + (ex.duracao || 0), 0)} min</span>
+                    <span>${sessaoObj.exercicios.reduce((sum, ex) => sum + (ex.kcal || 0), 0)} kcal</span>
+                    <span>0 MOVEs</span>
+                </div>
+                <button class="btn-expandir" onclick="toggleExpandirSessao()">
+                    <i class="fas ${modoExpandido ? 'fa-plus' : 'fa-expand'}"></i> 
+                    ${modoExpandido ? 'EXERCÍCIOS' : 'EXPANDIR'}
+                </button>
+            </div>
+            <div class="sessao-exercicios" id="sessao-exercicios-${sessaoObj.id}">
+                ${sessaoObj.exercicios.length === 0 ? `
+                    <div class="sessao-empty">
+                        <p>Adicione exercícios clicando nos cards acima</p>
+                    </div>
+                ` : `
+                    <div class="sessao-lista">
+                        ${sessaoObj.exercicios.map((ex, index) => `
+                            <div class="sessao-exercicio-item">
+                                <div class="exercicio-numero">${index + 1}</div>
+                                <div class="exercicio-detalhes">
+                                    <h4>${ex.nome}</h4>
+                                    <span class="exercicio-meta">${ex.tipo} • ${ex.aparelho}</span>
+                                </div>
+                                <div class="exercicio-acoes">
+                                    <button onclick="removerExercicioDaSessao(${sessaoObj.id}, ${index})" class="btn-remover">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+// Alias para compatibilidade - renderiza tabs + sessão
+function renderizarSessoes() {
+    renderizarTabsSessoes();
+    renderizarSessaoAtiva();
+}
+
+// Toggle expansão da sessão
+function toggleExpandirSessao() {
+    modoExpandido = !modoExpandido;
+    const biblioteca = document.querySelector('.exercicios-biblioteca');
+    const filtros = document.querySelector('.builder-filtros');
+    const btnAdicionar = document.querySelector('.btn-adicionar-sessao');
+    const tabs = document.querySelector('.sessoes-tabs');
+    
+    if (modoExpandido) {
+        // Esconder biblioteca, filtros, tabs e botão
+        if (biblioteca) biblioteca.style.display = 'none';
+        if (filtros) filtros.style.display = 'none';
+        if (btnAdicionar) btnAdicionar.style.display = 'none';
+        if (tabs) tabs.style.display = 'none';
+    } else {
+        // Mostrar biblioteca, filtros, tabs e botão
+        if (biblioteca) biblioteca.style.display = 'block';
+        if (filtros) filtros.style.display = 'flex';
+        if (btnAdicionar) btnAdicionar.style.display = 'block';
+        if (tabs) tabs.style.display = 'flex';
+    }
+    
+    renderizarSessaoAtiva();
+}
+
+// Adicionar nova sessão
+function adicionarNovaSessao() {
+    const novoId = Math.max(...sessoes.map(s => s.id)) + 1;
+    sessoes.push({
+        id: novoId,
+        nome: `Sessão ${novoId}`,
+        exercicios: [],
+        expandida: false
+    });
+    sessaoAtiva = novoId;
+    renderizarTabsSessoes();
+    renderizarSessaoAtiva();
+    showToast('Nova sessão criada!', 'success');
+}
+
+// Toggle menu de opções da sessão
+function toggleMenuSessao(event, sessaoId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`menu-sessao-${sessaoId}`);
+    
+    // Fechar outros menus
+    document.querySelectorAll('.menu-dropdown').forEach(m => {
+        if (m !== menu) m.style.display = 'none';
+    });
+    
+    if (menu) {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Renomear sessão
+function renomearSessao(sessaoId) {
+    const sessao = sessoes.find(s => s.id === sessaoId);
+    if (!sessao) return;
+    
+    const novoNome = prompt('Novo nome da sessão:', sessao.nome);
+    if (novoNome && novoNome.trim()) {
+        sessao.nome = novoNome.trim();
+        renderizarTabsSessoes();
+        renderizarSessaoAtiva();
+        showToast('Sessão renomeada!', 'success');
+    }
+    
+    // Fechar menu
+    const menu = document.getElementById(`menu-sessao-${sessaoId}`);
+    if (menu) menu.style.display = 'none';
+}
+
+// Clonar sessão
+function clonarSessao(sessaoId) {
+    const sessao = sessoes.find(s => s.id === sessaoId);
+    if (!sessao) return;
+    
+    const novoId = Math.max(...sessoes.map(s => s.id)) + 1;
+    const novaSessao = {
+        id: novoId,
+        nome: `${sessao.nome} (cópia)`,
+        exercicios: [...sessao.exercicios.map(ex => ({...ex}))], // Clone profundo
+        expandida: false
+    };
+    
+    sessoes.push(novaSessao);
+    sessaoAtiva = novoId;
+    renderizarTabsSessoes();
+    renderizarSessaoAtiva();
+    showToast('Sessão clonada!', 'success');
+    
+    // Fechar menu
+    const menu = document.getElementById(`menu-sessao-${sessaoId}`);
+    if (menu) menu.style.display = 'none';
+}
+
+// Excluir sessão
+function excluirSessao(sessaoId) {
+    if (sessoes.length === 1) {
+        showToast('Não é possível excluir a última sessão!', 'warning');
+        return;
+    }
+    
+    if (!confirm('Deseja realmente excluir esta sessão?')) return;
+    
+    sessoes = sessoes.filter(s => s.id !== sessaoId);
+    
+    // Ativar a primeira sessão disponível
+    if (sessaoAtiva === sessaoId) {
+        sessaoAtiva = sessoes[0].id;
+    }
+    
+    renderizarTabsSessoes();
+    renderizarSessaoAtiva();
+    showToast('Sessão excluída!', 'success');
+}
+
+// Remover exercício da sessão específica
+function removerExercicioDaSessao(sessaoId, index) {
+    const sessao = sessoes.find(s => s.id === sessaoId);
+    if (!sessao) return;
+    
+    sessao.exercicios.splice(index, 1);
+    renderizarTabsSessoes(); // Atualizar contador nas tabs
+    renderizarSessaoAtiva();
+    showToast('Exercício removido', 'info');
 }
 
 // Salvar programa
 function salvarPrograma() {
-    if (exerciciosSessao.length === 0) {
+    // Validar se há pelo menos 1 exercício em alguma sessão
+    const totalExercicios = sessoes.reduce((sum, s) => sum + s.exercicios.length, 0);
+    if (totalExercicios === 0) {
         showToast('Adicione pelo menos um exercício ao programa!', 'warning');
         return;
     }
     
     const programaData = JSON.parse(localStorage.getItem('programaEmCriacao') || '{}');
-    programaData.exercicios = [...exerciciosSessao]; // Clone para evitar referências
+    programaData.sessoes = sessoes.map(s => ({
+        ...s,
+        exercicios: [...s.exercicios]
+    }));
     programaData.dataCriacao = new Date().toISOString();
     programaData.id = programaData.id || Date.now();
     
