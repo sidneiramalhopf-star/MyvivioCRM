@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251018v15">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251018v18">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -842,8 +842,8 @@
 
                     <div id="page-treinamento" class="page-content">
                         <div class="page-header">
-                            <h1><i class="fas fa-dumbbell"></i> Treinamento</h1>
-                            <button class="btn-primary">
+                            <h1>Programas</h1>
+                            <button class="btn-primary" onclick="abrirModalNovoPrograma()">
                                 <i class="fas fa-plus"></i> Novo Programa
                             </button>
                         </div>
@@ -863,6 +863,95 @@
                                 </div>
                             </div>
                             <div class="programs-grid" id="programs-grid"></div>
+                        </div>
+                    </div>
+
+                    <!-- Página de Builder de Programa -->
+                    <div id="page-programa-builder" class="page-content" style="display: none;">
+                        <div class="builder-header">
+                            <div class="builder-breadcrumb">
+                                <button class="btn-back" onclick="fecharProgramaBuilder()">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <span>Fichas</span>
+                                <i class="fas fa-chevron-right"></i>
+                                <span id="builder-programa-nome">Treino rápido</span>
+                                <i class="fas fa-chevron-right"></i>
+                                <span>Nível 1</span>
+                            </div>
+                            <button class="btn-primary btn-salvar" onclick="salvarPrograma()">
+                                <i class="fas fa-check"></i> SALVAR
+                            </button>
+                        </div>
+
+                        <!-- Barra de Busca e Filtros -->
+                        <div class="builder-filtros">
+                            <div class="builder-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Buscar" id="search-exercicios">
+                            </div>
+                            <button class="btn-filtro"><i class="fas fa-filter"></i></button>
+                            <select id="filtro-aparelho" onchange="filtrarExercicios()">
+                                <option value="">Tipo de aparelho</option>
+                                <option value="esteira">Esteira</option>
+                                <option value="bike">Bike</option>
+                                <option value="halteres">Halteres</option>
+                                <option value="maquina">Máquina</option>
+                                <option value="solo">Solo</option>
+                            </select>
+                            <select id="filtro-qualidade" onchange="filtrarExercicios()">
+                                <option value="">Qualidade</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Média</option>
+                                <option value="baixa">Baixa</option>
+                            </select>
+                            <select id="filtro-parte-corpo" onchange="filtrarExercicios()">
+                                <option value="">Parte do Corpo</option>
+                                <option value="corpo-todo">Corpo todo</option>
+                                <option value="membros-superiores">Membros superiores</option>
+                                <option value="membros-inferiores">Membros inferiores</option>
+                                <option value="core">Core</option>
+                            </select>
+                            <select id="filtro-movimento" onchange="filtrarExercicios()">
+                                <option value="">Tipo de movimento</option>
+                                <option value="empurrar">Empurrar</option>
+                                <option value="puxar">Puxar</option>
+                                <option value="agachar">Agachar</option>
+                                <option value="rotacao">Rotação</option>
+                            </select>
+                        </div>
+
+                        <!-- Biblioteca de Exercícios -->
+                        <div class="exercicios-biblioteca">
+                            <div class="exercicios-grid" id="exercicios-grid">
+                                <!-- Exercícios serão carregados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Seção de Treino -->
+                        <div class="sessao-treino">
+                            <div class="sessao-header">
+                                <div class="sessao-info">
+                                    <i class="fas fa-chevron-down"></i>
+                                    <h3>Sessão 1</h3>
+                                    <button class="btn-more"><i class="fas fa-ellipsis-vertical"></i></button>
+                                </div>
+                                <div class="sessao-stats">
+                                    <span>3 exercícios</span>
+                                    <span>0 min</span>
+                                    <span>0 kcal</span>
+                                    <span>0 MOVEs</span>
+                                </div>
+                                <button class="btn-expandir" onclick="expandirSessao()">
+                                    <i class="fas fa-expand"></i> EXPANDIR
+                                </button>
+                            </div>
+                            <div class="sessao-exercicios" id="sessao-exercicios">
+                                <!-- Exercícios adicionados aparecerão aqui -->
+                                <div class="sessao-empty">
+                                    <p>Adicione exercícios clicando nos cards acima</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1029,6 +1118,73 @@
                     <!-- Lista de inscritos será populada dinamicamente -->
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Criação de Novo Programa -->
+    <div id="modal-novo-programa" class="modal">
+        <div class="modal-content modal-medio">
+            <div class="modal-header">
+                <h2>Crie um novo programa de treinamento</h2>
+                <span class="close" onclick="fecharModalNovoPrograma()">&times;</span>
+            </div>
+            
+            <form id="form-novo-programa" onsubmit="criarPrograma(event)">
+                <div class="form-group">
+                    <label for="programa-nome">Nome</label>
+                    <input type="text" id="programa-nome" placeholder="Nome do programa" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="programa-tipo-objetivo">Tipo de objetivo</label>
+                    <select id="programa-tipo-objetivo" required>
+                        <option value="">Selecione...</option>
+                        <option value="boa-forma">Boa forma/Bem-estar</option>
+                        <option value="emagrecimento">Emagrecimento</option>
+                        <option value="ganho-massa">Ganho de massa muscular</option>
+                        <option value="resistencia">Resistência</option>
+                        <option value="forca">Força</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="programa-objetivo">Objetivo</label>
+                    <select id="programa-objetivo" required>
+                        <option value="">Selecione...</option>
+                        <option value="iniciante">Iniciante</option>
+                        <option value="intermediario">Intermediário</option>
+                        <option value="avancado">Avançado</option>
+                        <option value="especifico">Específico</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="programa-tipo-exercicios">Tipo de exercícios</label>
+                    <select id="programa-tipo-exercicios" required>
+                        <option value="">Selecione...</option>
+                        <option value="cargas-absolutas">Cargas de trabalho absolutas</option>
+                        <option value="cargas-relativas">Cargas de trabalho relativas</option>
+                        <option value="peso-corporal">Peso corporal</option>
+                        <option value="funcional">Funcional</option>
+                        <option value="misto">Misto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="programa-quem-utiliza">Quem pode utilizá-lo</label>
+                    <select id="programa-quem-utiliza" required>
+                        <option value="">Selecione...</option>
+                        <option value="todos">Todos os membros</option>
+                        <option value="somente-eu">Somente eu elaborou</option>
+                        <option value="equipe">Minha equipe</option>
+                        <option value="personalizado">Personalizado</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary btn-criar">CRIAR</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1293,6 +1449,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251018v1"></script>
-    <script src="/static/js/app.js?v=20251018v13"></script>
+    <script src="/static/js/app.js?v=20251018v16"></script>
 </body>
 </html>

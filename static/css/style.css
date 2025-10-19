@@ -4924,3 +4924,457 @@ textarea.form-control {
     background: var(--accent-blue);
     color: white;
 }
+
+/* ============================================
+   PROGRAMAS DE TREINAMENTO
+   ============================================ */
+
+/* Modal Médio */
+.modal-medio {
+    max-width: 600px;
+    width: 90%;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text-primary);
+}
+
+.modal-actions {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-criar {
+    min-width: 120px;
+    padding: 0.75rem 2rem;
+    font-weight: 700;
+}
+
+/* Builder de Programa */
+.builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.builder-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.btn-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: var(--light-bg);
+}
+
+.builder-breadcrumb span {
+    color: var(--text-secondary);
+}
+
+.builder-breadcrumb .fa-chevron-right {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.btn-salvar {
+    font-weight: 700;
+}
+
+/* Filtros do Builder */
+.builder-filtros {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.builder-search {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.builder-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.builder-search input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.btn-filtro {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-filtro:hover {
+    background: var(--light-bg);
+}
+
+.builder-filtros select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+/* Biblioteca de Exercícios */
+.exercicios-biblioteca {
+    padding: 2rem;
+    background: var(--light-bg);
+    min-height: 400px;
+}
+
+.exercicios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+
+.exercicio-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.exercicio-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-blue);
+}
+
+.exercicio-thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.exercicio-thumb i {
+    font-size: 2rem;
+    color: white;
+    opacity: 0.8;
+}
+
+.exercicio-info {
+    padding: 0.75rem;
+}
+
+.exercicio-info h4 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Sessão de Treino */
+.sessao-treino {
+    background: white;
+    border-top: 1px solid var(--border-color);
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+}
+
+.sessao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--light-bg);
+}
+
+.sessao-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sessao-info i {
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.sessao-info h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.btn-more {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.sessao-stats {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.btn-expandir {
+    padding: 0.5rem 1rem;
+    background: var(--dark-bg);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-expandir:hover {
+    background: var(--text-primary);
+}
+
+.sessao-exercicios {
+    padding: 2rem;
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sessao-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+}
+
+.sessao-empty p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.sessao-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.sessao-exercicio-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--light-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.sessao-exercicio-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.exercicio-numero {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.exercicio-detalhes {
+    flex: 1;
+}
+
+.exercicio-detalhes h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.exercicio-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.exercicio-acoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-remover {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-remover:hover {
+    background: #fee;
+    border-color: #fcc;
+    color: #c33;
+}
+
+/* Cards de Programas */
+.programa-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.programa-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.programa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.programa-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.btn-menu {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-menu:hover {
+    background: var(--light-bg);
+}
+
+.programa-info {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.programa-info span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.programa-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 0.25rem 0.75rem;
+    background: var(--light-bg);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    opacity: 0.3;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+}
+
+.empty-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}

@@ -364,38 +364,80 @@ function switchTreinamentoView(view, evt) {
 }
 
 async function loadProgramas() {
-    if (!authToken) return;
+    // Carregar programas do localStorage (criados localmente)
+    const programasLocais = JSON.parse(localStorage.getItem('programas') || '[]');
     
-    try {
-        const response = await fetch(`${API_BASE}/programas`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
+    // Se houver autenticação, tentar carregar da API também
+    if (authToken) {
+        try {
+            const response = await fetch(`${API_BASE}/programas`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            if (response.ok) {
+                const programasAPI = await response.json();
+                // Combinar programas da API com programas locais
+                const todosProgramas = [...programasAPI, ...programasLocais];
+                displayProgramas(todosProgramas);
+                return;
             }
-        });
-        if (response.ok) {
-            const programas = await response.json();
-            displayProgramas(programas);
+        } catch (error) {
+            console.error('Erro ao carregar programas da API', error);
         }
-    } catch (error) {
-        console.error('Erro ao carregar programas', error);
     }
+    
+    // Se não houver autenticação ou a API falhou, mostrar apenas programas locais
+    displayProgramas(programasLocais);
 }
 
 function displayProgramas(programas) {
     const container = document.getElementById('programs-grid');
     
-    if (programas.length === 0) {
-        container.innerHTML = '<p class="empty-message">Nenhum programa cadastrado</p>';
+    if (!programas || programas.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-dumbbell"></i>
+                <p>Nenhum programa criado ainda</p>
+                <p class="empty-hint">Clique em "Novo Programa" para começar</p>
+            </div>
+        `;
         return;
     }
     
-    container.innerHTML = programas.map(p => `
-        <div class="program-card status-${p.status}">
-            <h4>${p.nome}</h4>
-            <p class="program-status">Status: ${p.status}</p>
-            <p class="program-usuarios">👥 ${p.usuarios_matriculados} matriculados</p>
-        </div>
-    `).join('');
+    container.innerHTML = programas.map(prog => {
+        // Programa da API (tem status e usuarios_matriculados)
+        if (prog.status) {
+            return `
+                <div class="program-card status-${prog.status}">
+                    <h4>${prog.nome}</h4>
+                    <p class="program-status">Status: ${prog.status}</p>
+                    <p class="program-usuarios">👥 ${prog.usuarios_matriculados || 0} matriculados</p>
+                </div>
+            `;
+        }
+        
+        // Programa local (tem exercicios e dataCriacao)
+        const numExercicios = prog.exercicios?.length || 0;
+        const data = prog.dataCriacao ? new Date(prog.dataCriacao).toLocaleDateString('pt-BR') : 'Sem data';
+        
+        return `
+            <div class="programa-card">
+                <div class="programa-header">
+                    <h3>${prog.nome}</h3>
+                    <button class="btn-menu"><i class="fas fa-ellipsis-vertical"></i></button>
+                </div>
+                <div class="programa-info">
+                    <span><i class="fas fa-list"></i> ${numExercicios} exercício${numExercicios !== 1 ? 's' : ''}</span>
+                    <span><i class="fas fa-calendar"></i> ${data}</span>
+                </div>
+                <div class="programa-tags">
+                    <span class="tag">${prog.tipoObjetivo || 'Sem categoria'}</span>
+                    <span class="tag">${prog.objetivo || 'Geral'}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function openAgendaModal() {
@@ -3007,4 +3049,259 @@ function abrirPessoasTab(tabName, evt) {
     if (targetTab) {
         targetTab.classList.add('active');
     }
+}
+
+// ============================================
+// PROGRAMAS DE TREINAMENTO
+// ============================================
+
+// Abrir modal de criação de novo programa
+function abrirModalNovoPrograma() {
+    const modal = document.getElementById('modal-novo-programa');
+    if (modal) {
+        modal.style.display = 'block';
+        // Limpar formulário
+        document.getElementById('form-novo-programa').reset();
+    }
+}
+
+// Fechar modal de criação de novo programa
+function fecharModalNovoPrograma() {
+    const modal = document.getElementById('modal-novo-programa');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Criar novo programa e abrir página de builder
+function criarPrograma(event) {
+    event.preventDefault();
+    
+    // Coletar dados do formulário
+    const programaData = {
+        nome: document.getElementById('programa-nome').value,
+        tipoObjetivo: document.getElementById('programa-tipo-objetivo').value,
+        objetivo: document.getElementById('programa-objetivo').value,
+        tipoExercicios: document.getElementById('programa-tipo-exercicios').value,
+        quemUtiliza: document.getElementById('programa-quem-utiliza').value,
+        id: Date.now() // ID temporário
+    };
+    
+    // Salvar em localStorage
+    localStorage.setItem('programaEmCriacao', JSON.stringify(programaData));
+    
+    // Fechar modal
+    fecharModalNovoPrograma();
+    
+    // Abrir página de builder
+    abrirProgramaBuilder(programaData);
+}
+
+// Abrir página de builder de programa
+function abrirProgramaBuilder(programaData) {
+    // Limpar sessão anterior e começar do zero
+    exerciciosSessao = [];
+    
+    // Esconder página de programas
+    const pageProgramas = document.getElementById('page-treinamento');
+    if (pageProgramas) {
+        pageProgramas.style.display = 'none';
+    }
+    
+    // Mostrar página de builder
+    const pageBuilder = document.getElementById('page-programa-builder');
+    if (pageBuilder) {
+        pageBuilder.style.display = 'block';
+        pageBuilder.classList.add('active');
+        
+        // Atualizar título com nome do programa
+        const builderTitle = document.getElementById('builder-programa-nome');
+        if (builderTitle) {
+            builderTitle.textContent = programaData.nome;
+        }
+        
+        // Carregar biblioteca de exercícios
+        carregarBibliotecaExercicios();
+        
+        // Renderizar sessão vazia
+        renderizarSessao();
+    }
+}
+
+// Fechar builder e voltar para lista de programas
+function fecharProgramaBuilder() {
+    const pageBuilder = document.getElementById('page-programa-builder');
+    if (pageBuilder) {
+        pageBuilder.style.display = 'none';
+        pageBuilder.classList.remove('active');
+    }
+    
+    const pageProgramas = document.getElementById('page-treinamento');
+    if (pageProgramas) {
+        pageProgramas.style.display = 'block';
+    }
+    
+    // Limpar estado e renderizar sessão vazia
+    exerciciosSessao = [];
+    renderizarSessao();
+    
+    // Recarregar lista de programas
+    carregarProgramas();
+}
+
+// Biblioteca de exercícios global
+const bibliotecaExercicios = [
+    { id: 1, nome: 'Run', tipo: 'Cardio', aparelho: 'Esteira', parteCorpo: 'Corpo todo', duracao: 10, kcal: 120 },
+    { id: 2, nome: 'Bike', tipo: 'Cardio', aparelho: 'Bike', parteCorpo: 'Membros inferiores', duracao: 10, kcal: 100 },
+    { id: 3, nome: 'Synchro', tipo: 'Cardio', aparelho: 'Synchro', parteCorpo: 'Corpo todo', duracao: 10, kcal: 150 },
+    { id: 4, nome: 'Flexão de abdômen', tipo: 'Força', aparelho: 'Solo', parteCorpo: 'Core', duracao: 5, kcal: 30 },
+    { id: 5, nome: 'Elevação lateral', tipo: 'Força', aparelho: 'Halteres', parteCorpo: 'Ombros', duracao: 5, kcal: 35 },
+    { id: 6, nome: 'Quadríceps - deitado', tipo: 'Força', aparelho: 'Máquina', parteCorpo: 'Pernas', duracao: 5, kcal: 40 },
+    { id: 7, nome: 'Abdominal - deitado', tipo: 'Força', aparelho: 'Solo', parteCorpo: 'Core', duracao: 5, kcal: 30 },
+    { id: 8, nome: 'Desenvolvimento', tipo: 'Força', aparelho: 'Halteres', parteCorpo: 'Ombros', duracao: 5, kcal: 35 }
+];
+
+// Exercícios adicionados à sessão atual
+let exerciciosSessao = [];
+
+// Carregar biblioteca de exercícios
+function carregarBibliotecaExercicios() {
+    const grid = document.getElementById('exercicios-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = bibliotecaExercicios.map(ex => `
+        <div class="exercicio-card" onclick="adicionarExercicioSessao(${ex.id})">
+            <div class="exercicio-thumb">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="exercicio-info">
+                <h4>${ex.nome}</h4>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Adicionar exercício à sessão ativa
+function adicionarExercicioSessao(exercicioId) {
+    const exercicio = bibliotecaExercicios.find(ex => ex.id === exercicioId);
+    if (!exercicio) return;
+    
+    // Adicionar à lista
+    exerciciosSessao.push({ ...exercicio, ordem: exerciciosSessao.length + 1 });
+    
+    // Atualizar visualização
+    renderizarSessao();
+    
+    // Feedback visual
+    mostrarToast('Exercício adicionado à sessão!', 'success');
+}
+
+// Renderizar exercícios da sessão
+function renderizarSessao() {
+    const container = document.getElementById('sessao-exercicios');
+    if (!container) return;
+    
+    if (exerciciosSessao.length === 0) {
+        container.innerHTML = `
+            <div class="sessao-empty">
+                <p>Adicione exercícios clicando nos cards acima</p>
+            </div>
+        `;
+        atualizarStatsSessao();
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="sessao-lista">
+            ${exerciciosSessao.map((ex, index) => `
+                <div class="sessao-exercicio-item">
+                    <div class="exercicio-numero">${index + 1}</div>
+                    <div class="exercicio-detalhes">
+                        <h4>${ex.nome}</h4>
+                        <span class="exercicio-meta">${ex.tipo} • ${ex.aparelho}</span>
+                    </div>
+                    <div class="exercicio-acoes">
+                        <button onclick="removerExercicioSessao(${index})" class="btn-remover">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    atualizarStatsSessao();
+}
+
+// Remover exercício da sessão
+function removerExercicioSessao(index) {
+    exerciciosSessao.splice(index, 1);
+    renderizarSessao();
+    mostrarToast('Exercício removido', 'info');
+}
+
+// Atualizar estatísticas da sessão
+function atualizarStatsSessao() {
+    const totalExercicios = exerciciosSessao.length;
+    const totalMinutos = exerciciosSessao.reduce((sum, ex) => sum + (ex.duracao || 0), 0);
+    const totalKcal = exerciciosSessao.reduce((sum, ex) => sum + (ex.kcal || 0), 0);
+    
+    const statsContainer = document.querySelector('.sessao-stats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <span>${totalExercicios} exercício${totalExercicios !== 1 ? 's' : ''}</span>
+            <span>${totalMinutos} min</span>
+            <span>${totalKcal} kcal</span>
+            <span>0 MOVEs</span>
+        `;
+    }
+}
+
+// Expandir sessão (placeholder)
+function expandirSessao() {
+    mostrarToast('Modo expandido em breve!', 'info');
+}
+
+// Salvar programa
+function salvarPrograma() {
+    if (exerciciosSessao.length === 0) {
+        mostrarToast('Adicione pelo menos um exercício ao programa!', 'warning');
+        return;
+    }
+    
+    const programaData = JSON.parse(localStorage.getItem('programaEmCriacao') || '{}');
+    programaData.exercicios = [...exerciciosSessao]; // Clone para evitar referências
+    programaData.dataCriacao = new Date().toISOString();
+    programaData.id = programaData.id || Date.now();
+    
+    // Salvar em localStorage (futuramente será API)
+    const programas = JSON.parse(localStorage.getItem('programas') || '[]');
+    programas.push(programaData);
+    localStorage.setItem('programas', JSON.stringify(programas));
+    
+    mostrarToast('Programa salvo com sucesso!', 'success');
+    
+    // Limpar dados temporários
+    localStorage.removeItem('programaEmCriacao');
+    
+    // Voltar para lista de programas
+    setTimeout(() => {
+        fecharProgramaBuilder();
+    }, 1000);
+}
+
+// Alias para compatibilidade
+function carregarProgramas() {
+    loadProgramas();
+}
+
+// Filtrar exercícios
+function filtrarExercicios() {
+    const filtroAparelho = document.getElementById('filtro-aparelho').value;
+    const filtroQualidade = document.getElementById('filtro-qualidade').value;
+    const filtroParteCorpo = document.getElementById('filtro-parte-corpo').value;
+    const filtroMovimento = document.getElementById('filtro-movimento').value;
+    
+    console.log('Filtros:', { filtroAparelho, filtroQualidade, filtroParteCorpo, filtroMovimento });
+    // TODO: Implementar lógica de filtro
 }
