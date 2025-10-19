@@ -4,6 +4,18 @@
 Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
+- **October 19, 2025**: **COMPLETE TRAINING PROGRAM MANAGEMENT SYSTEM**:
+  - Created "Programas" page with program creation modal (name, goal type, objective, exercise type, access permissions)
+  - Built comprehensive program builder with exercise library (8 initial exercises with metadata)
+  - Implemented filtering system (equipment type, quality, body part, movement type)
+  - Created session management with drag-and-drop functionality
+  - Added real-time statistics (exercise count, duration, calories)
+  - Implemented localStorage persistence with API fallback for hybrid online/offline usage
+  - Added state cleanup between program creations to prevent stale data
+  - Validation requires minimum 1 exercise before saving
+  - Programs display in grid with exercise count, date, and category tags
+  - Empty state with friendly message when no programs exist
+  - Smooth transitions and professional UI matching Technogym aesthetic
 - **October 18, 2025**: **MAJOR REFACTOR** - Unified sidebar converted to overlay system:
   - Sidebar now appears OVER the main content (z-index 900) instead of pushing it aside
   - When hidden, shows only a small 40x40px button in accent blue (#62b1ca) positioned at top-right (20px from edges)
@@ -52,7 +64,7 @@ The Myvivio CRM features a full-stack architecture with a FastAPI backend and a 
 - **Branding**: Full rebranding to "Myvivio CRM" with a professional aesthetic inspired by Technogym.
 - **Color Palette**: Utilizes a consistent professional palette: Accent Blue (#62b1ca), Dark Blue (#1f2746), Medium Blue (#333f6e), White (#ffffff), Black (#000000). Specific colors for warnings, success, and danger are also defined.
 - **Iconography**: Exclusively uses Font Awesome 6.4.0 icons for a professional look, replacing all emojis.
-- **Layout**: Features a fixed left-hand navigation sidebar with 6 main pages and a dynamic, collapsable "Planner" sidebar on the right.
+- **Layout**: Features a fixed left-hand navigation sidebar with 6 main pages (Home, Planejador, Pessoas, Treinamento, Relatórios, Configurações) and a dynamic, collapsable unified sidebar on the right that adapts content based on active page.
 - **Dashboard**: The Home dashboard is tab-based, offering "Day-to-day" and "Performance" views with widgets and metrics.
 - **Interactivity**: Includes a dynamic calendar, quick event creation, interactive sidebar elements with smooth animations, and toast notifications for user feedback.
 - **Responsiveness**: Designed to be responsive, with the sidebar adapting to full width on mobile.
