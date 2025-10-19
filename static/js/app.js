@@ -54,11 +54,13 @@ function navigateTo(event, page) {
     
     document.querySelectorAll('.page-content').forEach(content => {
         content.classList.remove('active');
+        content.style.display = 'none'; // Força esconder todas
     });
     
     const pageElement = document.getElementById(`page-${page}`);
     if (pageElement) {
         pageElement.classList.add('active');
+        pageElement.style.display = 'block'; // Força mostrar a página ativa
         
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
@@ -87,11 +89,13 @@ function navigateToPage(page) {
     
     document.querySelectorAll('.page-content').forEach(content => {
         content.classList.remove('active');
+        content.style.display = 'none'; // Força esconder todas
     });
     
     const pageElement = document.getElementById(`page-${page}`);
     if (pageElement) {
         pageElement.classList.add('active');
+        pageElement.style.display = 'block'; // Força mostrar a página ativa
         
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
@@ -3193,7 +3197,7 @@ function adicionarExercicioSessao(exercicioId) {
     renderizarSessao();
     
     // Feedback visual
-    mostrarToast('Exercício adicionado à sessão!', 'success');
+    showToast('Exercício adicionado à sessão!', 'success');
 }
 
 // Renderizar exercícios da sessão
@@ -3237,7 +3241,7 @@ function renderizarSessao() {
 function removerExercicioSessao(index) {
     exerciciosSessao.splice(index, 1);
     renderizarSessao();
-    mostrarToast('Exercício removido', 'info');
+    showToast('Exercício removido', 'info');
 }
 
 // Atualizar estatísticas da sessão
@@ -3259,13 +3263,13 @@ function atualizarStatsSessao() {
 
 // Expandir sessão (placeholder)
 function expandirSessao() {
-    mostrarToast('Modo expandido em breve!', 'info');
+    showToast('Modo expandido em breve!', 'info');
 }
 
 // Salvar programa
 function salvarPrograma() {
     if (exerciciosSessao.length === 0) {
-        mostrarToast('Adicione pelo menos um exercício ao programa!', 'warning');
+        showToast('Adicione pelo menos um exercício ao programa!', 'warning');
         return;
     }
     
@@ -3279,7 +3283,7 @@ function salvarPrograma() {
     programas.push(programaData);
     localStorage.setItem('programas', JSON.stringify(programas));
     
-    mostrarToast('Programa salvo com sucesso!', 'success');
+    showToast('Programa salvo com sucesso!', 'success');
     
     // Limpar dados temporários
     localStorage.removeItem('programaEmCriacao');
