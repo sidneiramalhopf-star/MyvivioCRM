@@ -203,20 +203,20 @@ body {
 }
 
 /* ============================================
-   UNIFIED COLLAPSIBLE SIDEBAR (DIREITA)
+   UNIFIED COLLAPSIBLE SIDEBAR (ESQUERDA)
    ============================================ */
 
 .unified-sidebar {
     width: 250px;
     background: white;
-    border-left: 1px solid var(--border-color);
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     position: fixed;
     height: 100vh;
-    right: 0;
+    left: 0;
     top: 0;
     z-index: 900;
 }
@@ -225,7 +225,7 @@ body {
 .unified-sidebar.collapsed {
     width: auto;
     height: auto;
-    right: 0;
+    left: 0;
     top: 0;
     background: transparent;
     border: none;
@@ -242,7 +242,7 @@ body {
 .unified-sidebar.hidden {
     width: auto;
     height: auto;
-    right: 0;
+    left: 0;
     top: 0;
     background: transparent;
     border: none;
@@ -375,7 +375,7 @@ body {
     font-size: 0.9rem;
     color: var(--text-primary);
     text-align: left;
-    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
 }
 
 .unified-menu-item i {
@@ -389,7 +389,7 @@ body {
 
 .unified-menu-item.active {
     background: rgba(98, 177, 202, 0.2);
-    border-left-color: var(--accent-blue);
+    border-right-color: var(--accent-blue);
     font-weight: 600;
     color: var(--accent-blue);
 }
