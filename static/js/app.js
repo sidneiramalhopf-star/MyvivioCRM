@@ -593,23 +593,26 @@ const sidebarConfigs = {
     }
 };
 
-// Posicionar dinamicamente o botão da sidebar colapsada/hidden na altura da breadcrumb
+// Posicionar dinamicamente o botão da sidebar colapsada/hidden no page-header
 function positionSidebarButton() {
     const sidebar = document.getElementById('unified-sidebar');
-    if (!sidebar) return;
+    const sidebarToggle = document.getElementById('unified-sidebar-toggle');
     
-    // Encontrar o page-header (breadcrumb)
-    const pageHeader = document.querySelector('.page-content.active .page-header');
+    if (!sidebar || !sidebarToggle) return;
     
-    if (pageHeader) {
-        const rect = pageHeader.getBoundingClientRect();
-        const topPosition = rect.top;
+    // Verificar se a sidebar está colapsada ou hidden
+    const isCollapsed = sidebar.classList.contains('collapsed') || sidebar.classList.contains('hidden');
+    
+    if (isCollapsed) {
+        // Encontrar o page-header ativo
+        const pageHeader = document.querySelector('.page-content.active .page-header');
         
-        // Definir a posição top dinamicamente
-        sidebar.style.setProperty('--sidebar-button-top', `${topPosition}px`);
-    } else {
-        // Fallback para posição padrão se não houver breadcrumb
-        sidebar.style.setProperty('--sidebar-button-top', '80px');
+        if (pageHeader) {
+            // Mover o botão para dentro do page-header
+            if (!pageHeader.contains(sidebarToggle)) {
+                pageHeader.appendChild(sidebarToggle);
+            }
+        }
     }
 }
 
@@ -639,6 +642,7 @@ if (document.readyState === 'loading') {
 function updateUnifiedSidebar(page) {
     const sidebar = document.getElementById('unified-sidebar');
     const sidebarContent = document.getElementById('unified-sidebar-content');
+    const toggleIcon = document.getElementById('sidebar-toggle-icon');
     
     if (!sidebar || !sidebarContent) return;
     
@@ -646,8 +650,15 @@ function updateUnifiedSidebar(page) {
     const config = sidebarConfigs[page];
     
     if (config) {
-        // Mostrar sidebar (overlay sobre o conteúdo)
+        // Mostrar sidebar colapsada inicialmente (overlay sobre o conteúdo)
         sidebar.classList.remove('hidden');
+        sidebar.classList.add('collapsed');
+        unifiedSidebarCollapsed = true;
+        
+        // Atualizar ícone para seta para esquerda (indicando que abre para esquerda)
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-chevron-left';
+        }
         
         // Construir HTML do conteúdo
         let html = `
@@ -683,13 +694,21 @@ function updateUnifiedSidebar(page) {
 // Toggle da sidebar unificada (overlay - não modifica o main-content)
 function toggleUnifiedSidebar() {
     const sidebar = document.getElementById('unified-sidebar');
+    const toggleIcon = document.getElementById('sidebar-toggle-icon');
+    const sidebarToggle = document.getElementById('unified-sidebar-toggle');
     
-    if (!sidebar) return;
+    if (!sidebar || !toggleIcon || !sidebarToggle) return;
     
     // Se está hidden, mostra expandida
     if (sidebar.classList.contains('hidden')) {
         sidebar.classList.remove('hidden');
         unifiedSidebarCollapsed = false;
+        toggleIcon.className = 'fas fa-chevron-right';
+        
+        // Mover o botão de volta para dentro da sidebar
+        if (!sidebar.contains(sidebarToggle)) {
+            sidebar.insertBefore(sidebarToggle, sidebar.firstChild);
+        }
         return;
     }
     
@@ -698,8 +717,18 @@ function toggleUnifiedSidebar() {
     
     if (unifiedSidebarCollapsed) {
         sidebar.classList.add('collapsed');
+        toggleIcon.className = 'fas fa-chevron-left';
+        
+        // Posicionar botão no page-header
+        positionSidebarButton();
     } else {
         sidebar.classList.remove('collapsed');
+        toggleIcon.className = 'fas fa-chevron-right';
+        
+        // Mover o botão de volta para dentro da sidebar
+        if (!sidebar.contains(sidebarToggle)) {
+            sidebar.insertBefore(sidebarToggle, sidebar.firstChild);
+        }
     }
 }
 
