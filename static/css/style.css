@@ -203,20 +203,20 @@ body {
 }
 
 /* ============================================
-   UNIFIED COLLAPSIBLE SIDEBAR (ESQUERDA)
+   UNIFIED COLLAPSIBLE SIDEBAR (DIREITA)
    ============================================ */
 
 .unified-sidebar {
     width: 250px;
     background: white;
-    border-right: 2px solid var(--accent-blue);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     position: fixed;
     height: 100vh;
-    left: 0;
+    right: 0;
     top: 0;
     z-index: 900;
 }
@@ -225,7 +225,7 @@ body {
 .unified-sidebar.collapsed {
     width: auto;
     height: auto;
-    left: 0;
+    right: 0;
     top: 0;
     background: transparent;
     border: none;
@@ -242,7 +242,7 @@ body {
 .unified-sidebar.hidden {
     width: auto;
     height: auto;
-    left: 0;
+    right: 0;
     top: 0;
     background: transparent;
     border: none;
@@ -260,13 +260,13 @@ body {
     position: absolute;
     right: 10px;
     top: 10px;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: white;
     border: 2px solid var(--accent-blue);
     color: var(--accent-blue);
     cursor: pointer;
-    border-radius: 50%;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -276,7 +276,7 @@ body {
 
 .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--accent-blue);
+    border-color: var(--dark-bg);
 }
 
 .unified-sidebar-toggle i {
@@ -286,24 +286,24 @@ body {
 }
 
 .unified-sidebar-toggle:hover i {
-    color: var(--accent-blue);
+    color: var(--dark-bg);
 }
 
 /* Botão quando colapsada - fica posicionado na extremidade direita do page-header */
 .unified-sidebar.collapsed .unified-sidebar-toggle {
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: white;
     border: 2px solid var(--accent-blue);
-    border-radius: 50%;
+    border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--accent-blue);
+    border-color: var(--dark-bg);
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle i {
@@ -313,24 +313,24 @@ body {
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle:hover i {
-    color: var(--accent-blue);
+    color: var(--dark-bg);
 }
 
 /* Botão pequeno quando sidebar está hidden - fica posicionado na extremidade direita do page-header */
 .unified-sidebar.hidden .unified-sidebar-toggle {
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: white;
     border: 2px solid var(--accent-blue);
-    border-radius: 50%;
+    border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--accent-blue);
+    border-color: var(--dark-bg);
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle i {
@@ -340,7 +340,7 @@ body {
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle:hover i {
-    color: var(--accent-blue);
+    color: var(--dark-bg);
 }
 
 .unified-sidebar-content {
@@ -375,7 +375,7 @@ body {
     font-size: 0.9rem;
     color: var(--text-primary);
     text-align: left;
-    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
 }
 
 .unified-menu-item i {
@@ -389,7 +389,7 @@ body {
 
 .unified-menu-item.active {
     background: rgba(98, 177, 202, 0.2);
-    border-right-color: var(--accent-blue);
+    border-left-color: var(--accent-blue);
     font-weight: 600;
     color: var(--accent-blue);
 }
@@ -5008,7 +5008,7 @@ textarea.form-control {
 .breadcrumb-toggle {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: 6px;
     border: 1px solid var(--accent-blue);
     background: white;
     color: var(--accent-blue);
@@ -5021,7 +5021,6 @@ textarea.form-control {
 
 .breadcrumb-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--accent-blue);
 }
 
 .builder-breadcrumb span {

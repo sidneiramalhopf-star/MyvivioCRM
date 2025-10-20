@@ -655,9 +655,9 @@ function updateUnifiedSidebar(page) {
         sidebar.classList.add('collapsed');
         unifiedSidebarCollapsed = true;
         
-        // Atualizar ícone para seta para direita (indicando que abre para direita)
+        // Atualizar ícone para seta para esquerda (indicando que abre para esquerda)
         if (toggleIcon) {
-            toggleIcon.className = 'fas fa-chevron-right';
+            toggleIcon.className = 'fas fa-chevron-left';
         }
         
         // Construir HTML do conteúdo
@@ -703,7 +703,7 @@ function toggleUnifiedSidebar() {
     if (sidebar.classList.contains('hidden')) {
         sidebar.classList.remove('hidden');
         unifiedSidebarCollapsed = false;
-        toggleIcon.className = 'fas fa-chevron-left';
+        toggleIcon.className = 'fas fa-chevron-right';
         
         // Mover o botão de volta para dentro da sidebar
         if (!sidebar.contains(sidebarToggle)) {
@@ -717,13 +717,13 @@ function toggleUnifiedSidebar() {
     
     if (unifiedSidebarCollapsed) {
         sidebar.classList.add('collapsed');
-        toggleIcon.className = 'fas fa-chevron-right';
+        toggleIcon.className = 'fas fa-chevron-left';
         
         // Posicionar botão no page-header
         positionSidebarButton();
     } else {
         sidebar.classList.remove('collapsed');
-        toggleIcon.className = 'fas fa-chevron-left';
+        toggleIcon.className = 'fas fa-chevron-right';
         
         // Mover o botão de volta para dentro da sidebar
         if (!sidebar.contains(sidebarToggle)) {
