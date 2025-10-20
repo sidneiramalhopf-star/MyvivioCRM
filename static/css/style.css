@@ -209,7 +209,7 @@ body {
 .unified-sidebar {
     width: 250px;
     background: white;
-    border-right: 1px solid var(--border-color);
+    border-right: 2px solid var(--accent-blue);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     display: flex;
@@ -260,13 +260,13 @@ body {
     position: absolute;
     right: 10px;
     top: 10px;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: white;
     border: 2px solid var(--accent-blue);
     color: var(--accent-blue);
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -276,7 +276,7 @@ body {
 
 .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--dark-bg);
+    border-color: var(--accent-blue);
 }
 
 .unified-sidebar-toggle i {
@@ -286,24 +286,24 @@ body {
 }
 
 .unified-sidebar-toggle:hover i {
-    color: var(--dark-bg);
+    color: var(--accent-blue);
 }
 
 /* Botão quando colapsada - fica posicionado na extremidade direita do page-header */
 .unified-sidebar.collapsed .unified-sidebar-toggle {
     position: relative;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: white;
     border: 2px solid var(--accent-blue);
-    border-radius: 6px;
+    border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--dark-bg);
+    border-color: var(--accent-blue);
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle i {
@@ -313,24 +313,24 @@ body {
 }
 
 .unified-sidebar.collapsed .unified-sidebar-toggle:hover i {
-    color: var(--dark-bg);
+    color: var(--accent-blue);
 }
 
 /* Botão pequeno quando sidebar está hidden - fica posicionado na extremidade direita do page-header */
 .unified-sidebar.hidden .unified-sidebar-toggle {
     position: relative;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: white;
     border: 2px solid var(--accent-blue);
-    border-radius: 6px;
+    border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
-    border-color: var(--dark-bg);
+    border-color: var(--accent-blue);
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle i {
@@ -340,7 +340,7 @@ body {
 }
 
 .unified-sidebar.hidden .unified-sidebar-toggle:hover i {
-    color: var(--dark-bg);
+    color: var(--accent-blue);
 }
 
 .unified-sidebar-content {
@@ -5008,7 +5008,7 @@ textarea.form-control {
 .breadcrumb-toggle {
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 50%;
     border: 1px solid var(--accent-blue);
     background: white;
     color: var(--accent-blue);
@@ -5021,6 +5021,7 @@ textarea.form-control {
 
 .breadcrumb-toggle:hover {
     background: rgba(98, 177, 202, 0.1);
+    border-color: var(--accent-blue);
 }
 
 .builder-breadcrumb span {
