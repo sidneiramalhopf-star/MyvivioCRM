@@ -5005,6 +5005,24 @@ textarea.form-control {
     background: var(--light-bg);
 }
 
+.breadcrumb-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid var(--accent-blue);
+    background: white;
+    color: var(--accent-blue);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.breadcrumb-toggle:hover {
+    background: rgba(98, 177, 202, 0.1);
+}
+
 .builder-breadcrumb span {
     color: var(--text-secondary);
 }
