@@ -4,6 +4,13 @@
 Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
+- **October 20, 2025**: **OTIMIZAÇÃO DO LAYOUT DA SIDEBAR**:
+  - Reduzida largura da sidebar de navegação de 250px para 180px (ajustada ao tamanho da maior palavra)
+  - Reduzido padding da `.logo-section` de 1rem para 0.5rem
+  - Reduzido padding do `.logo-placeholder` de 1.5rem 0.75rem para 1rem 0.5rem
+  - Ajustado `margin-left` do `.main-content` de 250px para 180px
+  - Layout mais compacto e com melhor aproveitamento de espaço horizontal
+  - Media queries atualizados para manter consistência em todas as resoluções
 - **October 19, 2025**: **SISTEMA DE MÚLTIPLAS SESSÕES COMPLETO** (Aprovado pelo Arquiteto):
   - Implementado sistema de tabs clicáveis para navegação entre sessões (`renderizarTabsSessoes()`)
   - Cada tab mostra nome da sessão + contador de exercícios atualizado em tempo real

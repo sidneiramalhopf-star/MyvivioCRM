@@ -133,7 +133,7 @@ body {
 
 /* Navigation Sidebar */
 .nav-sidebar {
-    width: 250px;
+    width: 180px;
     background: var(--sidebar-bg);
     color: white;
     display: flex;
@@ -146,13 +146,13 @@ body {
 }
 
 .logo-section {
-    padding: 1rem;
+    padding: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo-placeholder {
     background: var(--accent-blue);
-    padding: 1.5rem 0.75rem;
+    padding: 1rem 0.5rem;
     border-radius: 8px;
     text-align: center;
 }
@@ -400,7 +400,7 @@ body {
 
 /* Main Content */
 .main-content {
-    margin-left: 250px;
+    margin-left: 180px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1488,11 +1488,11 @@ body {
 /* Responsive */
 @media (max-width: 1024px) {
     .nav-sidebar {
-        width: 220px;
+        width: 180px;
     }
     
     .main-content {
-        margin-left: 220px;
+        margin-left: 180px;
     }
 }
 
