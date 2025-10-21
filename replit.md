@@ -4,18 +4,18 @@
 Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 21, 2025**: **LAYOUT DE 3 COLUNAS ESTILO TECHNOGYM** (Aprovado pelo Arquiteto):
-  - Implementado layout de 3 colunas fixas: nav-sidebar (180px) → unified-sidebar (280px) → main-content
-  - Sidebar secundária com position: fixed, left: 180px, fundo escuro (#2c2c2c)
-  - Botão toggle circular azul (40px) com position: fixed, centralizado verticalmente (top: 50%)
-  - Seletores CSS :has() para reatividade: main-content margin ajusta de 180px → 460px quando sidebar abre
-  - Botão reposiciona automaticamente de left: 180px → left: 460px quando sidebar expande
-  - toggleUnifiedSidebar() alterna classes .collapsed para abrir/fechar sidebar
-  - updateUnifiedSidebar() adiciona .hidden em páginas sem subtabs (Home, Iniciar, Configuração)
-  - Sidebar inicia collapsed em páginas com subtabs (Planejador, Pessoas, Treinamento)
-  - Ícone muda entre chevron-right (fechada) ↔ chevron-left (aberta)
-  - Transições suaves (0.3s ease) sem sobreposições ou elementos ocultos
-  - Versões de arquivos atualizadas para v20251021v1 (forçar reload de cache)
+- **October 21, 2025**: **SIDEBAR OVERLAY COM NOVO DESIGN DE BOTÃO** (Aprovado pelo Arquiteto):
+  - Sidebar convertida para overlay puro: z-index 900, desliza por cima do conteúdo sem empurrá-lo
+  - main-content sempre com margin-left fixo em 180px (removidos seletores :has() de ajuste)
+  - Botão toggle redesenhado: 28px (reduzido de 40px), fundo branco, borda 2px solid #123058
+  - Ícone do botão na cor #123058 (azul escuro), hover sutil sem mudança drástica
+  - Botão posicionado 1cm à esquerda: left: 142px (fechado) → left: 422px (aberto)
+  - Auto-fechamento implementado: sidebar fecha automaticamente ao clicar em qualquer subtab
+  - Menu items com event listeners em vez de onclick inline para melhor controle
+  - Persistência de estado: sidebar mantém estado (aberta/fechada) ao navegar entre páginas com subtabs
+  - Reseta para collapsed ao vir de páginas sem subtabs (Home, Iniciar, Configuração)
+  - Correção crítica: captura wasHidden ANTES de remover classe para lógica correta
+  - Transições suaves (0.3s ease) mantidas, comportamento visual polido
 - **October 20, 2025**: **BREADCRUMB COM BOTÃO DE TOGGLE ADICIONADO**:
   - Adicionado botão de toggle no breadcrumb do builder de programa
   - Botão posicionado antes da palavra "Treinamento" no breadcrumb
