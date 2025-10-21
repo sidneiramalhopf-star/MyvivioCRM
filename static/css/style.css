@@ -217,7 +217,7 @@ body {
     position: fixed;
     left: 180px;
     top: 0;
-    z-index: 90;
+    z-index: 900;
     overflow: hidden;
 }
 
@@ -238,17 +238,17 @@ body {
     display: none;
 }
 
-/* Botão circular de toggle - fica na borda direita da sidebar, centralizado verticalmente */
+/* Botão circular de toggle - menor, 1cm à esquerda, fundo branco */
 .unified-sidebar-toggle-circle {
     position: fixed;
-    left: 180px;
+    left: 142px; /* 180px - 38px (1cm) */
     top: 50%;
     transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: var(--accent-blue);
-    border: none;
-    color: white;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #123058;
+    color: #123058;
     cursor: pointer;
     border-radius: 50%;
     display: flex;
@@ -256,12 +256,12 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
     z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Quando sidebar está aberta, move o botão para a direita */
 body:has(.unified-sidebar:not(.collapsed):not(.hidden)) .unified-sidebar-toggle-circle {
-    left: calc(180px + 280px);
+    left: calc(180px + 280px - 38px); /* 422px */
 }
 
 /* Quando sidebar está escondida (hidden), esconde o botão também */
@@ -270,13 +270,14 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 }
 
 .unified-sidebar-toggle-circle:hover {
-    background: var(--dark-bg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: #f8f9fa;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 .unified-sidebar-toggle-circle i {
     transition: transform 0.3s ease;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
+    color: #123058;
 }
 
 .unified-sidebar-content {
@@ -343,19 +344,13 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     color: var(--accent-blue);
 }
 
-/* Main Content */
+/* Main Content - margem fixa, sidebar desliza por cima como overlay */
 .main-content {
     margin-left: 180px;
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    transition: margin-left 0.3s ease;
-}
-
-/* Quando sidebar está aberta, ajusta margem do conteúdo principal */
-body:has(.unified-sidebar:not(.collapsed):not(.hidden)) .main-content {
-    margin-left: calc(180px + 280px);
 }
 
 .top-header {

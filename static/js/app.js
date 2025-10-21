@@ -650,14 +650,35 @@ function updateUnifiedSidebar(page) {
     const config = sidebarConfigs[page];
     
     if (config) {
-        // Mostrar sidebar colapsada inicialmente
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('collapsed');
-        unifiedSidebarCollapsed = true;
+        // Capturar estado hidden ANTES de remover a classe
+        const wasHidden = sidebar.classList.contains('hidden');
         
-        // Atualizar ícone para chevron-right (aponta para direita quando fechada)
-        if (toggleIcon) {
-            toggleIcon.className = 'fas fa-chevron-right';
+        // Remover classe hidden (pode ter sido adicionada em páginas anteriores)
+        sidebar.classList.remove('hidden');
+        
+        // Manter estado atual da sidebar se já estava visível (persistência)
+        // Apenas definir como collapsed se for primeira vez ou estava hidden antes
+        if (wasHidden || unifiedSidebarCollapsed === undefined) {
+            sidebar.classList.add('collapsed');
+            unifiedSidebarCollapsed = true;
+            
+            // Atualizar ícone para chevron-right (aponta para direita quando fechada)
+            if (toggleIcon) {
+                toggleIcon.className = 'fas fa-chevron-right';
+            }
+        } else {
+            // Manter estado atual
+            if (unifiedSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                if (toggleIcon) {
+                    toggleIcon.className = 'fas fa-chevron-right';
+                }
+            } else {
+                sidebar.classList.remove('collapsed');
+                if (toggleIcon) {
+                    toggleIcon.className = 'fas fa-chevron-left';
+                }
+            }
         }
         
         // Construir HTML do conteúdo
@@ -670,7 +691,7 @@ function updateUnifiedSidebar(page) {
         config.items.forEach((item, index) => {
             const activeClass = index === 0 ? 'active' : '';
             html += `
-                <button class="unified-menu-item ${activeClass}" onclick="${item.action}('${item.id}', event)">
+                <button class="unified-menu-item ${activeClass}" data-menu-action="${item.action}" data-menu-id="${item.id}">
                     <i class="fas ${item.icon}"></i>
                     <span>${item.label}</span>
                 </button>
@@ -678,6 +699,25 @@ function updateUnifiedSidebar(page) {
         });
         
         sidebarContent.innerHTML = html;
+        
+        // Adicionar event listeners para auto-fechar sidebar ao clicar em subtab
+        const menuItems = sidebarContent.querySelectorAll('.unified-menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function(event) {
+                const action = this.getAttribute('data-menu-action');
+                const id = this.getAttribute('data-menu-id');
+                
+                // Executar a ação original
+                if (action && window[action]) {
+                    window[action](id, event);
+                }
+                
+                // Auto-fechar a sidebar após clicar
+                if (!sidebar.classList.contains('collapsed')) {
+                    toggleUnifiedSidebar();
+                }
+            });
+        });
     } else {
         // Ocultar sidebar completamente para páginas sem configuração
         sidebar.classList.add('hidden');
