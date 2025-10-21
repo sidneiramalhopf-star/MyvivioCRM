@@ -6,6 +6,7 @@ let currentPage = 'home';
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
+    addToggleButtonToHeaders();
 });
 
 function setupEventListeners() {
@@ -65,6 +66,9 @@ function navigateTo(event, page) {
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
         
+        // Adicionar botão toggle ao header da página
+        setTimeout(() => addToggleButtonToHeaders(), 50);
+        
         if (page === 'home') {
             loadDashboardData();
         } else if (page === 'planejador') {
@@ -99,6 +103,9 @@ function navigateToPage(page) {
         
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
+        
+        // Adicionar botão toggle ao header da página
+        setTimeout(() => addToggleButtonToHeaders(), 50);
         
         if (page === 'home') {
             loadDashboardData();
@@ -691,44 +698,56 @@ function updateUnifiedSidebar(page) {
     }
 }
 
-// Toggle da sidebar unificada (overlay - não modifica o main-content)
+// Adicionar botão toggle aos page-headers
+function addToggleButtonToHeaders() {
+    const pageHeaders = document.querySelectorAll('.page-header');
+    
+    pageHeaders.forEach(header => {
+        // Verifica se já tem o botão
+        if (header.querySelector('.unified-sidebar-toggle')) return;
+        
+        // Cria o botão
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'unified-sidebar-toggle';
+        toggleBtn.id = 'unified-sidebar-toggle';
+        toggleBtn.onclick = toggleUnifiedSidebar;
+        toggleBtn.innerHTML = '<i class="fas fa-chevron-left" id="sidebar-toggle-icon"></i>';
+        
+        // Adiciona no início do header
+        header.insertBefore(toggleBtn, header.firstChild);
+    });
+}
+
+// Toggle da sidebar unificada (inline - agora muda apenas as classes)
 function toggleUnifiedSidebar() {
     const sidebar = document.getElementById('unified-sidebar');
-    const toggleIcon = document.getElementById('sidebar-toggle-icon');
-    const sidebarToggle = document.getElementById('unified-sidebar-toggle');
+    const toggleIcons = document.querySelectorAll('#sidebar-toggle-icon');
     
-    if (!sidebar || !toggleIcon || !sidebarToggle) return;
+    if (!sidebar) return;
     
     // Se está hidden, mostra expandida
     if (sidebar.classList.contains('hidden')) {
         sidebar.classList.remove('hidden');
         unifiedSidebarCollapsed = false;
-        toggleIcon.className = 'fas fa-chevron-right';
-        
-        // Mover o botão de volta para dentro da sidebar
-        if (!sidebar.contains(sidebarToggle)) {
-            sidebar.insertBefore(sidebarToggle, sidebar.firstChild);
-        }
+        toggleIcons.forEach(icon => {
+            icon.className = 'fas fa-chevron-left';
+        });
         return;
     }
     
-    // Se está expandida ou colapsada, alterna entre os estados
+    // Alterna entre collapsed e expandida
     unifiedSidebarCollapsed = !unifiedSidebarCollapsed;
     
     if (unifiedSidebarCollapsed) {
         sidebar.classList.add('collapsed');
-        toggleIcon.className = 'fas fa-chevron-left';
-        
-        // Posicionar botão no page-header
-        positionSidebarButton();
+        toggleIcons.forEach(icon => {
+            icon.className = 'fas fa-chevron-right';
+        });
     } else {
         sidebar.classList.remove('collapsed');
-        toggleIcon.className = 'fas fa-chevron-right';
-        
-        // Mover o botão de volta para dentro da sidebar
-        if (!sidebar.contains(sidebarToggle)) {
-            sidebar.insertBefore(sidebarToggle, sidebar.firstChild);
-        }
+        toggleIcons.forEach(icon => {
+            icon.className = 'fas fa-chevron-left';
+        });
     }
 }
 

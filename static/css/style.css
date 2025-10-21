@@ -209,59 +209,42 @@ body {
 .unified-sidebar {
     width: 250px;
     background: white;
-    border-left: 1px solid var(--border-color);
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    border-left: 2px solid var(--accent-blue);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    position: fixed;
-    height: 100vh;
-    right: 0;
-    top: 0;
-    z-index: 900;
+    min-height: 100vh;
+    flex-shrink: 0;
 }
 
-/* Quando colapsada, esconde completamente mostrando apenas o botão */
+/* Quando colapsada, reduz a largura mas mantém visível */
 .unified-sidebar.collapsed {
-    width: auto;
-    height: auto;
-    right: 0;
-    top: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    position: static;
+    width: 0;
+    min-width: 0;
+    border-left: none;
+    overflow: hidden;
 }
 
-.unified-sidebar.collapsed .unified-sidebar-header,
 .unified-sidebar.collapsed .unified-sidebar-content {
     display: none;
 }
 
-/* Quando escondida, mostra apenas um botão pequeno */
+/* Quando escondida (mesmo comportamento que collapsed) */
 .unified-sidebar.hidden {
-    width: auto;
-    height: auto;
-    right: 0;
-    top: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    position: static;
+    width: 0;
+    min-width: 0;
+    border-left: none;
+    overflow: hidden;
 }
 
-.unified-sidebar.hidden .unified-sidebar-header,
 .unified-sidebar.hidden .unified-sidebar-content {
     display: none;
 }
 
-/* Botão de toggle - quando sidebar está expandida, fica dentro dela no topo direito */
+/* Botão de toggle da sidebar - fica no page-header */
 .unified-sidebar-toggle {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: white;
     border: 2px solid var(--accent-blue);
     color: var(--accent-blue);
@@ -271,7 +254,7 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    z-index: 1000;
+    flex-shrink: 0;
 }
 
 .unified-sidebar-toggle:hover {
@@ -282,65 +265,16 @@ body {
 .unified-sidebar-toggle i {
     transition: transform 0.3s ease;
     color: var(--accent-blue);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .unified-sidebar-toggle:hover i {
     color: var(--dark-bg);
 }
 
-/* Botão quando colapsada - fica posicionado na extremidade direita do page-header */
-.unified-sidebar.collapsed .unified-sidebar-toggle {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    background: white;
-    border: 2px solid var(--accent-blue);
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
-}
-
-.unified-sidebar.collapsed .unified-sidebar-toggle:hover {
-    background: rgba(98, 177, 202, 0.1);
-    border-color: var(--dark-bg);
-}
-
-.unified-sidebar.collapsed .unified-sidebar-toggle i {
-    transform: none;
-    color: var(--accent-blue);
-    font-size: 0.9rem;
-}
-
-.unified-sidebar.collapsed .unified-sidebar-toggle:hover i {
-    color: var(--dark-bg);
-}
-
-/* Botão pequeno quando sidebar está hidden - fica posicionado na extremidade direita do page-header */
-.unified-sidebar.hidden .unified-sidebar-toggle {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    background: white;
-    border: 2px solid var(--accent-blue);
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0;
-}
-
-.unified-sidebar.hidden .unified-sidebar-toggle:hover {
-    background: rgba(98, 177, 202, 0.1);
-    border-color: var(--dark-bg);
-}
-
-.unified-sidebar.hidden .unified-sidebar-toggle i {
-    transform: none;
-    color: var(--accent-blue);
-    font-size: 0.9rem;
-}
-
-.unified-sidebar.hidden .unified-sidebar-toggle:hover i {
-    color: var(--dark-bg);
+/* Rotaciona o ícone quando a sidebar está expandida */
+.unified-sidebar:not(.collapsed):not(.hidden) ~ .main-content .unified-sidebar-toggle i {
+    transform: rotate(180deg);
 }
 
 .unified-sidebar-content {
@@ -515,6 +449,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
     margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 2rem;
