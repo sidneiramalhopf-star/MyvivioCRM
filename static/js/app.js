@@ -645,11 +645,11 @@ if (document.readyState === 'loading') {
     window.addEventListener('scroll', updateSidebarPosition, { passive: true });
 }
 
-// Atualizar conteúdo da sidebar unificada baseado na página
+// Atualizar conteúdo da sidebar unificada baseado na página (estilo Technogym)
 function updateUnifiedSidebar(page) {
     const sidebar = document.getElementById('unified-sidebar');
     const sidebarContent = document.getElementById('unified-sidebar-content');
-    const toggleIcon = document.getElementById('sidebar-toggle-icon');
+    const toggleIcon = document.getElementById('sidebar-toggle-icon-circle');
     
     if (!sidebar || !sidebarContent) return;
     
@@ -657,14 +657,14 @@ function updateUnifiedSidebar(page) {
     const config = sidebarConfigs[page];
     
     if (config) {
-        // Mostrar sidebar colapsada inicialmente (overlay sobre o conteúdo)
+        // Mostrar sidebar colapsada inicialmente
         sidebar.classList.remove('hidden');
         sidebar.classList.add('collapsed');
         unifiedSidebarCollapsed = true;
         
-        // Atualizar ícone para seta para esquerda (indicando que abre para esquerda)
+        // Atualizar ícone para chevron-right (aponta para direita quando fechada)
         if (toggleIcon) {
-            toggleIcon.className = 'fas fa-chevron-left';
+            toggleIcon.className = 'fas fa-chevron-right';
         }
         
         // Construir HTML do conteúdo
@@ -685,53 +685,21 @@ function updateUnifiedSidebar(page) {
         });
         
         sidebarContent.innerHTML = html;
-        
-        // Posicionar o botão dinamicamente usando requestAnimationFrame para garantir que o layout foi renderizado
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                positionSidebarButton();
-            });
-        });
     } else {
-        // Ocultar sidebar para páginas sem configuração
+        // Ocultar sidebar completamente para páginas sem configuração
         sidebar.classList.add('hidden');
     }
 }
 
-// Adicionar botão toggle aos page-headers
-function addToggleButtonToHeaders() {
-    const pageHeaders = document.querySelectorAll('.page-header');
-    
-    pageHeaders.forEach(header => {
-        // Verifica se já tem o botão
-        if (header.querySelector('.unified-sidebar-toggle')) return;
-        
-        // Cria o botão
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'unified-sidebar-toggle';
-        toggleBtn.id = 'unified-sidebar-toggle';
-        toggleBtn.onclick = toggleUnifiedSidebar;
-        toggleBtn.innerHTML = '<i class="fas fa-chevron-left" id="sidebar-toggle-icon"></i>';
-        
-        // Adiciona no início do header
-        header.insertBefore(toggleBtn, header.firstChild);
-    });
-}
-
-// Toggle da sidebar unificada (inline - agora muda apenas as classes)
+// Toggle da sidebar unificada (estilo Technogym - sidebar no meio)
 function toggleUnifiedSidebar() {
     const sidebar = document.getElementById('unified-sidebar');
-    const toggleIcons = document.querySelectorAll('#sidebar-toggle-icon');
+    const toggleIcon = document.getElementById('sidebar-toggle-icon-circle');
     
-    if (!sidebar) return;
+    if (!sidebar || !toggleIcon) return;
     
-    // Se está hidden, mostra expandida
+    // Se está hidden, não fazer nada (sidebar escondida em páginas sem subtabs)
     if (sidebar.classList.contains('hidden')) {
-        sidebar.classList.remove('hidden');
-        unifiedSidebarCollapsed = false;
-        toggleIcons.forEach(icon => {
-            icon.className = 'fas fa-chevron-left';
-        });
         return;
     }
     
@@ -740,14 +708,10 @@ function toggleUnifiedSidebar() {
     
     if (unifiedSidebarCollapsed) {
         sidebar.classList.add('collapsed');
-        toggleIcons.forEach(icon => {
-            icon.className = 'fas fa-chevron-right';
-        });
+        toggleIcon.className = 'fas fa-chevron-right';
     } else {
         sidebar.classList.remove('collapsed');
-        toggleIcons.forEach(icon => {
-            icon.className = 'fas fa-chevron-left';
-        });
+        toggleIcon.className = 'fas fa-chevron-left';
     }
 }
 
