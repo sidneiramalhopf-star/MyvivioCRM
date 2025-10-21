@@ -6,7 +6,6 @@ let currentPage = 'home';
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
-    addToggleButtonToHeaders();
 });
 
 function setupEventListeners() {
@@ -66,9 +65,6 @@ function navigateTo(event, page) {
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
         
-        // Adicionar botão toggle ao header da página
-        setTimeout(() => addToggleButtonToHeaders(), 50);
-        
         if (page === 'home') {
             loadDashboardData();
         } else if (page === 'planejador') {
@@ -103,9 +99,6 @@ function navigateToPage(page) {
         
         // Atualizar sidebar unificada
         updateUnifiedSidebar(page);
-        
-        // Adicionar botão toggle ao header da página
-        setTimeout(() => addToggleButtonToHeaders(), 50);
         
         if (page === 'home') {
             loadDashboardData();

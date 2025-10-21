@@ -209,12 +209,15 @@ body {
 .unified-sidebar {
     width: 280px;
     background: #2c2c2c;
-    transition: width 0.3s ease, margin 0.3s ease;
+    transition: width 0.3s ease;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     flex-shrink: 0;
-    position: relative;
+    position: fixed;
+    left: 180px;
+    top: 0;
+    z-index: 90;
     overflow: hidden;
 }
 
@@ -257,12 +260,12 @@ body {
 }
 
 /* Quando sidebar está aberta, move o botão para a direita */
-.unified-sidebar:not(.collapsed) ~ .unified-sidebar-toggle-circle {
+body:has(.unified-sidebar:not(.collapsed):not(.hidden)) .unified-sidebar-toggle-circle {
     left: calc(180px + 280px);
 }
 
 /* Quando sidebar está escondida (hidden), esconde o botão também */
-.unified-sidebar.hidden ~ .unified-sidebar-toggle-circle {
+body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     display: none;
 }
 
@@ -342,11 +345,17 @@ body {
 
 /* Main Content */
 .main-content {
+    margin-left: 180px;
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
+}
+
+/* Quando sidebar está aberta, ajusta margem do conteúdo principal */
+body:has(.unified-sidebar:not(.collapsed):not(.hidden)) .main-content {
+    margin-left: calc(180px + 280px);
 }
 
 .top-header {
