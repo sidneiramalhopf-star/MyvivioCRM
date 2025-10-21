@@ -656,29 +656,13 @@ function updateUnifiedSidebar(page) {
         // Remover classe hidden (pode ter sido adicionada em páginas anteriores)
         sidebar.classList.remove('hidden');
         
-        // Manter estado atual da sidebar se já estava visível (persistência)
-        // Apenas definir como collapsed se for primeira vez ou estava hidden antes
-        if (wasHidden || unifiedSidebarCollapsed === undefined) {
-            sidebar.classList.add('collapsed');
-            unifiedSidebarCollapsed = true;
-            
-            // Atualizar ícone para chevron-right (aponta para direita quando fechada)
-            if (toggleIcon) {
-                toggleIcon.className = 'fas fa-chevron-right';
-            }
-        } else {
-            // Manter estado atual
-            if (unifiedSidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                if (toggleIcon) {
-                    toggleIcon.className = 'fas fa-chevron-right';
-                }
-            } else {
-                sidebar.classList.remove('collapsed');
-                if (toggleIcon) {
-                    toggleIcon.className = 'fas fa-chevron-left';
-                }
-            }
+        // Abrir automaticamente a sidebar ao navegar para página com subtabs
+        sidebar.classList.remove('collapsed');
+        unifiedSidebarCollapsed = false;
+        
+        // Atualizar ícone para chevron-left (aponta para esquerda quando aberta)
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-chevron-left';
         }
         
         // Construir HTML do conteúdo

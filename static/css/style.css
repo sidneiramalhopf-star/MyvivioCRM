@@ -238,16 +238,16 @@ body {
     display: none;
 }
 
-/* Botão circular de toggle - menor, 1cm à esquerda, fundo branco */
+/* Botão circular de toggle - 13px, 0.5cm à esquerda, fundo branco */
 .unified-sidebar-toggle-circle {
     position: fixed;
-    left: 142px; /* 180px - 38px (1cm) */
+    left: 161px; /* 180px - 19px (0.5cm) */
     top: 50%;
     transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
+    width: 13px;
+    height: 13px;
     background: white;
-    border: 2px solid #123058;
+    border: 1.5px solid #123058;
     color: #123058;
     cursor: pointer;
     border-radius: 50%;
@@ -256,12 +256,12 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
     z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Quando sidebar está aberta, move o botão para a direita */
 body:has(.unified-sidebar:not(.collapsed):not(.hidden)) .unified-sidebar-toggle-circle {
-    left: calc(180px + 280px - 38px); /* 422px */
+    left: calc(180px + 280px - 19px); /* 441px */
 }
 
 /* Quando sidebar está escondida (hidden), esconde o botão também */
@@ -271,12 +271,12 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .unified-sidebar-toggle-circle:hover {
     background: #f8f9fa;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .unified-sidebar-toggle-circle i {
     transition: transform 0.3s ease;
-    font-size: 0.9rem;
+    font-size: 0.45rem;
     color: #123058;
 }
 
