@@ -4,18 +4,17 @@
 Myvivio CRM is an intelligent management system designed for gyms and corporate wellness programs. It focuses on AI-driven optimization to enhance engagement, return on investment (ROI), and productivity. The system provides comprehensive tools for managing users, programs, schedules, and facilities, with a strong emphasis on data-driven insights and a modern user experience. Its primary goal is to serve as a unified platform for wellness businesses, offering features ranging from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 21, 2025**: **SIDEBAR OVERLAY COM NOVO DESIGN DE BOTÃO** (Aprovado pelo Arquiteto):
+- **October 21, 2025**: **SIDEBAR OVERLAY COM ABERTURA AUTOMÁTICA** (Aprovado pelo Arquiteto):
   - Sidebar convertida para overlay puro: z-index 900, desliza por cima do conteúdo sem empurrá-lo
   - main-content sempre com margin-left fixo em 180px (removidos seletores :has() de ajuste)
-  - Botão toggle redesenhado: 28px (reduzido de 40px), fundo branco, borda 2px solid #123058
-  - Ícone do botão na cor #123058 (azul escuro), hover sutil sem mudança drástica
-  - Botão posicionado 1cm à esquerda: left: 142px (fechado) → left: 422px (aberto)
-  - Auto-fechamento implementado: sidebar fecha automaticamente ao clicar em qualquer subtab
+  - Botão toggle ultra-compacto: **13px** (altamente discreto), fundo branco, borda 1.5px solid #123058
+  - Ícone do botão na cor #123058 (azul escuro), tamanho 0.45rem proporcional ao botão
+  - Botão posicionado 0.5cm à esquerda: left: 161px (fechado) → left: 441px (aberto)
+  - **Abertura automática**: sidebar abre automaticamente ao navegar para qualquer tab com subtabs
+  - Auto-fechamento mantido: sidebar fecha automaticamente ao clicar em qualquer subtab
   - Menu items com event listeners em vez de onclick inline para melhor controle
-  - Persistência de estado: sidebar mantém estado (aberta/fechada) ao navegar entre páginas com subtabs
-  - Reseta para collapsed ao vir de páginas sem subtabs (Home, Iniciar, Configuração)
-  - Correção crítica: captura wasHidden ANTES de remover classe para lógica correta
-  - Transições suaves (0.3s ease) mantidas, comportamento visual polido
+  - Comportamento simplificado: sempre abre ao entrar em páginas com subtabs (Planejador, Pessoas, Treinamento)
+  - Transições suaves (0.3s ease) mantidas, botão 13px ainda clicável e funcional
 - **October 20, 2025**: **BREADCRUMB COM BOTÃO DE TOGGLE ADICIONADO**:
   - Adicionado botão de toggle no breadcrumb do builder de programa
   - Botão posicionado antes da palavra "Treinamento" no breadcrumb
