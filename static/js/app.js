@@ -3661,23 +3661,28 @@ function renderizarExercicios(exercicios) {
     }
     
     grid.innerHTML = exercicios.map(ex => {
-        const imagemUrl = ex.foto_url || '/static/uploads/exercicios/fotos/placeholder.jpg';
+        const imagemUrl = ex.foto_url || '';
         const favoritoClass = ex.favorito ? 'active' : '';
+        const iconClass = ex.tipo === 'Cardio' ? 'fa-running' : ex.tipo === 'Força' ? 'fa-dumbbell' : 'fa-heartbeat';
         
         return `
             <div class="exercicio-card" onclick="abrirEdicaoExercicio(${ex.id})">
-                <div class="exercicio-imagem">
-                    <img src="${imagemUrl}" alt="${ex.nome}" onerror="this.src='/static/uploads/exercicios/fotos/placeholder.jpg'">
-                    <button class="btn-favorito ${favoritoClass}" onclick="event.stopPropagation(); toggleFavorito(${ex.id})">
-                        <i class="fas fa-star"></i>
-                    </button>
+                <div class="exercicio-thumbnail">
+                    ${imagemUrl ? `<img src="${imagemUrl}" alt="${ex.nome}" onerror="this.innerHTML='<i class=\\'fas ${iconClass} exercicio-thumbnail-placeholder\\'></i>'">` : `<i class="fas ${iconClass} exercicio-thumbnail-placeholder"></i>`}
                 </div>
-                <div class="exercicio-info">
-                    <h4>${ex.nome}</h4>
-                    <p class="exercicio-proprietario">${ex.elaborado_por || 'Sem proprietário'}</p>
-                    <button class="btn-ocultar" onclick="event.stopPropagation(); ocultarExercicio(${ex.id})">
-                        OCULTAR
-                    </button>
+                <div class="exercicio-card-body">
+                    <div>
+                        <div class="exercicio-nome">${ex.nome}</div>
+                        <div class="exercicio-proprietario">Proprietário: ${ex.elaborado_por || 'Sem proprietário'}</div>
+                    </div>
+                    <div class="exercicio-card-footer">
+                        <button class="btn-favorito ${favoritoClass}" onclick="event.stopPropagation(); toggleFavorito(${ex.id})">
+                            <i class="fas fa-star"></i>
+                        </button>
+                        <button class="btn-ocultar" onclick="event.stopPropagation(); ocultarExercicio(${ex.id})">
+                            OCULTAR
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
