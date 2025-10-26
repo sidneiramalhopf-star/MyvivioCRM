@@ -3751,7 +3751,55 @@ async function continuarNovoExercicio() {
     }
 }
 
-// 7. Abrir página de edição de exercício
+// 7. Abrir página de criação de novo exercício (modo vazio)
+function abrirNovoExercicio() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    exercicioAtualId = null;
+    fotoUrlTemp = null;
+    videoUrlTemp = null;
+    
+    const pageExercicios = document.getElementById('page-exercicios');
+    const pageEdicao = document.getElementById('page-edicao-exercicio');
+    
+    if (pageExercicios) pageExercicios.style.display = 'none';
+    if (pageEdicao) pageEdicao.style.display = 'block';
+    
+    // Limpar todos os campos
+    const headerNome = pageEdicao.querySelector('.exercicio-header-info h1');
+    const headerSubtitulo = pageEdicao.querySelector('.exercicio-header-subtitulo');
+    if (headerNome) headerNome.textContent = 'Novo Exercício';
+    if (headerSubtitulo) headerSubtitulo.textContent = 'Em criação';
+    
+    // Limpar campos do formulário
+    const camposInput = pageEdicao.querySelectorAll('input[type="text"], textarea');
+    camposInput.forEach(campo => campo.value = '');
+    
+    const camposSelect = pageEdicao.querySelectorAll('select');
+    camposSelect.forEach(campo => campo.selectedIndex = 0);
+    
+    // Limpar preview de imagem
+    const previewImagem = document.getElementById('exercicio-preview-imagem');
+    if (previewImagem) {
+        previewImagem.innerHTML = `
+            <div class="exercicio-imagem-placeholder">
+                <i class="fas fa-image"></i>
+                <div>Clique para fazer upload</div>
+            </div>
+        `;
+    }
+    
+    // Limpar preview de vídeo
+    const videoPlayer = pageEdicao.querySelector('.exercicio-video-player');
+    if (videoPlayer) {
+        videoPlayer.src = '';
+    }
+}
+
+// 8. Abrir página de edição de exercício
 async function abrirEdicaoExercicio(exercicioId) {
     if (!authToken) {
         showToast('Você precisa estar autenticado', 'warning');
@@ -3848,8 +3896,50 @@ function voltarParaExercicios() {
     loadExercicios();
 }
 
-// 9. Upload de foto do exercício
-function uploadFotoExercicio() {
+// 9. Upload de foto do exercício (versão com input event)
+async function uploadFotoExercicio(event) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${API_BASE}/exercicios/upload-foto`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            fotoUrlTemp = data.foto_url;
+            
+            // Atualizar preview
+            const previewContainer = document.getElementById('exercicio-preview-imagem');
+            if (previewContainer) {
+                previewContainer.innerHTML = `<img src="${fotoUrlTemp}" alt="Preview" style="width: 100%; height: auto; border-radius: 8px;">`;
+            }
+            
+            showToast('Foto enviada com sucesso!', 'success');
+        } else {
+            showToast('Erro ao enviar foto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao enviar foto:', error);
+        showToast('Erro ao enviar foto', 'error');
+    }
+}
+
+// 9b. Upload de foto do exercício (versão antiga mantida para compatibilidade)
+function uploadFotoExercicioOld() {
     if (!authToken) {
         showToast('Você precisa estar autenticado', 'warning');
         return;
@@ -3898,8 +3988,62 @@ function uploadFotoExercicio() {
     input.click();
 }
 
-// 10. Upload de vídeo do exercício
-function uploadVideoExercicio() {
+// 10. Upload de vídeo do exercício (versão com input event)
+async function uploadVideoExercicio(event) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const maxSize = 40 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showToast('O vídeo deve ter no máximo 40MB', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        showToast('Enviando vídeo...', 'info');
+        
+        const response = await fetch(`${API_BASE}/exercicios/upload-video`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            videoUrlTemp = data.video_url;
+            
+            // Atualizar player
+            const videoContainer = document.getElementById('exercicio-preview-video');
+            if (videoContainer) {
+                const player = videoContainer.querySelector('.exercicio-video-player');
+                if (player) {
+                    player.src = videoUrlTemp;
+                    player.load();
+                }
+            }
+            
+            showToast('Vídeo enviado com sucesso!', 'success');
+        } else {
+            showToast('Erro ao enviar vídeo', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao enviar vídeo:', error);
+        showToast('Erro ao enviar vídeo', 'error');
+    }
+}
+
+// 10b. Upload de vídeo do exercício (versão antiga mantida para compatibilidade)
+function uploadVideoExercicioOld() {
     if (!authToken) {
         showToast('Você precisa estar autenticado', 'warning');
         return;
