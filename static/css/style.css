@@ -5673,9 +5673,10 @@ textarea.form-control {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* Override específico do botão NOVO EXERCÍCIO - 5px menor que o padrão */
 .btn-novo-exercicio {
     white-space: nowrap;
-    padding: 0.6rem 1.25rem !important;
+    padding: 0.4375rem 1.1875rem !important; /* 7px 19px (5px menor que 12px 24px) */
 }
 
 /* .btn-novo-exercicio agora usa estilos globais padronizados com #123058 */
