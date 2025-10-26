@@ -5675,12 +5675,13 @@ textarea.form-control {
 
 .btn-novo-exercicio {
     white-space: nowrap;
+    padding: 0.6rem 1.25rem !important;
 }
 
 /* .btn-novo-exercicio agora usa estilos globais padronizados com #123058 */
 .btn-novo-exercicio:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 4px 12px rgba(18, 48, 88, 0.3);
 }
 
 .exercicios-dropdown {
@@ -6038,9 +6039,22 @@ textarea.form-control {
     color: #ffc107;
 }
 
+.exercicio-dados-gerais-header {
+    text-align: right;
+    margin-bottom: 0.5rem;
+}
+
+.exercicio-dados-gerais-header strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
 .exercicio-ultima-atualizacao {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #999;
+    line-height: 1.4;
 }
 
 .exercicio-edit-layout {
@@ -6127,6 +6141,29 @@ textarea.form-control {
     font-size: 0.75rem;
     color: #999;
     text-align: center;
+}
+
+.exercicio-specs-detalhado {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+.exercicio-specs-detalhado div {
+    margin-bottom: 0.25rem;
+}
+
+.exercicio-specs-detalhado strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.exercicio-video-container {
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
 }
 
 .exercicio-video-player {

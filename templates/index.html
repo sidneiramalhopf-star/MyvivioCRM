@@ -1118,6 +1118,12 @@
                                 </div>
                             </div>
                             <div class="exercicio-header-right">
+                                <div class="exercicio-dados-gerais-header">
+                                    <strong>Dados gerais</strong>
+                                    <div class="exercicio-ultima-atualizacao">
+                                        Última atualização quarta-feira, 1 de maio de 2024
+                                    </div>
+                                </div>
                                 <div class="exercicio-header-icons">
                                     <button class="exercicio-header-icon">
                                         <i class="fas fa-list"></i>
@@ -1125,12 +1131,6 @@
                                     <button class="exercicio-header-icon">
                                         <i class="fas fa-cog"></i>
                                     </button>
-                                    <button class="exercicio-header-icon favorito">
-                                        <i class="fas fa-star"></i>
-                                    </button>
-                                </div>
-                                <div class="exercicio-ultima-atualizacao">
-                                    Última atualização<br>quarta-feira, 1 de maio de 2024
                                 </div>
                             </div>
                         </div>
@@ -1142,14 +1142,18 @@
                                 <!-- Seção Imagem -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Imagem</h3>
-                                    <div class="exercicio-imagem-upload">
+                                    <div class="exercicio-imagem-upload" id="exercicio-preview-imagem">
                                         <div class="exercicio-imagem-placeholder">
                                             <i class="fas fa-image"></i>
                                             <div>Clique para fazer upload</div>
                                         </div>
                                     </div>
-                                    <button class="btn-modificar-foto">Modificar a foto</button>
-                                    <div class="exercicio-specs">jpg, png | 600x450 | Formatos compatíveis</div>
+                                    <button class="btn-modificar-foto" onclick="document.getElementById('upload-foto-exercicio').click()">Modificar a foto</button>
+                                    <input type="file" id="upload-foto-exercicio" accept="image/jpeg,image/png" style="display:none" onchange="uploadFotoExercicio(event)">
+                                    <div class="exercicio-specs-detalhado">
+                                        <div><strong>Formatos compatíveis:</strong> jpg, png</div>
+                                        <div><strong>Resolução sugerida:</strong> 600 x 450</div>
+                                    </div>
                                 </div>
 
                                 <!-- Seção Nome -->
@@ -1193,12 +1197,19 @@
                                 <!-- Seção Vídeo -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Vídeo</h3>
-                                    <video class="exercicio-video-player" controls>
-                                        <source src="" type="video/mp4">
-                                        Seu navegador não suporta vídeo HTML5.
-                                    </video>
-                                    <button class="btn-alterar-video">Alterar vídeo</button>
-                                    <div class="exercicio-specs">mp4, webm, mov | 40 MB | 4:3</div>
+                                    <div class="exercicio-video-container" id="exercicio-preview-video">
+                                        <video class="exercicio-video-player" controls>
+                                            <source src="" type="video/mp4">
+                                            Seu navegador não suporta vídeo HTML5.
+                                        </video>
+                                    </div>
+                                    <button class="btn-alterar-video" onclick="document.getElementById('upload-video-exercicio').click()">Alterar vídeo</button>
+                                    <input type="file" id="upload-video-exercicio" accept="video/mp4,video/webm,video/quicktime" style="display:none" onchange="uploadVideoExercicio(event)">
+                                    <div class="exercicio-specs-detalhado">
+                                        <div><strong>Formatos compatíveis:</strong> mp4, webm, mov, wmv, mov</div>
+                                        <div><strong>Tamanho máximo:</strong> 40 MB</div>
+                                        <div><strong>Razão de aspecto:</strong> 4:3</div>
+                                    </div>
                                 </div>
 
                                 <!-- Seção Descrição -->
