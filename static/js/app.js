@@ -3753,8 +3753,11 @@ async function continuarNovoExercicio() {
 
 // 7. Abrir página de criação de novo exercício (modo vazio)
 function abrirNovoExercicio() {
+    console.log('abrirNovoExercicio chamado, authToken:', authToken ? 'presente' : 'ausente');
+    
     if (!authToken) {
-        showToast('Você precisa estar autenticado', 'warning');
+        showToast('Você precisa fazer login primeiro para criar exercícios', 'warning');
+        console.error('Tentativa de criar exercício sem autenticação');
         return;
     }
     
@@ -3896,8 +3899,11 @@ async function abrirEdicaoExercicio(exercicioId) {
 
 // 8. Salvar exercício (criar novo ou atualizar existente)
 async function salvarExercicio() {
+    console.log('salvarExercicio chamado, authToken:', authToken ? 'presente' : 'ausente');
+    
     if (!authToken) {
-        showToast('Você precisa estar autenticado', 'warning');
+        showToast('Você precisa fazer login primeiro para salvar exercícios', 'warning');
+        console.error('Tentativa de salvar exercício sem autenticação');
         return;
     }
     
@@ -3950,10 +3956,12 @@ async function salvarExercicio() {
         
         if (response.ok) {
             const exercicio = await response.json();
+            console.log('Exercício salvo com sucesso:', exercicio);
             showToast(`Exercício ${exercicioAtualId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
             voltarParaExercicios();
         } else {
             const error = await response.json();
+            console.error('Erro ao salvar exercício:', response.status, error);
             showToast(error.detail || 'Erro ao salvar exercício', 'error');
         }
     } catch (error) {
