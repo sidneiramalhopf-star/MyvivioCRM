@@ -5811,7 +5811,7 @@ textarea.form-control {
     font-size: 0.9rem;
     font-weight: 600;
     color: #333;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5821,6 +5821,7 @@ textarea.form-control {
     font-size: 0.7rem;
     color: #999;
     margin-bottom: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 .exercicio-card-footer {
@@ -5833,7 +5834,7 @@ textarea.form-control {
 .btn-favorito {
     background: none;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #ddd;
     cursor: pointer;
     transition: all 0.3s;
@@ -5845,11 +5846,11 @@ textarea.form-control {
 }
 
 .btn-ocultar {
-    padding: 0.5rem 1rem;
+    padding: 0.35rem 0.75rem;
     background: #e0e0e0;
     border: none;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #666;
     cursor: pointer;
