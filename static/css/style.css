@@ -20,6 +20,20 @@
     --light-bg: #f5f7fa;
     --accent-blue: #62b1ca;
     --accent-dark: #333f6e;
+    
+    /* NOVA PADRONIZAÇÃO - Cor padrão de botões */
+    --btn-primary: #123058;
+    --btn-primary-hover: #0d2340;
+    --btn-secondary: #e0e0e0;
+    --btn-secondary-hover: #d5d5d5;
+    
+    /* Tamanhos de fonte padronizados */
+    --font-h1: 1.75rem;        /* Títulos principais */
+    --font-h2: 1.25rem;        /* Subtítulos */
+    --font-h3: 1rem;           /* Subtítulos menores */
+    --font-body: 0.875rem;     /* Texto normal (igual às tabs) */
+    --font-small: 0.75rem;     /* Texto pequeno */
+    --font-tiny: 0.7rem;       /* Texto muito pequeno */
 }
 
 body {
@@ -27,6 +41,168 @@ body {
     background: var(--light-bg);
     color: var(--text-primary);
     overflow-x: hidden;
+    font-size: var(--font-body);
+}
+
+/* PADRONIZAÇÃO DE TIPOGRAFIA */
+h1, .h1 {
+    font-size: var(--font-h1);
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+h2, .h2 {
+    font-size: var(--font-h2);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+h3, .h3 {
+    font-size: var(--font-h3);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.text-body {
+    font-size: var(--font-body);
+}
+
+.text-small {
+    font-size: var(--font-small);
+}
+
+.text-tiny {
+    font-size: var(--font-tiny);
+}
+
+/* PADRONIZAÇÃO DE BOTÕES - TODOS NA COR #123058 */
+button, .btn {
+    font-size: var(--font-body);
+    font-family: inherit;
+}
+
+.btn-primary,
+.btn-criar,
+.btn-salvar,
+.btn-continuar,
+.btn-salvar-exercicio,
+.btn-novo-exercicio,
+.btn-agendar-rapido,
+.btn-reservar,
+.btn-concluir,
+.btn-add-option,
+.btn-mostra,
+.btn-adicionar-sessao {
+    background: var(--btn-primary) !important;
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-body);
+    transition: all 0.3s;
+}
+
+.btn-primary:hover,
+.btn-criar:hover,
+.btn-salvar:hover,
+.btn-continuar:hover,
+.btn-salvar-exercicio:hover,
+.btn-novo-exercicio:hover,
+.btn-agendar-rapido:hover,
+.btn-reservar:hover,
+.btn-concluir:hover,
+.btn-add-option:hover,
+.btn-mostra:hover,
+.btn-adicionar-sessao:hover {
+    background: var(--btn-primary-hover) !important;
+    transform: translateY(-1px);
+}
+
+.btn-secondary,
+.btn-filter,
+.btn-filtro,
+.btn-limpar-filtros,
+.btn-buscar {
+    background: var(--btn-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--font-body);
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover,
+.btn-filter:hover,
+.btn-filtro:hover,
+.btn-limpar-filtros:hover,
+.btn-buscar:hover {
+    background: var(--btn-secondary-hover) !important;
+}
+
+.btn-outline,
+.btn-outline-primary,
+.btn-back {
+    background: transparent !important;
+    color: var(--btn-primary) !important;
+    border: 2px solid var(--btn-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-body);
+    transition: all 0.3s;
+}
+
+.btn-outline:hover,
+.btn-outline-primary:hover,
+.btn-back:hover {
+    background: var(--btn-primary) !important;
+    color: white !important;
+}
+
+.btn-danger,
+.btn-eliminar-falta,
+.btn-excluir-penalidade,
+.btn-remover {
+    background: var(--danger-color) !important;
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-body);
+    transition: all 0.3s;
+}
+
+.btn-danger:hover,
+.btn-eliminar-falta:hover,
+.btn-excluir-penalidade:hover,
+.btn-remover:hover {
+    background: #c82333 !important;
+}
+
+.btn-warning,
+.btn-ver-detalhes {
+    background: var(--warning-color) !important;
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-body);
+    transition: all 0.3s;
+}
+
+.btn-warning:hover,
+.btn-ver-detalhes:hover {
+    background: #f57c00 !important;
 }
 
 .app-container {
