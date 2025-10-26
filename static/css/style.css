@@ -5538,3 +5538,612 @@ textarea.form-control {
 .sessao-tab.active .tab-count {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* ===== BIBLIOTECA DE EXERCÍCIOS ===== */
+
+/* Página Principal de Exercícios */
+#page-exercicios {
+    display: none;
+}
+
+#page-exercicios.active {
+    display: block;
+}
+
+.exercicios-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-novo-exercicio {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+}
+
+.btn-novo-exercicio:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.exercicios-dropdown {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 180px;
+}
+
+.exercicios-search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 400px;
+}
+
+.exercicios-search {
+    position: relative;
+    flex: 1;
+}
+
+.exercicios-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.exercicios-search input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.btn-buscar {
+    padding: 0.75rem 1.5rem;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-buscar:hover {
+    background: #e8e8e8;
+}
+
+.exercicios-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 1rem;
+}
+
+.exercicios-contador {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.exercicios-filtros-direita {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.exercicios-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.exercicio-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.exercicio-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.exercicio-thumbnail {
+    width: 100%;
+    height: 150px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.exercicio-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exercicio-thumbnail-placeholder {
+    color: #ccc;
+    font-size: 3rem;
+}
+
+.exercicio-card-body {
+    padding: 1rem;
+}
+
+.exercicio-nome {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.exercicio-proprietario {
+    font-size: 0.75rem;
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.exercicio-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-favorito {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-favorito.active,
+.btn-favorito:hover {
+    color: #ffc107;
+}
+
+.btn-ocultar {
+    padding: 0.5rem 1rem;
+    background: #e0e0e0;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-ocultar:hover {
+    background: #d5d5d5;
+}
+
+/* Modal Novo Exercício */
+#modal-novo-exercicio {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-novo-exercicio.active {
+    display: flex;
+}
+
+.modal-novo-exercicio-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.modal-novo-exercicio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.modal-novo-exercicio-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.btn-fechar-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.btn-fechar-modal:hover {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.modal-novo-exercicio-body {
+    padding: 1.5rem;
+}
+
+.modal-novo-exercicio-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-continuar {
+    padding: 0.75rem 2rem;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-continuar:hover {
+    background: #45a049;
+}
+
+/* Página de Edição de Exercício */
+#page-edicao-exercicio {
+    display: none;
+}
+
+#page-edicao-exercicio.active {
+    display: block;
+}
+
+.exercicio-edit-header {
+    background: white;
+    padding: 1rem 2rem;
+    margin: -2rem -2rem 2rem -2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.exercicio-edit-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-voltar-circular {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-voltar-circular:hover {
+    background: #f5f5f5;
+    border-color: #4caf50;
+}
+
+.btn-voltar-circular i {
+    color: #333;
+}
+
+.exercicio-header-thumb {
+    width: 60px;
+    height: 45px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.exercicio-header-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exercicio-header-info h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.25rem 0;
+}
+
+.exercicio-header-subtitulo {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.exercicio-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.exercicio-header-icons {
+    display: flex;
+    gap: 1rem;
+}
+
+.exercicio-header-icon {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.exercicio-header-icon:hover {
+    color: #4caf50;
+}
+
+.exercicio-header-icon.favorito.active {
+    color: #ffc107;
+}
+
+.exercicio-ultima-atualizacao {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.exercicio-edit-layout {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.exercicio-edit-coluna {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.exercicio-edit-secao {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.exercicio-edit-secao h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+.exercicio-imagem-upload {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #f5f5f5;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.exercicio-imagem-upload:hover {
+    border-color: #4caf50;
+    background: #fafafa;
+}
+
+.exercicio-imagem-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exercicio-imagem-placeholder {
+    text-align: center;
+    color: #999;
+}
+
+.exercicio-imagem-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn-modificar-foto {
+    width: 100%;
+    padding: 0.75rem;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 0.5rem;
+}
+
+.btn-modificar-foto:hover {
+    background: #f5f5f5;
+    border-color: #4caf50;
+}
+
+.exercicio-specs {
+    font-size: 0.75rem;
+    color: #999;
+    text-align: center;
+}
+
+.exercicio-video-player {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.btn-alterar-video {
+    width: 100%;
+    padding: 0.75rem;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 0.5rem;
+}
+
+.btn-alterar-video:hover {
+    background: #f5f5f5;
+    border-color: #4caf50;
+}
+
+.exercicio-edit-secao input[type="text"],
+.exercicio-edit-secao select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.exercicio-edit-secao input[type="text"]:focus,
+.exercicio-edit-secao select:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+.exercicio-edit-secao textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.exercicio-edit-secao textarea:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+.link-remover-favoritos {
+    color: #4caf50;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.link-remover-favoritos:hover {
+    text-decoration: underline;
+}
+
+.exercicio-edit-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e8e8e8;
+}
+
+.btn-salvar-exercicio {
+    padding: 0.75rem 2.5rem;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-salvar-exercicio:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .exercicio-edit-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .exercicios-top-bar {
+        flex-wrap: wrap;
+    }
+    
+    .exercicios-search-wrapper {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .exercicios-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}

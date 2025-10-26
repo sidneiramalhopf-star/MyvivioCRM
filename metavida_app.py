@@ -3,7 +3,7 @@
 # Sistema de Gestão para Academias e Wellness Corporativo
 # ============================================================
 
-from fastapi import FastAPI, Depends, HTTPException, Header, Request, Response
+from fastapi import FastAPI, Depends, HTTPException, Header, Request, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -197,6 +197,25 @@ class Attendance(Base):
     evento_aula = relationship("EventoAula")
     usuario = relationship("Usuario", foreign_keys=[usuario_id])
     marcador = relationship("Usuario", foreign_keys=[marcado_por])
+
+class Exercicio(Base):
+    __tablename__ = "exercicios"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    tipo = Column(String, nullable=True)  # Peso do corpo, Funcional, etc
+    quem_pode_utilizar = Column(String, nullable=True)  # Todos os instrutores, Somente quem elaborou
+    elaborado_por = Column(String, nullable=True)  # Nome do elaborador
+    descricao = Column(Text, nullable=True)
+    foto_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
+    favorito = Column(Boolean, default=False)
+    oculto = Column(Boolean, default=False)
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
+    criado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    unidade = relationship("Unidade")
+    criado_por = relationship("Usuario")
 
 # ============================================================
 # Inicializar Banco de Dados
@@ -1417,3 +1436,265 @@ def estatisticas_aula(
         "ocupacao_percentual": round(ocupacao_percentual, 2),
         "vagas_disponiveis": aula.limite_inscricoes - total_inscricoes
     }
+
+# ============================================================
+# Endpoints de Exercícios
+# ============================================================
+
+class ExercicioCreate(BaseModel):
+    nome: str
+    tipo: Optional[str] = None
+    quem_pode_utilizar: Optional[str] = None
+    elaborado_por: Optional[str] = None
+    descricao: Optional[str] = None
+    foto_url: Optional[str] = None
+    video_url: Optional[str] = None
+    favorito: bool = False
+    oculto: bool = False
+
+class ExercicioUpdate(BaseModel):
+    nome: Optional[str] = None
+    tipo: Optional[str] = None
+    quem_pode_utilizar: Optional[str] = None
+    elaborado_por: Optional[str] = None
+    descricao: Optional[str] = None
+    foto_url: Optional[str] = None
+    video_url: Optional[str] = None
+    favorito: Optional[bool] = None
+    oculto: Optional[bool] = None
+
+@app.post("/exercicios")
+def criar_exercicio(
+    exercicio: ExercicioCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    novo_exercicio = Exercicio(
+        nome=exercicio.nome,
+        tipo=exercicio.tipo,
+        quem_pode_utilizar=exercicio.quem_pode_utilizar,
+        elaborado_por=exercicio.elaborado_por,
+        descricao=exercicio.descricao,
+        foto_url=exercicio.foto_url,
+        video_url=exercicio.video_url,
+        favorito=exercicio.favorito,
+        oculto=exercicio.oculto,
+        unidade_id=usuario.unidade_id,
+        criado_por_id=usuario.id
+    )
+    db.add(novo_exercicio)
+    db.commit()
+    db.refresh(novo_exercicio)
+    return {
+        "id": novo_exercicio.id,
+        "nome": novo_exercicio.nome,
+        "tipo": novo_exercicio.tipo,
+        "quem_pode_utilizar": novo_exercicio.quem_pode_utilizar,
+        "elaborado_por": novo_exercicio.elaborado_por,
+        "descricao": novo_exercicio.descricao,
+        "foto_url": novo_exercicio.foto_url,
+        "video_url": novo_exercicio.video_url,
+        "favorito": novo_exercicio.favorito,
+        "oculto": novo_exercicio.oculto,
+        "data_criacao": novo_exercicio.data_criacao.isoformat() if novo_exercicio.data_criacao else None
+    }
+
+@app.get("/exercicios")
+def listar_exercicios(
+    busca: Optional[str] = None,
+    tipo: Optional[str] = None,
+    favoritos: Optional[bool] = None,
+    ocultos: Optional[bool] = False,
+    ordenar: Optional[str] = "nome",
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Exercicio)
+    
+    if not ocultos:
+        query = query.filter(Exercicio.oculto == False)
+    
+    if busca:
+        query = query.filter(Exercicio.nome.ilike(f"%{busca}%"))
+    
+    if tipo:
+        query = query.filter(Exercicio.tipo == tipo)
+    
+    if favoritos is not None:
+        query = query.filter(Exercicio.favorito == favoritos)
+    
+    if ordenar == "nome":
+        query = query.order_by(Exercicio.nome)
+    elif ordenar == "recentes":
+        query = query.order_by(Exercicio.data_criacao.desc())
+    
+    exercicios = query.all()
+    
+    return [{
+        "id": ex.id,
+        "nome": ex.nome,
+        "tipo": ex.tipo,
+        "quem_pode_utilizar": ex.quem_pode_utilizar,
+        "elaborado_por": ex.elaborado_por,
+        "descricao": ex.descricao,
+        "foto_url": ex.foto_url,
+        "video_url": ex.video_url,
+        "favorito": ex.favorito,
+        "oculto": ex.oculto,
+        "data_criacao": ex.data_criacao.isoformat() if ex.data_criacao else None
+    } for ex in exercicios]
+
+@app.get("/exercicios/{exercicio_id}")
+def obter_exercicio(
+    exercicio_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    exercicio = db.query(Exercicio).filter(Exercicio.id == exercicio_id).first()
+    if not exercicio:
+        raise HTTPException(status_code=404, detail="Exercício não encontrado")
+    
+    return {
+        "id": exercicio.id,
+        "nome": exercicio.nome,
+        "tipo": exercicio.tipo,
+        "quem_pode_utilizar": exercicio.quem_pode_utilizar,
+        "elaborado_por": exercicio.elaborado_por,
+        "descricao": exercicio.descricao,
+        "foto_url": exercicio.foto_url,
+        "video_url": exercicio.video_url,
+        "favorito": exercicio.favorito,
+        "oculto": exercicio.oculto,
+        "data_criacao": exercicio.data_criacao.isoformat() if exercicio.data_criacao else None,
+        "data_atualizacao": exercicio.data_atualizacao.isoformat() if exercicio.data_atualizacao else None
+    }
+
+@app.put("/exercicios/{exercicio_id}")
+def atualizar_exercicio(
+    exercicio_id: int,
+    dados: ExercicioUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    exercicio = db.query(Exercicio).filter(Exercicio.id == exercicio_id).first()
+    if not exercicio:
+        raise HTTPException(status_code=404, detail="Exercício não encontrado")
+    
+    if dados.nome is not None:
+        exercicio.nome = dados.nome
+    if dados.tipo is not None:
+        exercicio.tipo = dados.tipo
+    if dados.quem_pode_utilizar is not None:
+        exercicio.quem_pode_utilizar = dados.quem_pode_utilizar
+    if dados.elaborado_por is not None:
+        exercicio.elaborado_por = dados.elaborado_por
+    if dados.descricao is not None:
+        exercicio.descricao = dados.descricao
+    if dados.foto_url is not None:
+        exercicio.foto_url = dados.foto_url
+    if dados.video_url is not None:
+        exercicio.video_url = dados.video_url
+    if dados.favorito is not None:
+        exercicio.favorito = dados.favorito
+    if dados.oculto is not None:
+        exercicio.oculto = dados.oculto
+    
+    exercicio.data_atualizacao = datetime.utcnow()
+    db.commit()
+    db.refresh(exercicio)
+    
+    return {
+        "id": exercicio.id,
+        "nome": exercicio.nome,
+        "tipo": exercicio.tipo,
+        "favorito": exercicio.favorito,
+        "oculto": exercicio.oculto
+    }
+
+@app.delete("/exercicios/{exercicio_id}")
+def deletar_exercicio(
+    exercicio_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    exercicio = db.query(Exercicio).filter(Exercicio.id == exercicio_id).first()
+    if not exercicio:
+        raise HTTPException(status_code=404, detail="Exercício não encontrado")
+    
+    db.delete(exercicio)
+    db.commit()
+    return {"mensagem": "Exercício excluído com sucesso"}
+
+import shutil
+from pathlib import Path
+
+# Criar diretórios para uploads se não existirem
+UPLOAD_DIR = Path("static/uploads")
+EXERCICIOS_FOTOS_DIR = UPLOAD_DIR / "exercicios" / "fotos"
+EXERCICIOS_VIDEOS_DIR = UPLOAD_DIR / "exercicios" / "videos"
+EXERCICIOS_FOTOS_DIR.mkdir(parents=True, exist_ok=True)
+EXERCICIOS_VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.post("/exercicios/upload-foto")
+async def upload_foto_exercicio(
+    file: UploadFile = File(...),
+    usuario: Usuario = Depends(get_current_user)
+):
+    # Validar tipo de arquivo
+    allowed_types = ["image/jpeg", "image/jpg", "image/png"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400, 
+            detail="Formato não permitido. Use JPG, JPEG ou PNG"
+        )
+    
+    # Gerar nome único do arquivo
+    file_extension = file.filename.split(".")[-1]
+    unique_filename = f"{datetime.utcnow().timestamp()}_{usuario.id}.{file_extension}"
+    file_path = EXERCICIOS_FOTOS_DIR / unique_filename
+    
+    # Salvar arquivo
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Retornar URL relativa
+    relative_url = f"/static/uploads/exercicios/fotos/{unique_filename}"
+    return {"foto_url": relative_url, "mensagem": "Foto enviada com sucesso"}
+
+@app.post("/exercicios/upload-video")
+async def upload_video_exercicio(
+    file: UploadFile = File(...),
+    usuario: Usuario = Depends(get_current_user)
+):
+    # Validar tipo de arquivo
+    allowed_types = ["video/mp4", "video/webm", "video/quicktime"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400, 
+            detail="Formato não permitido. Use MP4, WEBM ou MOV"
+        )
+    
+    # Validar tamanho (40 MB máximo)
+    max_size = 40 * 1024 * 1024  # 40 MB em bytes
+    file.file.seek(0, 2)  # Ir para o final do arquivo
+    file_size = file.file.tell()
+    file.file.seek(0)  # Voltar para o início
+    
+    if file_size > max_size:
+        raise HTTPException(
+            status_code=400, 
+            detail="Arquivo muito grande. Tamanho máximo: 40 MB"
+        )
+    
+    # Gerar nome único do arquivo
+    file_extension = file.filename.split(".")[-1]
+    unique_filename = f"{datetime.utcnow().timestamp()}_{usuario.id}.{file_extension}"
+    file_path = EXERCICIOS_VIDEOS_DIR / unique_filename
+    
+    # Salvar arquivo
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Retornar URL relativa
+    relative_url = f"/static/uploads/exercicios/videos/{unique_filename}"
+    return {"video_url": relative_url, "mensagem": "Vídeo enviado com sucesso"}

@@ -70,7 +70,8 @@ function navigateTo(event, page) {
         } else if (page === 'planejador') {
             initPlanner();
         } else if (page === 'treinamento') {
-            loadProgramas();
+            // Mostrar view de programas por padrão
+            switchTreinamentoView('programas');
         }
     }
 }
@@ -105,7 +106,8 @@ function navigateToPage(page) {
         } else if (page === 'planejador') {
             initPlanner();
         } else if (page === 'treinamento') {
-            loadProgramas();
+            // Mostrar view de programas por padrão
+            switchTreinamentoView('programas');
         }
     }
 }
@@ -3578,4 +3580,617 @@ function filtrarExercicios() {
     
     console.log('Filtros:', { filtroAparelho, filtroQualidade, filtroParteCorpo, filtroMovimento });
     // TODO: Implementar lógica de filtro
+}
+
+// ============================================
+// BIBLIOTECA DE EXERCÍCIOS
+// ============================================
+
+let exercicioAtualId = null;
+let fotoUrlTemp = null;
+let videoUrlTemp = null;
+
+// 1. Navegar entre 'programas' e 'exercicios'
+function switchTreinamentoView(view, evt) {
+    const pageTreinamento = document.getElementById('page-treinamento');
+    const pageExercicios = document.getElementById('page-exercicios');
+    
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    }
+    
+    if (view === 'exercicios') {
+        if (pageTreinamento) pageTreinamento.style.display = 'none';
+        if (pageExercicios) pageExercicios.style.display = 'block';
+        loadExercicios();
+    } else if (view === 'programas') {
+        if (pageExercicios) pageExercicios.style.display = 'none';
+        if (pageTreinamento) pageTreinamento.style.display = 'block';
+        loadProgramas();
+    }
+}
+
+// 2. Carregar lista de exercícios do backend
+async function loadExercicios() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/exercicios`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const exercicios = await response.json();
+            renderizarExercicios(exercicios);
+            
+            const contador = document.getElementById('exercicios-count');
+            if (contador) {
+                contador.textContent = exercicios.length;
+            }
+        } else {
+            showToast('Erro ao carregar exercícios', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar exercícios:', error);
+        showToast('Erro ao carregar exercícios', 'error');
+    }
+}
+
+// 3. Renderizar cards de exercícios no grid
+function renderizarExercicios(exercicios) {
+    const grid = document.getElementById('exercicios-grid');
+    
+    if (!grid) return;
+    
+    if (!exercicios || exercicios.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-running"></i>
+                <p>Nenhum exercício cadastrado ainda</p>
+                <p class="empty-hint">Clique em "Novo Exercício" para começar</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = exercicios.map(ex => {
+        const imagemUrl = ex.foto_url || '/static/uploads/exercicios/fotos/placeholder.jpg';
+        const favoritoClass = ex.favorito ? 'active' : '';
+        
+        return `
+            <div class="exercicio-card" onclick="abrirEdicaoExercicio(${ex.id})">
+                <div class="exercicio-imagem">
+                    <img src="${imagemUrl}" alt="${ex.nome}" onerror="this.src='/static/uploads/exercicios/fotos/placeholder.jpg'">
+                    <button class="btn-favorito ${favoritoClass}" onclick="event.stopPropagation(); toggleFavorito(${ex.id})">
+                        <i class="fas fa-star"></i>
+                    </button>
+                </div>
+                <div class="exercicio-info">
+                    <h4>${ex.nome}</h4>
+                    <p class="exercicio-proprietario">${ex.elaborado_por || 'Sem proprietário'}</p>
+                    <button class="btn-ocultar" onclick="event.stopPropagation(); ocultarExercicio(${ex.id})">
+                        OCULTAR
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 4. Abrir modal de criação de exercício
+function abrirModalNovoExercicio() {
+    const modal = document.getElementById('modal-novo-exercicio');
+    if (!modal) return;
+    
+    const form = document.getElementById('form-novo-exercicio');
+    if (form) form.reset();
+    
+    modal.style.display = 'block';
+}
+
+// 5. Fechar modal de criação
+function fecharModalNovoExercicio() {
+    const modal = document.getElementById('modal-novo-exercicio');
+    if (modal) modal.style.display = 'none';
+}
+
+// 6. Criar exercício e ir para edição
+async function continuarNovoExercicio() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const nome = document.getElementById('novo-exercicio-nome')?.value;
+    const tipo = document.getElementById('novo-exercicio-tipo')?.value;
+    const quemPodeUtilizar = document.getElementById('novo-exercicio-quem-pode-utilizar')?.value;
+    
+    if (!nome || !tipo || !quemPodeUtilizar) {
+        showToast('Preencha todos os campos obrigatórios', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/exercicios`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                nome: nome,
+                tipo: tipo,
+                quem_pode_utilizar: quemPodeUtilizar
+            })
+        });
+        
+        if (response.ok) {
+            const exercicio = await response.json();
+            fecharModalNovoExercicio();
+            abrirEdicaoExercicio(exercicio.id);
+            showToast('Exercício criado com sucesso!', 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao criar exercício', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao criar exercício:', error);
+        showToast('Erro ao criar exercício', 'error');
+    }
+}
+
+// 7. Abrir página de edição de exercício
+async function abrirEdicaoExercicio(exercicioId) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    exercicioAtualId = exercicioId;
+    fotoUrlTemp = null;
+    videoUrlTemp = null;
+    
+    const pageExercicios = document.getElementById('page-exercicios');
+    const pageEdicao = document.getElementById('page-edicao-exercicio');
+    
+    if (pageExercicios) pageExercicios.style.display = 'none';
+    if (pageEdicao) pageEdicao.style.display = 'block';
+    
+    try {
+        const response = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const exercicio = await response.json();
+            
+            const campos = {
+                'edicao-exercicio-nome': exercicio.nome,
+                'edicao-exercicio-tipo': exercicio.tipo,
+                'edicao-exercicio-quem-pode-utilizar': exercicio.quem_pode_utilizar,
+                'edicao-exercicio-aparelho': exercicio.aparelho,
+                'edicao-exercicio-qualidade-movimento': exercicio.qualidade_movimento,
+                'edicao-exercicio-parte-corpo': exercicio.parte_corpo,
+                'edicao-exercicio-movimento': exercicio.movimento,
+                'edicao-exercicio-descricao': exercicio.descricao
+            };
+            
+            for (const [id, valor] of Object.entries(campos)) {
+                const campo = document.getElementById(id);
+                if (campo && valor) campo.value = valor;
+            }
+            
+            if (exercicio.foto_url) {
+                const preview = document.getElementById('preview-foto-exercicio');
+                if (preview) {
+                    preview.src = exercicio.foto_url;
+                    preview.style.display = 'block';
+                }
+                fotoUrlTemp = exercicio.foto_url;
+            }
+            
+            if (exercicio.video_url) {
+                const player = document.getElementById('player-video-exercicio');
+                if (player) {
+                    player.src = exercicio.video_url;
+                    player.style.display = 'block';
+                }
+                videoUrlTemp = exercicio.video_url;
+            }
+            
+            const btnFavorito = document.getElementById('btn-favorito-edicao');
+            if (btnFavorito) {
+                if (exercicio.favorito) {
+                    btnFavorito.textContent = 'Remover dos favoritos';
+                    btnFavorito.classList.add('favorito-ativo');
+                } else {
+                    btnFavorito.textContent = 'Adicionar aos favoritos';
+                    btnFavorito.classList.remove('favorito-ativo');
+                }
+            }
+        } else {
+            showToast('Erro ao carregar exercício', 'error');
+            voltarParaExercicios();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar exercício:', error);
+        showToast('Erro ao carregar exercício', 'error');
+        voltarParaExercicios();
+    }
+}
+
+// 8. Voltar para biblioteca de exercícios
+function voltarParaExercicios() {
+    const pageEdicao = document.getElementById('page-edicao-exercicio');
+    const pageExercicios = document.getElementById('page-exercicios');
+    
+    if (pageEdicao) pageEdicao.style.display = 'none';
+    if (pageExercicios) pageExercicios.style.display = 'block';
+    
+    exercicioAtualId = null;
+    fotoUrlTemp = null;
+    videoUrlTemp = null;
+    
+    loadExercicios();
+}
+
+// 9. Upload de foto do exercício
+function uploadFotoExercicio() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch(`${API_BASE}/exercicios/upload-foto`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                fotoUrlTemp = data.foto_url;
+                
+                const preview = document.getElementById('preview-foto-exercicio');
+                if (preview) {
+                    preview.src = fotoUrlTemp;
+                    preview.style.display = 'block';
+                }
+                
+                showToast('Foto enviada com sucesso!', 'success');
+            } else {
+                showToast('Erro ao enviar foto', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao enviar foto:', error);
+            showToast('Erro ao enviar foto', 'error');
+        }
+    };
+    
+    input.click();
+}
+
+// 10. Upload de vídeo do exercício
+function uploadVideoExercicio() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/mp4,video/webm,video/quicktime';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const maxSize = 40 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showToast('O vídeo deve ter no máximo 40MB', 'warning');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            showToast('Enviando vídeo...', 'info');
+            
+            const response = await fetch(`${API_BASE}/exercicios/upload-video`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                videoUrlTemp = data.video_url;
+                
+                const player = document.getElementById('player-video-exercicio');
+                if (player) {
+                    player.src = videoUrlTemp;
+                    player.style.display = 'block';
+                }
+                
+                showToast('Vídeo enviado com sucesso!', 'success');
+            } else {
+                showToast('Erro ao enviar vídeo', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao enviar vídeo:', error);
+            showToast('Erro ao enviar vídeo', 'error');
+        }
+    };
+    
+    input.click();
+}
+
+// 11. Salvar alterações do exercício
+async function salvarExercicio() {
+    if (!authToken || !exercicioAtualId) {
+        showToast('Erro ao salvar exercício', 'error');
+        return;
+    }
+    
+    const nome = document.getElementById('edicao-exercicio-nome')?.value;
+    const tipo = document.getElementById('edicao-exercicio-tipo')?.value;
+    const quemPodeUtilizar = document.getElementById('edicao-exercicio-quem-pode-utilizar')?.value;
+    
+    if (!nome || !tipo || !quemPodeUtilizar) {
+        showToast('Preencha todos os campos obrigatórios', 'warning');
+        return;
+    }
+    
+    const dados = {
+        nome: nome,
+        tipo: tipo,
+        quem_pode_utilizar: quemPodeUtilizar,
+        aparelho: document.getElementById('edicao-exercicio-aparelho')?.value || null,
+        qualidade_movimento: document.getElementById('edicao-exercicio-qualidade-movimento')?.value || null,
+        parte_corpo: document.getElementById('edicao-exercicio-parte-corpo')?.value || null,
+        movimento: document.getElementById('edicao-exercicio-movimento')?.value || null,
+        descricao: document.getElementById('edicao-exercicio-descricao')?.value || null
+    };
+    
+    if (fotoUrlTemp) {
+        dados.foto_url = fotoUrlTemp;
+    }
+    
+    if (videoUrlTemp) {
+        dados.video_url = videoUrlTemp;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/exercicios/${exercicioAtualId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        if (response.ok) {
+            showToast('Exercício salvo com sucesso!', 'success');
+            setTimeout(() => {
+                voltarParaExercicios();
+            }, 1000);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao salvar exercício', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar exercício:', error);
+        showToast('Erro ao salvar exercício', 'error');
+    }
+}
+
+// 12. Toggle favorito
+async function toggleFavorito(exercicioId) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    try {
+        const responseGet = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!responseGet.ok) {
+            showToast('Erro ao buscar exercício', 'error');
+            return;
+        }
+        
+        const exercicio = await responseGet.json();
+        const novoEstado = !exercicio.favorito;
+        
+        const responsePut = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                ...exercicio,
+                favorito: novoEstado
+            })
+        });
+        
+        if (responsePut.ok) {
+            showToast(novoEstado ? 'Adicionado aos favoritos!' : 'Removido dos favoritos!', 'success');
+            loadExercicios();
+        } else {
+            showToast('Erro ao atualizar favorito', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar favorito:', error);
+        showToast('Erro ao atualizar favorito', 'error');
+    }
+}
+
+// 13. Ocultar exercício
+async function ocultarExercicio(exercicioId) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    if (!confirm('Deseja realmente ocultar este exercício?')) {
+        return;
+    }
+    
+    try {
+        const responseGet = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!responseGet.ok) {
+            showToast('Erro ao buscar exercício', 'error');
+            return;
+        }
+        
+        const exercicio = await responseGet.json();
+        
+        const responsePut = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                ...exercicio,
+                oculto: true
+            })
+        });
+        
+        if (responsePut.ok) {
+            showToast('Exercício ocultado com sucesso!', 'success');
+            loadExercicios();
+        } else {
+            showToast('Erro ao ocultar exercício', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao ocultar exercício:', error);
+        showToast('Erro ao ocultar exercício', 'error');
+    }
+}
+
+// 14. Buscar e filtrar exercícios
+async function buscarExercicios() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const busca = document.getElementById('busca-exercicios')?.value || '';
+    const tipo = document.getElementById('filtro-tipo-exercicio')?.value || '';
+    const ordenar = document.getElementById('filtro-ordenacao')?.value || '';
+    
+    let url = `${API_BASE}/exercicios?`;
+    const params = [];
+    
+    if (busca) params.push(`busca=${encodeURIComponent(busca)}`);
+    if (tipo) params.push(`tipo=${encodeURIComponent(tipo)}`);
+    if (ordenar) params.push(`ordenar=${encodeURIComponent(ordenar)}`);
+    
+    url += params.join('&');
+    
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const exercicios = await response.json();
+            renderizarExercicios(exercicios);
+        } else {
+            showToast('Erro ao buscar exercícios', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao buscar exercícios:', error);
+        showToast('Erro ao buscar exercícios', 'error');
+    }
+}
+
+// 15. Remover dos favoritos na página de edição
+async function removerDosFavoritos() {
+    if (!authToken || !exercicioAtualId) {
+        showToast('Erro ao remover dos favoritos', 'error');
+        return;
+    }
+    
+    try {
+        const responseGet = await fetch(`${API_BASE}/exercicios/${exercicioAtualId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!responseGet.ok) {
+            showToast('Erro ao buscar exercício', 'error');
+            return;
+        }
+        
+        const exercicio = await responseGet.json();
+        
+        const responsePut = await fetch(`${API_BASE}/exercicios/${exercicioAtualId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                ...exercicio,
+                favorito: false
+            })
+        });
+        
+        if (responsePut.ok) {
+            showToast('Removido dos favoritos!', 'success');
+            
+            const btnFavorito = document.getElementById('btn-favorito-edicao');
+            if (btnFavorito) {
+                btnFavorito.textContent = 'Adicionar aos favoritos';
+                btnFavorito.classList.remove('favorito-ativo');
+            }
+        } else {
+            showToast('Erro ao remover dos favoritos', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao remover dos favoritos:', error);
+        showToast('Erro ao remover dos favoritos', 'error');
+    }
 }

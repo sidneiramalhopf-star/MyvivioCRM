@@ -868,6 +868,353 @@
                         </div>
                     </div>
 
+                    <!-- ========== BIBLIOTECA DE EXERCÍCIOS ========== -->
+                    
+                    <!-- Página Principal de Exercícios -->
+                    <div id="page-exercicios" class="page-content" style="display: none;">
+                        <!-- Barra no topo -->
+                        <div class="exercicios-top-bar">
+                            <button class="btn-novo-exercicio">
+                                <i class="fas fa-plus"></i> NOVO EXERCÍCIO
+                            </button>
+                            <select class="exercicios-dropdown">
+                                <option>Todos os exercícios</option>
+                                <option>Meus exercícios</option>
+                                <option>Exercícios compartilhados</option>
+                            </select>
+                            <select class="exercicios-dropdown">
+                                <option>Mais filtros</option>
+                                <option>Tipo de movimento</option>
+                                <option>Parte do corpo</option>
+                                <option>Equipamento</option>
+                            </select>
+                            <div class="exercicios-search-wrapper">
+                                <div class="exercicios-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" placeholder="Buscar exercícios...">
+                                </div>
+                                <button class="btn-buscar">Buscar</button>
+                            </div>
+                        </div>
+
+                        <!-- Contador e filtros -->
+                        <div class="exercicios-header-info">
+                            <div class="exercicios-contador">2046 exercícios</div>
+                            <div class="exercicios-filtros-direita">
+                                <select class="exercicios-dropdown">
+                                    <option>Lista dos mais usados</option>
+                                    <option>Mais recentes</option>
+                                    <option>Mais antigos</option>
+                                </select>
+                                <select class="exercicios-dropdown">
+                                    <option>A-Z</option>
+                                    <option>Z-A</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Grid de cards -->
+                        <div class="exercicios-cards-grid">
+                            <!-- Card 1 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-dumbbell exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Agachamento Livre</div>
+                                    <div class="exercicio-proprietario">Proprietário: João Silva</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-running exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Corrida na Esteira</div>
+                                    <div class="exercicio-proprietario">Proprietário: Maria Santos</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito active">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-heartbeat exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Supino Reto</div>
+                                    <div class="exercicio-proprietario">Proprietário: Pedro Costa</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 4 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-bicycle exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Bicicleta Ergométrica</div>
+                                    <div class="exercicio-proprietario">Proprietário: Ana Lima</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 5 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-weight exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Levantamento Terra</div>
+                                    <div class="exercicio-proprietario">Proprietário: Carlos Mendes</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito active">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 6 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-spa exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Yoga Flow</div>
+                                    <div class="exercicio-proprietario">Proprietário: Fernanda Alves</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 7 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-person-walking exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Caminhada Rápida</div>
+                                    <div class="exercicio-proprietario">Proprietário: Roberto Dias</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 8 -->
+                            <div class="exercicio-card">
+                                <div class="exercicio-thumbnail">
+                                    <i class="fas fa-fire exercicio-thumbnail-placeholder"></i>
+                                </div>
+                                <div class="exercicio-card-body">
+                                    <div class="exercicio-nome">Burpees</div>
+                                    <div class="exercicio-proprietario">Proprietário: Juliana Rocha</div>
+                                    <div class="exercicio-card-footer">
+                                        <button class="btn-favorito active">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                        <button class="btn-ocultar">OCULTAR</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Novo Exercício -->
+                    <div id="modal-novo-exercicio" style="display: none;">
+                        <div class="modal-novo-exercicio-content">
+                            <div class="modal-novo-exercicio-header">
+                                <h2>Novo exercício</h2>
+                                <button class="btn-fechar-modal">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="modal-novo-exercicio-body">
+                                <form>
+                                    <div class="form-group">
+                                        <label>Nome</label>
+                                        <input type="text" placeholder="Nome do exercício">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Tipo</label>
+                                        <select>
+                                            <option value="">Selecione...</option>
+                                            <option>Peso do corpo</option>
+                                            <option>Funcional</option>
+                                            <option>Cardio</option>
+                                            <option>Força</option>
+                                            <option>Flexibilidade</option>
+                                            <option>Resistência</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Quem pode utilizá-lo</label>
+                                        <select>
+                                            <option value="">Selecione...</option>
+                                            <option>Todos os instrutores</option>
+                                            <option>Somente quem elaborou</option>
+                                            <option>Minha equipe</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="modal-novo-exercicio-footer">
+                                <button class="btn-continuar">CONTINUAR</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Página de Edição de Exercício -->
+                    <div id="page-edicao-exercicio" class="page-content" style="display: none;">
+                        <!-- Header customizado -->
+                        <div class="exercicio-edit-header">
+                            <div class="exercicio-edit-header-left">
+                                <button class="btn-voltar-circular">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <div class="exercicio-header-thumb">
+                                    <i class="fas fa-dumbbell" style="color: #ccc;"></i>
+                                </div>
+                                <div class="exercicio-header-info">
+                                    <h1>Agachamento Livre</h1>
+                                    <div class="exercicio-header-subtitulo">Movimento funcional</div>
+                                </div>
+                            </div>
+                            <div class="exercicio-header-right">
+                                <div class="exercicio-header-icons">
+                                    <button class="exercicio-header-icon">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                    <button class="exercicio-header-icon">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <button class="exercicio-header-icon favorito">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                </div>
+                                <div class="exercicio-ultima-atualizacao">
+                                    Última atualização<br>quarta-feira, 1 de maio de 2024
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Layout 2 colunas -->
+                        <div class="exercicio-edit-layout">
+                            <!-- Coluna Esquerda (60%) -->
+                            <div class="exercicio-edit-coluna">
+                                <!-- Seção Imagem -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Imagem</h3>
+                                    <div class="exercicio-imagem-upload">
+                                        <div class="exercicio-imagem-placeholder">
+                                            <i class="fas fa-image"></i>
+                                            <div>Clique para fazer upload</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-modificar-foto">Modificar a foto</button>
+                                    <div class="exercicio-specs">jpg, png | 600x450 | Formatos compatíveis</div>
+                                </div>
+
+                                <!-- Seção Nome -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Nome</h3>
+                                    <input type="text" value="Agachamento Livre">
+                                </div>
+
+                                <!-- Seção Quem pode utilizá-lo -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Quem pode utilizá-lo</h3>
+                                    <select>
+                                        <option>Todos os instrutores</option>
+                                        <option>Somente quem elaborou</option>
+                                        <option>Minha equipe</option>
+                                    </select>
+                                </div>
+
+                                <!-- Seção Tipo -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Tipo</h3>
+                                    <select>
+                                        <option>Peso do corpo</option>
+                                        <option>Funcional</option>
+                                        <option>Cardio</option>
+                                        <option>Força</option>
+                                        <option>Flexibilidade</option>
+                                    </select>
+                                </div>
+
+                                <!-- Seção Elaborado por -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Elaborado por</h3>
+                                    <input type="text" value="João Silva">
+                                    <a href="#" class="link-remover-favoritos">Remover dos favoritos</a>
+                                </div>
+                            </div>
+
+                            <!-- Coluna Direita (40%) -->
+                            <div class="exercicio-edit-coluna">
+                                <!-- Seção Vídeo -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Vídeo</h3>
+                                    <video class="exercicio-video-player" controls>
+                                        <source src="" type="video/mp4">
+                                        Seu navegador não suporta vídeo HTML5.
+                                    </video>
+                                    <button class="btn-alterar-video">Alterar vídeo</button>
+                                    <div class="exercicio-specs">mp4, webm, mov | 40 MB | 4:3</div>
+                                </div>
+
+                                <!-- Seção Descrição -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Descrição</h3>
+                                    <textarea placeholder="Descreva o exercício, seus benefícios, instruções de execução..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer com botão salvar -->
+                        <div class="exercicio-edit-footer">
+                            <button class="btn-salvar-exercicio">SALVAR</button>
+                        </div>
+                    </div>
+
                     <!-- Página de Builder de Programa -->
                     <div id="page-programa-builder" class="page-content" style="display: none;">
                         <div class="builder-header">
