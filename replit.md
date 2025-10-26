@@ -4,7 +4,18 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 26, 2025 - Afternoon**: **PÁGINA DE CRIAÇÃO/EDIÇÃO DE EXERCÍCIOS IMPLEMENTADA** (Aprovado pelo Arquiteto):
+- **October 26, 2025 - Afternoon (Update 2)**: **OTIMIZAÇÃO DA PÁGINA DE EXERCÍCIOS** (Aprovado pelo Arquiteto):
+  - **Interface compactada**: Todos os elementos visíveis na tela sem scroll excessivo
+  - **Tamanhos reduzidos**: Header (0.75rem padding), botão voltar (32px), thumbnail (50x38), seções (1rem padding)
+  - **Fontes padronizadas**: Uso consistente de variáveis CSS (--font-h2, --font-body, --font-small, --font-tiny)
+  - **Box de imagem 600x450px**: Dimensões exatas conforme especificação, com max-width: 100% para responsividade
+  - **Criador automático**: Campo "Elaborado por" preenchido automaticamente com nome do usuário logado (readonly)
+  - **Upload intuitivo**: Clique na área de preview ou botão "Modificar a foto" abre seletor de arquivo
+  - **Preview funcional**: Imagens e vídeos exibidos imediatamente após upload, mantendo click handler
+  - **Botão SALVAR ativo**: Função salvarExercicio() completa - valida campos, cria/atualiza exercício, volta para biblioteca
+  - **Textarea reduzida**: min-height de 200px → 120px para melhor aproveitamento vertical
+  - **Vídeo aspect ratio 4:3**: Mudado de 16:9 para 4:3 (mais compacto e consistente com fotos)
+- **October 26, 2025 - Afternoon (Update 1)**: **PÁGINA DE CRIAÇÃO/EDIÇÃO DE EXERCÍCIOS IMPLEMENTADA** (Aprovado pelo Arquiteto):
   - **Botão NOVO EXERCÍCIO reduzido**: Padding ajustado de 12px 24px para 7px 19px (exatamente 5px menor)
   - **Página de criação implementada**: Ao clicar em NOVO EXERCÍCIO, abre página de edição em modo vazio para criar novo exercício
   - **Layout conforme referência**: Header com botão voltar circular, thumbnail, nome, "Dados gerais" e ícones (lista, engrenagem)
