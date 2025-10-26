@@ -3,6 +3,31 @@
 ## Overview
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
+## Recent Changes
+- **October 26, 2025**: **PADRONIZAÇÃO COMPLETA DE BOTÕES E TIPOGRAFIA** (Aprovado pelo Arquiteto):
+  - **Variáveis CSS criadas** em :root:
+    - --btn-primary: #123058 (cor padrão de TODOS os botões primários)
+    - --btn-primary-hover: #0d2340 (hover de botões primários)
+    - --btn-secondary: #e0e0e0 (botões secundários/filtros)
+    - --btn-secondary-hover: #d5d5d5
+    - --font-h1: 1.75rem (títulos principais)
+    - --font-h2: 1.25rem (subtítulos)
+    - --font-h3: 1rem (subtítulos menores)
+    - --font-body: 0.875rem (texto normal, igual às tabs)
+    - --font-small: 0.75rem, --font-tiny: 0.7rem
+  - **Estilos globais padronizados**:
+    - Todos botões primários (btn-primary, btn-criar, btn-salvar, btn-continuar, btn-salvar-exercicio, btn-novo-exercicio, btn-agendar-rapido, btn-reservar, btn-concluir, btn-add-option, btn-mostra, btn-adicionar-sessao) com background #123058
+    - Todos botões secundários (btn-secondary, btn-filter, btn-filtro, btn-limpar-filtros, btn-buscar) com background #e0e0e0
+    - Botões outline com borda #123058 e background transparente
+    - Botões de perigo (danger) e aviso (warning) mantidos para ações destrutivas
+    - Tipografia padronizada: h1, h2, h3 com tamanhos consistentes
+  - **Limpeza de CSS**:
+    - Removidas 10+ definições duplicadas de botões que sobrescreviam estilos globais
+    - Removidas cores antigas (verde #4caf50, azul #62b1ca) de botões específicos
+    - Removidos hovers órfãos que causavam conflitos na cascata CSS
+    - Mantidas apenas propriedades únicas (width, height, display) em classes específicas
+  - **Resultado**: Sistema de design consistente e production-ready, sem conflitos CSS, todos botões seguem o padrão #123058, hierarquia visual clara
+
 ## User Preferences
 I prefer detailed explanations. Do not make changes to the folder `Z`. Do not make changes to the file `Y`. I want iterative development. I prefer simple language. I like functional programming. Ask before making major changes.
 
