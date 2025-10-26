@@ -4182,65 +4182,7 @@ function uploadVideoExercicioOld() {
     input.click();
 }
 
-// 11. Salvar alterações do exercício
-async function salvarExercicio() {
-    if (!authToken || !exercicioAtualId) {
-        showToast('Erro ao salvar exercício', 'error');
-        return;
-    }
-    
-    const nome = document.getElementById('edicao-exercicio-nome')?.value;
-    const tipo = document.getElementById('edicao-exercicio-tipo')?.value;
-    const quemPodeUtilizar = document.getElementById('edicao-exercicio-quem-pode-utilizar')?.value;
-    
-    if (!nome || !tipo || !quemPodeUtilizar) {
-        showToast('Preencha todos os campos obrigatórios', 'warning');
-        return;
-    }
-    
-    const dados = {
-        nome: nome,
-        tipo: tipo,
-        quem_pode_utilizar: quemPodeUtilizar,
-        aparelho: document.getElementById('edicao-exercicio-aparelho')?.value || null,
-        qualidade_movimento: document.getElementById('edicao-exercicio-qualidade-movimento')?.value || null,
-        parte_corpo: document.getElementById('edicao-exercicio-parte-corpo')?.value || null,
-        movimento: document.getElementById('edicao-exercicio-movimento')?.value || null,
-        descricao: document.getElementById('edicao-exercicio-descricao')?.value || null
-    };
-    
-    if (fotoUrlTemp) {
-        dados.foto_url = fotoUrlTemp;
-    }
-    
-    if (videoUrlTemp) {
-        dados.video_url = videoUrlTemp;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE}/exercicios/${exercicioAtualId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(dados)
-        });
-        
-        if (response.ok) {
-            showToast('Exercício salvo com sucesso!', 'success');
-            setTimeout(() => {
-                voltarParaExercicios();
-            }, 1000);
-        } else {
-            const error = await response.json();
-            showToast(error.detail || 'Erro ao salvar exercício', 'error');
-        }
-    } catch (error) {
-        console.error('Erro ao salvar exercício:', error);
-        showToast('Erro ao salvar exercício', 'error');
-    }
-}
+// 11. salvarExercicio() já foi definido anteriormente (linha 3898), removida duplicata
 
 // 12. Toggle favorito
 async function toggleFavorito(exercicioId) {
