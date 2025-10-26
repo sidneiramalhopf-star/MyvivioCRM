@@ -1119,10 +1119,10 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     gap: 0.5rem;
 }
 
+/* .btn-primary:hover agora usa estilos globais padronizados com #123058 */
 .btn-primary:hover {
-    background: var(--accent-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(98, 177, 202, 0.3);
+    box-shadow: 0 4px 12px rgba(18, 48, 88, 0.3);
 }
 
 /* Modal */
@@ -2820,14 +2820,9 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     border-color: var(--accent-blue);
 }
 
+/* .btn-limpar-filtros agora usa estilos globais padronizados */
 .btn-limpar-filtros {
-    background: #ecf0f1;
-    color: var(--text-secondary);
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    cursor: pointer;
+    font-size: var(--font-small);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -3539,20 +3534,9 @@ textarea.form-control {
     border-top: 1px solid #e0e0e0;
 }
 
-.btn-secondary {
-    padding: 0.75rem 2rem;
-    background: transparent;
-    border: 2px solid #ccc;
-    color: #666;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-}
+/* .btn-secondary (1ª ocorrência) - removido, usa estilos globais */
 
-.btn-secondary:hover {
-    background: #f0f0f0;
-    border-color: #999;
+/* .btn-secondary:hover órfão removido */
     color: #333;
 }
 
@@ -4771,20 +4755,13 @@ textarea.form-control {
     cursor: pointer;
 }
 
+/* .btn-filter agora usa estilos globais padronizados */
 .btn-filter {
     padding: 0.5rem 1rem;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
+    font-size: var(--font-small);
 }
 
-.btn-filter:hover {
-    background: var(--light-bg);
-}
+/* .btn-filter:hover usa estilos globais */
 
 /* Contatos Stats */
 .contatos-stats {
@@ -5007,20 +4984,9 @@ textarea.form-control {
     font-size: 0.9rem;
 }
 
-.btn-secondary {
-    padding: 0.75rem 1.5rem;
-    background: white;
-    border: 2px solid var(--accent-blue);
-    color: var(--accent-blue);
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
+/* .btn-secondary (2ª ocorrência) - removido, usa estilos globais */
 
-.btn-secondary:hover {
-    background: var(--accent-blue);
-    color: white;
+/* .btn-secondary:hover órfão removido */
 }
 
 /* ============================================
@@ -5162,19 +5128,13 @@ textarea.form-control {
     font-size: 0.9rem;
 }
 
+/* .btn-filtro agora usa estilos globais padronizados */
 .btn-filtro {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
-.btn-filtro:hover {
-    background: var(--light-bg);
-}
+/* .btn-filtro:hover usa estilos globais */
 
 .builder-filtros select {
     padding: 0.75rem 1rem;
@@ -5754,19 +5714,9 @@ textarea.form-control {
     font-size: 0.9rem;
 }
 
-.btn-buscar {
-    padding: 0.75rem 1.5rem;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-}
+/* .btn-buscar (duplicado) - removido, usa estilos globais */
 
-.btn-buscar:hover {
-    background: #e8e8e8;
-}
+/* .btn-buscar:hover usa estilos globais */
 
 .exercicios-header-info {
     display: flex;
