@@ -4,7 +4,18 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 26, 2025**: **PADRONIZAÇÃO COMPLETA DE BOTÕES E TIPOGRAFIA** (Aprovado pelo Arquiteto):
+- **October 26, 2025 - Afternoon**: **PÁGINA DE CRIAÇÃO/EDIÇÃO DE EXERCÍCIOS IMPLEMENTADA** (Aprovado pelo Arquiteto):
+  - **Botão NOVO EXERCÍCIO reduzido**: Padding ajustado de 12px 24px para 7px 19px (exatamente 5px menor)
+  - **Página de criação implementada**: Ao clicar em NOVO EXERCÍCIO, abre página de edição em modo vazio para criar novo exercício
+  - **Layout conforme referência**: Header com botão voltar circular, thumbnail, nome, "Dados gerais" e ícones (lista, engrenagem)
+  - **Layout 2 colunas**: Imagem (60%) à esquerda com preview e upload, Vídeo (40%) à direita com player e upload
+  - **Formulário completo**: Nome, Quem pode utilizá-lo, Tipo, Elaborado por, Descrição
+  - **Uploads funcionais**: uploadFotoExercicio() e uploadVideoExercicio() com preview automático e validação de tamanho (max 40MB para vídeo)
+  - **Navegação completa**: NOVO EXERCÍCIO → página de criação → voltar → biblioteca de exercícios
+  - **Função abrirNovoExercicio()**: Limpa todos os campos, reseta previews, prepara página para criação
+  - **Função abrirEdicaoExercicio(id)**: Carrega dados de exercício existente para edição
+  - **Estilos detalhados**: Specs de foto/vídeo com formatação (Formatos compatíveis, Resolução sugerida, Tamanho máximo, Razão de aspecto)
+- **October 26, 2025 - Morning**: **PADRONIZAÇÃO COMPLETA DE BOTÕES E TIPOGRAFIA** (Aprovado pelo Arquiteto):
   - **Variáveis CSS criadas** em :root:
     - --btn-primary: #123058 (cor padrão de TODOS os botões primários)
     - --btn-primary-hover: #0d2340 (hover de botões primários)
