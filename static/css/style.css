@@ -5950,8 +5950,8 @@ textarea.form-control {
 
 .exercicio-edit-header {
     background: white;
-    padding: 1rem 2rem;
-    margin: -2rem -2rem 2rem -2rem;
+    padding: 0.75rem 1.5rem;
+    margin: -1.5rem -1.5rem 1rem -1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
@@ -5961,12 +5961,12 @@ textarea.form-control {
 .exercicio-edit-header-left {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .btn-voltar-circular {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: white;
     border: 2px solid #ddd;
@@ -5975,6 +5975,7 @@ textarea.form-control {
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
+    font-size: 0.85rem;
 }
 
 .btn-voltar-circular:hover {
@@ -5987,11 +5988,14 @@ textarea.form-control {
 }
 
 .exercicio-header-thumb {
-    width: 60px;
-    height: 45px;
+    width: 50px;
+    height: 38px;
     background: #f5f5f5;
     border-radius: 4px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .exercicio-header-thumb img {
@@ -6001,14 +6005,14 @@ textarea.form-control {
 }
 
 .exercicio-header-info h1 {
-    font-size: 1.2rem;
+    font-size: var(--font-h2);
     font-weight: 600;
     color: #333;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.15rem 0;
 }
 
 .exercicio-header-subtitulo {
-    font-size: 0.85rem;
+    font-size: var(--font-small);
     color: #999;
 }
 
@@ -6047,47 +6051,48 @@ textarea.form-control {
 
 .exercicio-dados-gerais-header strong {
     display: block;
-    font-size: 0.9rem;
+    font-size: var(--font-body);
     color: var(--text-primary);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 
 .exercicio-ultima-atualizacao {
-    font-size: 0.7rem;
+    font-size: var(--font-tiny);
     color: #999;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .exercicio-edit-layout {
     display: grid;
     grid-template-columns: 60% 40%;
-    gap: 2rem;
-    margin-top: 2rem;
+    gap: 1rem;
+    margin-top: 0.5rem;
 }
 
 .exercicio-edit-coluna {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.75rem;
 }
 
 .exercicio-edit-secao {
     background: white;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .exercicio-edit-secao h3 {
-    font-size: 0.95rem;
+    font-size: var(--font-body);
     font-weight: 600;
     color: #333;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0;
 }
 
 .exercicio-imagem-upload {
-    width: 100%;
-    aspect-ratio: 4/3;
+    width: 600px;
+    height: 450px;
+    max-width: 100%;
     background: #f5f5f5;
     border: 2px dashed #ddd;
     border-radius: 8px;
@@ -6096,8 +6101,9 @@ textarea.form-control {
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     overflow: hidden;
+    position: relative;
 }
 
 .exercicio-imagem-upload:hover {
@@ -6117,17 +6123,22 @@ textarea.form-control {
 }
 
 .exercicio-imagem-placeholder i {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-bottom: 0.5rem;
+}
+
+.exercicio-imagem-placeholder div {
+    font-size: var(--font-small);
 }
 
 .btn-modificar-foto {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem;
     background: white;
     border: 2px solid #ddd;
     border-radius: 4px;
     font-weight: 600;
+    font-size: var(--font-body);
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 0.5rem;
@@ -6145,14 +6156,14 @@ textarea.form-control {
 }
 
 .exercicio-specs-detalhado {
-    margin-top: 0.75rem;
-    font-size: 0.75rem;
+    margin-top: 0rem;
+    font-size: var(--font-tiny);
     color: #666;
-    line-height: 1.6;
+    line-height: 1.4;
 }
 
 .exercicio-specs-detalhado div {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 
 .exercicio-specs-detalhado strong {
@@ -6164,24 +6175,25 @@ textarea.form-control {
     background: #f5f5f5;
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .exercicio-video-player {
     width: 100%;
-    aspect-ratio: 16/9;
+    aspect-ratio: 4/3;
     background: #000;
     border-radius: 8px;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .btn-alterar-video {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem;
     background: white;
     border: 2px solid #ddd;
     border-radius: 4px;
     font-weight: 600;
+    font-size: var(--font-body);
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 0.5rem;
@@ -6195,10 +6207,10 @@ textarea.form-control {
 .exercicio-edit-secao input[type="text"],
 .exercicio-edit-secao select {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: var(--font-body);
     font-family: inherit;
 }
 
@@ -6210,8 +6222,9 @@ textarea.form-control {
 
 .exercicio-edit-secao textarea {
     width: 100%;
-    min-height: 200px;
-    padding: 0.75rem;
+    min-height: 120px;
+    padding: 0.6rem;
+    font-size: var(--font-body);
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 0.9rem;

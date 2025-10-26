@@ -3775,11 +3775,22 @@ function abrirNovoExercicio() {
     if (headerSubtitulo) headerSubtitulo.textContent = 'Em criação';
     
     // Limpar campos do formulário
-    const camposInput = pageEdicao.querySelectorAll('input[type="text"], textarea');
-    camposInput.forEach(campo => campo.value = '');
+    const campoNome = document.getElementById('exercicio-nome');
+    const campoDescricao = document.getElementById('exercicio-descricao');
+    if (campoNome) campoNome.value = '';
+    if (campoDescricao) campoDescricao.value = '';
     
-    const camposSelect = pageEdicao.querySelectorAll('select');
-    camposSelect.forEach(campo => campo.selectedIndex = 0);
+    // Preencher automaticamente o criador com usuário logado
+    const campoElaboradoPor = document.getElementById('exercicio-elaborado-por');
+    if (campoElaboradoPor && currentUser) {
+        campoElaboradoPor.value = currentUser.nome || currentUser.email || 'Usuário';
+    }
+    
+    // Resetar selects
+    const selectQuemPode = document.getElementById('exercicio-quem-pode-utilizar');
+    const selectTipo = document.getElementById('exercicio-tipo');
+    if (selectQuemPode) selectQuemPode.selectedIndex = 0;
+    if (selectTipo) selectTipo.selectedIndex = 0;
     
     // Limpar preview de imagem
     const previewImagem = document.getElementById('exercicio-preview-imagem');
@@ -3790,12 +3801,14 @@ function abrirNovoExercicio() {
                 <div>Clique para fazer upload</div>
             </div>
         `;
+        previewImagem.onclick = () => document.getElementById('upload-foto-exercicio').click();
     }
     
     // Limpar preview de vídeo
-    const videoPlayer = pageEdicao.querySelector('.exercicio-video-player');
-    if (videoPlayer) {
-        videoPlayer.src = '';
+    const videoContainer = document.getElementById('exercicio-preview-video');
+    if (videoContainer) {
+        const videoPlayer = videoContainer.querySelector('.exercicio-video-player');
+        if (videoPlayer) videoPlayer.src = '';
     }
 }
 
@@ -3881,7 +3894,75 @@ async function abrirEdicaoExercicio(exercicioId) {
     }
 }
 
-// 8. Voltar para biblioteca de exercícios
+// 8. Salvar exercício (criar novo ou atualizar existente)
+async function salvarExercicio() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    // Coletar dados do formulário
+    const nome = document.getElementById('exercicio-nome')?.value || '';
+    const quemPodeUtilizar = document.getElementById('exercicio-quem-pode-utilizar')?.value || 'Todos os instrutores';
+    const tipo = document.getElementById('exercicio-tipo')?.value || 'Movimento funcional';
+    const elaboradoPor = document.getElementById('exercicio-elaborado-por')?.value || '';
+    const descricao = document.getElementById('exercicio-descricao')?.value || '';
+    
+    // Validar campos obrigatórios
+    if (!nome.trim()) {
+        showToast('Por favor, preencha o nome do exercício', 'warning');
+        return;
+    }
+    
+    try {
+        const exercicioData = {
+            nome: nome.trim(),
+            tipo: tipo,
+            quem_pode_utilizar: quemPodeUtilizar,
+            descricao: descricao.trim(),
+            foto_url: fotoUrlTemp || null,
+            video_url: videoUrlTemp || null
+        };
+        
+        let response;
+        
+        if (exercicioAtualId) {
+            // Atualizar exercício existente
+            response = await fetch(`${API_BASE}/exercicios/${exercicioAtualId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(exercicioData)
+            });
+        } else {
+            // Criar novo exercício
+            response = await fetch(`${API_BASE}/exercicios`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(exercicioData)
+            });
+        }
+        
+        if (response.ok) {
+            const exercicio = await response.json();
+            showToast(`Exercício ${exercicioAtualId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+            voltarParaExercicios();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao salvar exercício', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar exercício:', error);
+        showToast('Erro ao salvar exercício', 'error');
+    }
+}
+
+// 9. Voltar para biblioteca de exercícios
 function voltarParaExercicios() {
     const pageEdicao = document.getElementById('page-edicao-exercicio');
     const pageExercicios = document.getElementById('page-exercicios');
@@ -3896,7 +3977,7 @@ function voltarParaExercicios() {
     loadExercicios();
 }
 
-// 9. Upload de foto do exercício (versão com input event)
+// 10. Upload de foto do exercício (versão com input event)
 async function uploadFotoExercicio(event) {
     if (!authToken) {
         showToast('Você precisa estar autenticado', 'warning');
@@ -3922,10 +4003,11 @@ async function uploadFotoExercicio(event) {
             const data = await response.json();
             fotoUrlTemp = data.foto_url;
             
-            // Atualizar preview
+            // Atualizar preview mantendo o click handler
             const previewContainer = document.getElementById('exercicio-preview-imagem');
             if (previewContainer) {
-                previewContainer.innerHTML = `<img src="${fotoUrlTemp}" alt="Preview" style="width: 100%; height: auto; border-radius: 8px;">`;
+                previewContainer.innerHTML = `<img src="${fotoUrlTemp}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+                previewContainer.onclick = () => document.getElementById('upload-foto-exercicio').click();
             }
             
             showToast('Foto enviada com sucesso!', 'success');

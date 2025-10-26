@@ -1142,7 +1142,7 @@
                                 <!-- Seção Imagem -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Imagem</h3>
-                                    <div class="exercicio-imagem-upload" id="exercicio-preview-imagem">
+                                    <div class="exercicio-imagem-upload" id="exercicio-preview-imagem" onclick="document.getElementById('upload-foto-exercicio').click()">
                                         <div class="exercicio-imagem-placeholder">
                                             <i class="fas fa-image"></i>
                                             <div>Clique para fazer upload</div>
@@ -1159,13 +1159,13 @@
                                 <!-- Seção Nome -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Nome</h3>
-                                    <input type="text" value="Agachamento Livre">
+                                    <input type="text" id="exercicio-nome" value="Agachamento Livre">
                                 </div>
 
                                 <!-- Seção Quem pode utilizá-lo -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Quem pode utilizá-lo</h3>
-                                    <select>
+                                    <select id="exercicio-quem-pode-utilizar">
                                         <option>Todos os instrutores</option>
                                         <option>Somente quem elaborou</option>
                                         <option>Minha equipe</option>
@@ -1175,7 +1175,8 @@
                                 <!-- Seção Tipo -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Tipo</h3>
-                                    <select>
+                                    <select id="exercicio-tipo">
+                                        <option>Movimento funcional</option>
                                         <option>Peso do corpo</option>
                                         <option>Funcional</option>
                                         <option>Cardio</option>
@@ -1187,8 +1188,7 @@
                                 <!-- Seção Elaborado por -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Elaborado por</h3>
-                                    <input type="text" value="João Silva">
-                                    <a href="#" class="link-remover-favoritos">Remover dos favoritos</a>
+                                    <input type="text" id="exercicio-elaborado-por" value="João Silva" readonly style="background: #f5f5f5;">
                                 </div>
                             </div>
 
@@ -1215,14 +1215,14 @@
                                 <!-- Seção Descrição -->
                                 <div class="exercicio-edit-secao">
                                     <h3>Descrição</h3>
-                                    <textarea placeholder="Descreva o exercício, seus benefícios, instruções de execução..."></textarea>
+                                    <textarea id="exercicio-descricao" placeholder="Descreva o exercício, seus benefícios, instruções de execução..."></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Footer com botão salvar -->
                         <div class="exercicio-edit-footer">
-                            <button class="btn-salvar-exercicio">SALVAR</button>
+                            <button class="btn-salvar-exercicio" onclick="salvarExercicio()">SALVAR</button>
                         </div>
                     </div>
 
