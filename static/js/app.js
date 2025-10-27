@@ -1336,7 +1336,7 @@ function miniNextMonth() {
 // ===== FUNCIONALIDADES DO PLANEJADOR APRIMORADO =====
 
 // Modal de Informações da Aula
-let aulaAtualId = null;
+// aulaAtualId declarado na seção de AULAS (linha 3633)
 
 function abrirInfoAula(aulaId) {
     if (!window.mockData || !window.mockData.aulasDetalhes[aulaId]) {
@@ -3999,16 +3999,6 @@ async function abrirEdicaoAula(id) {
         console.error('Erro ao carregar aula:', error);
         showToast('Erro ao carregar aula', 'error');
         voltarParaAulas();
-    }
-}
-
-// Atualizar função antiga para manter compatibilidade
-if (view === 'exercicios') {
-        // Removido - agora está integrado nas tabs
-    } else if (view === 'programas') {
-        // Removido - agora está integrado nas tabs
-        if (pageTreinamento) pageTreinamento.style.display = 'block';
-        loadProgramas();
     }
 }
 
