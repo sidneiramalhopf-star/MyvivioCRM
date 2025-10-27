@@ -843,28 +843,136 @@
                     </div>
 
                     <div id="page-treinamento" class="page-content">
-                        <div class="page-header">
-                            <h1>Programas</h1>
-                            <button class="btn-primary" onclick="abrirModalNovoPrograma()">
-                                <i class="fas fa-plus"></i> Novo Programa
-                            </button>
+                        <!-- Subtabs de Treinamento -->
+                        <div class="treinamento-subtabs">
+                            <button class="treinamento-tab active" onclick="switchTreinamentoView('programas', event)">Fichas</button>
+                            <button class="treinamento-tab" onclick="switchTreinamentoView('exercicios', event)">Exercícios</button>
+                            <button class="treinamento-tab" onclick="switchTreinamentoView('aulas', event)">Aulas</button>
                         </div>
-                        <div class="programs-section">
-                            <div class="programs-stats">
-                                <div class="program-stat expirado">
-                                    <span class="count" id="prog-expirados">0</span>
-                                    <span class="label">Expirados</span>
+
+                        <!-- Tab Programas/Fichas -->
+                        <div id="tab-programas" class="treinamento-tab-content active">
+                            <div class="page-header">
+                                <h1>Programas</h1>
+                                <button class="btn-primary" onclick="abrirModalNovoPrograma()">
+                                    <i class="fas fa-plus"></i> Novo Programa
+                                </button>
+                            </div>
+                            <div class="programs-section">
+                                <div class="programs-stats">
+                                    <div class="program-stat expirado">
+                                        <span class="count" id="prog-expirados">0</span>
+                                        <span class="label">Expirados</span>
+                                    </div>
+                                    <div class="program-stat nao-atribuido">
+                                        <span class="count" id="prog-nao-atribuidos">0</span>
+                                        <span class="label">Não atribuídos</span>
+                                    </div>
+                                    <div class="program-stat atribuido">
+                                        <span class="count" id="prog-atribuidos">0</span>
+                                        <span class="label">Atribuídos</span>
+                                    </div>
                                 </div>
-                                <div class="program-stat nao-atribuido">
-                                    <span class="count" id="prog-nao-atribuidos">0</span>
-                                    <span class="label">Não atribuídos</span>
-                                </div>
-                                <div class="program-stat atribuido">
-                                    <span class="count" id="prog-atribuidos">0</span>
-                                    <span class="label">Atribuídos</span>
+                                <div class="programs-grid" id="programs-grid"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Exercícios (movido de page-exercicios) -->
+                        <div id="tab-exercicios" class="treinamento-tab-content">
+                            <!-- Barra no topo -->
+                            <div class="exercicios-top-bar">
+                                <button class="btn-novo-exercicio" onclick="abrirNovoExercicio()">
+                                    <i class="fas fa-plus"></i> NOVO EXERCÍCIO
+                                </button>
+                                <select class="exercicios-dropdown">
+                                    <option>Todos os exercícios</option>
+                                    <option>Meus exercícios</option>
+                                    <option>Exercícios compartilhados</option>
+                                </select>
+                                <select class="exercicios-dropdown">
+                                    <option>Mais filtros</option>
+                                    <option>Tipo de movimento</option>
+                                    <option>Parte do corpo</option>
+                                    <option>Equipamento</option>
+                                </select>
+                                <div class="exercicios-search-wrapper">
+                                    <div class="exercicios-search">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" placeholder="Buscar exercícios...">
+                                    </div>
+                                    <button class="btn-buscar">Buscar</button>
                                 </div>
                             </div>
-                            <div class="programs-grid" id="programs-grid"></div>
+
+                            <!-- Contador e filtros -->
+                            <div class="exercicios-header-info">
+                                <div class="exercicios-contador"><span id="exercicios-count">0</span> exercícios</div>
+                                <div class="exercicios-filtros-direita">
+                                    <select class="exercicios-dropdown">
+                                        <option>Lista dos mais usados</option>
+                                        <option>Mais recentes</option>
+                                        <option>Mais antigos</option>
+                                    </select>
+                                    <select class="exercicios-dropdown">
+                                        <option>A-Z</option>
+                                        <option>Z-A</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Grid de cards -->
+                            <div class="exercicios-cards-grid" id="exercicios-grid">
+                                <!-- Cards serão carregados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Tab Aulas (novo) -->
+                        <div id="tab-aulas" class="treinamento-tab-content">
+                            <!-- Barra no topo -->
+                            <div class="exercicios-top-bar">
+                                <button class="btn-nova-aula" onclick="abrirNovaAula()">
+                                    <i class="fas fa-plus"></i> NOVA AULA
+                                </button>
+                                <select class="exercicios-dropdown">
+                                    <option>Todas as aulas</option>
+                                    <option>Minhas aulas</option>
+                                    <option>Aulas compartilhadas</option>
+                                </select>
+                                <select class="exercicios-dropdown">
+                                    <option>Mais filtros</option>
+                                    <option>Tipo de aula</option>
+                                    <option>Nível</option>
+                                    <option>Duração</option>
+                                </select>
+                                <div class="exercicios-search-wrapper">
+                                    <div class="exercicios-search">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" placeholder="Buscar aulas...">
+                                    </div>
+                                    <button class="btn-buscar">Buscar</button>
+                                </div>
+                            </div>
+
+                            <!-- Contador e filtros -->
+                            <div class="exercicios-header-info">
+                                <div class="exercicios-contador"><span id="aulas-count">0</span> aulas</div>
+                                <div class="exercicios-filtros-direita">
+                                    <select class="exercicios-dropdown">
+                                        <option>Lista dos mais usados</option>
+                                        <option>Mais recentes</option>
+                                        <option>Mais antigos</option>
+                                    </select>
+                                    <select class="exercicios-dropdown">
+                                        <option>A-Z</option>
+                                        <option>Z-A</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Grid de cards de aulas -->
+                            <div class="exercicios-cards-grid" id="aulas-grid">
+                                <!-- Cards de aulas serão carregados dinamicamente -->
+                            </div>
                         </div>
                     </div>
 
@@ -1223,6 +1331,137 @@
                         <!-- Footer com botão salvar -->
                         <div class="exercicio-edit-footer">
                             <button class="btn-salvar-exercicio" onclick="salvarExercicio()">SALVAR</button>
+                        </div>
+                    </div>
+
+                    <!-- Página de Criação/Edição de Aula -->
+                    <div id="page-edicao-aula" class="page-content" style="display: none;">
+                        <!-- Header customizado -->
+                        <div class="exercicio-edit-header">
+                            <div class="exercicio-edit-header-left">
+                                <button class="btn-voltar-circular" onclick="voltarParaAulas()">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <div class="exercicio-header-thumbnail">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="exercicio-header-info">
+                                    <h1>Nova Aula</h1>
+                                    <p class="exercicio-header-subtitulo">Em criação</p>
+                                </div>
+                            </div>
+                            <div class="exercicio-header-icons">
+                                <button class="btn-icon"><i class="fas fa-list"></i></button>
+                                <button class="btn-icon"><i class="fas fa-cog"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Seção Dados Gerais -->
+                        <div class="exercicio-dados-gerais">
+                            <h2>Dados gerais</h2>
+                        </div>
+
+                        <!-- Container 2 colunas -->
+                        <div class="exercicio-edit-colunas">
+                            <!-- Coluna Esquerda (60%) -->
+                            <div class="exercicio-edit-coluna">
+                                <!-- Seção Imagem -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Imagem</h3>
+                                    <div class="exercicio-imagem-upload" id="aula-preview-foto" onclick="document.getElementById('upload-foto-aula').click()">
+                                        <i class="fas fa-camera exercicio-foto-placeholder"></i>
+                                    </div>
+                                    <button class="btn-alterar-foto" onclick="document.getElementById('upload-foto-aula').click()">Modificar a foto</button>
+                                    <input type="file" id="upload-foto-aula" accept="image/jpeg,image/png" style="display:none" onchange="uploadFotoAula(event)">
+                                    <div class="exercicio-specs-detalhado">
+                                        <div><strong>Formatos compatíveis:</strong> jpg, png</div>
+                                        <div><strong>Resolução sugerida:</strong> 600 x 450</div>
+                                    </div>
+                                </div>
+
+                                <!-- Seção Nome -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Nome</h3>
+                                    <input type="text" id="aula-nome" placeholder="Ex: GAP, Pilates, Yoga">
+                                </div>
+
+                                <!-- Seção Tipo -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Tipo</h3>
+                                    <select id="aula-tipo">
+                                        <option>Cardio</option>
+                                        <option>Força</option>
+                                        <option>Flexibilidade</option>
+                                        <option>Pilates</option>
+                                        <option>Yoga</option>
+                                        <option>Funcional</option>
+                                        <option>Dança</option>
+                                        <option>Lutas</option>
+                                        <option>Outro</option>
+                                    </select>
+                                </div>
+
+                                <!-- Seção Nível -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Nível</h3>
+                                    <select id="aula-nivel">
+                                        <option>Iniciante</option>
+                                        <option>Intermediário</option>
+                                        <option>Avançado</option>
+                                        <option>Todos os níveis</option>
+                                    </select>
+                                </div>
+
+                                <!-- Seção Duração -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Duração (minutos)</h3>
+                                    <input type="number" id="aula-duracao" placeholder="Ex: 60" min="15" max="180">
+                                </div>
+
+                                <!-- Seção Capacidade -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Capacidade máxima</h3>
+                                    <input type="number" id="aula-capacidade" placeholder="Ex: 20" min="1" max="100">
+                                </div>
+
+                                <!-- Seção Elaborado por -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Elaborado por</h3>
+                                    <input type="text" id="aula-elaborado-por" readonly style="background: #f5f5f5;">
+                                </div>
+                            </div>
+
+                            <!-- Coluna Direita (40%) -->
+                            <div class="exercicio-edit-coluna">
+                                <!-- Seção Vídeo -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Vídeo promocional</h3>
+                                    <div class="exercicio-video-container" id="aula-preview-video">
+                                        <video class="exercicio-video-player" controls>
+                                            <source src="" type="video/mp4">
+                                            Seu navegador não suporta vídeo HTML5.
+                                        </video>
+                                    </div>
+                                    <button class="btn-alterar-video" onclick="document.getElementById('upload-video-aula').click()">Alterar vídeo</button>
+                                    <input type="file" id="upload-video-aula" accept="video/mp4,video/webm,video/quicktime" style="display:none" onchange="uploadVideoAula(event)">
+                                    <div class="exercicio-specs-detalhado">
+                                        <div><strong>Formatos compatíveis:</strong> mp4, webm, mov</div>
+                                        <div><strong>Tamanho máximo:</strong> 40 MB</div>
+                                        <div><strong>Razão de aspecto:</strong> 4:3</div>
+                                    </div>
+                                </div>
+
+                                <!-- Seção Descrição -->
+                                <div class="exercicio-edit-secao">
+                                    <h3>Descrição</h3>
+                                    <textarea id="aula-descricao" placeholder="Descreva a aula, seus benefícios, dinâmica, materiais necessários..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer com botão salvar -->
+                        <div class="exercicio-edit-footer">
+                            <button class="btn-salvar-exercicio" onclick="salvarAula()">SALVAR</button>
                         </div>
                     </div>
 
