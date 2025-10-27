@@ -3592,21 +3592,421 @@ let videoUrlTemp = null;
 
 // 1. Navegar entre 'programas' e 'exercicios'
 function switchTreinamentoView(view, evt) {
-    const pageTreinamento = document.getElementById('page-treinamento');
-    const pageExercicios = document.getElementById('page-exercicios');
+    console.log('switchTreinamentoView:', view);
     
-    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    // Remover active de todos os tabs
+    document.querySelectorAll('.treinamento-tab').forEach(tab => tab.classList.remove('active'));
     
-    if (evt) {
-        evt.target.closest('.unified-menu-item').classList.add('active');
+    // Ativar tab clicado
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
     }
     
-    if (view === 'exercicios') {
-        if (pageTreinamento) pageTreinamento.style.display = 'none';
-        if (pageExercicios) pageExercicios.style.display = 'block';
+    // Esconder todos os conteúdos de tabs
+    document.querySelectorAll('.treinamento-tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+    });
+    
+    // Mostrar o conteúdo correto
+    const targetTab = document.getElementById(`tab-${view}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        targetTab.style.display = 'block';
+    }
+    
+    // Carregar dados específicos de cada tab
+    if (view === 'programas') {
+        loadProgramas();
+    } else if (view === 'exercicios') {
         loadExercicios();
+    } else if (view === 'aulas') {
+        loadAulas();
+    }
+}
+
+// ===== AULAS =====
+
+let aulaAtualId = null;
+let aulaFotoUrlTemp = null;
+let aulaVideoUrlTemp = null;
+
+// 1. Carregar lista de aulas
+async function loadAulas() {
+    if (!authToken) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/aulas`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const aulas = await response.json();
+            renderAulas(aulas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar aulas:', error);
+    }
+}
+
+// 2. Renderizar grid de aulas
+function renderAulas(aulas) {
+    const grid = document.getElementById('aulas-grid');
+    const countElement = document.getElementById('aulas-count');
+    
+    if (!grid) return;
+    
+    if (countElement) {
+        countElement.textContent = aulas.length;
+    }
+    
+    if (aulas.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>Nenhuma aula cadastrada</p></div>';
+        return;
+    }
+    
+    grid.innerHTML = aulas.map(aula => `
+        <div class="exercicio-card" onclick="abrirEdicaoAula(${aula.id})">
+            <div class="exercicio-thumbnail">
+                ${aula.foto_url ? 
+                    `<img src="${aula.foto_url}" alt="${aula.nome}">` : 
+                    `<i class="fas fa-users exercicio-thumbnail-placeholder"></i>`
+                }
+            </div>
+            <div class="exercicio-card-body">
+                <div class="exercicio-nome">${aula.nome}</div>
+                <div class="exercicio-proprietario">
+                    <div>Tipo: ${aula.tipo || 'N/A'}</div>
+                    <div>Nível: ${aula.nivel || 'N/A'}</div>
+                    <div>Duração: ${aula.duracao || 'N/A'} min</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 3. Abrir página de criação de nova aula
+function abrirNovaAula() {
+    console.log('abrirNovaAula chamado, authToken:', authToken ? 'presente' : 'ausente');
+    
+    if (!authToken) {
+        showToast('Você precisa fazer login primeiro para criar aulas', 'warning');
+        console.error('Tentativa de criar aula sem autenticação');
+        return;
+    }
+    
+    aulaAtualId = null;
+    aulaFotoUrlTemp = null;
+    aulaVideoUrlTemp = null;
+    
+    const pageAulas = document.getElementById('tab-aulas');
+    const pageEdicao = document.getElementById('page-edicao-aula');
+    
+    if (pageAulas) pageAulas.style.display = 'none';
+    if (pageEdicao) pageEdicao.style.display = 'block';
+    
+    // Limpar todos os campos
+    const headerNome = pageEdicao.querySelector('.exercicio-header-info h1');
+    const headerSubtitulo = pageEdicao.querySelector('.exercicio-header-subtitulo');
+    if (headerNome) headerNome.textContent = 'Nova Aula';
+    if (headerSubtitulo) headerSubtitulo.textContent = 'Em criação';
+    
+    // Limpar campos do formulário
+    const campoNome = document.getElementById('aula-nome');
+    const campoDescricao = document.getElementById('aula-descricao');
+    const campoDuracao = document.getElementById('aula-duracao');
+    const campoCapacidade = document.getElementById('aula-capacidade');
+    if (campoNome) campoNome.value = '';
+    if (campoDescricao) campoDescricao.value = '';
+    if (campoDuracao) campoDuracao.value = '';
+    if (campoCapacidade) campoCapacidade.value = '';
+    
+    // Preencher automaticamente o criador com usuário logado
+    const campoElaboradoPor = document.getElementById('aula-elaborado-por');
+    if (campoElaboradoPor && currentUser) {
+        campoElaboradoPor.value = currentUser.nome || currentUser.email;
+    }
+    
+    // Limpar previews
+    const previewFoto = document.getElementById('aula-preview-foto');
+    const previewVideo = document.getElementById('aula-preview-video');
+    
+    if (previewFoto) {
+        previewFoto.innerHTML = '<i class="fas fa-camera exercicio-foto-placeholder"></i>';
+        previewFoto.onclick = () => document.getElementById('upload-foto-aula').click();
+    }
+    
+    if (previewVideo) {
+        const video = previewVideo.querySelector('video');
+        if (video) video.src = '';
+    }
+}
+
+// 4. Upload de foto da aula
+async function uploadFotoAula(event) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${API_BASE}/aulas/upload-foto`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            aulaFotoUrlTemp = data.url;
+            
+            const previewFoto = document.getElementById('aula-preview-foto');
+            if (previewFoto) {
+                previewFoto.innerHTML = `<img src="${data.url}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+                previewFoto.onclick = () => document.getElementById('upload-foto-aula').click();
+            }
+            
+            showToast('Foto enviada com sucesso!', 'success');
+        } else {
+            showToast('Erro ao enviar foto', 'error');
+        }
+    } catch (error) {
+        console.error('Erro no upload da foto:', error);
+        showToast('Erro ao enviar foto', 'error');
+    }
+}
+
+// 5. Upload de vídeo da aula
+async function uploadVideoAula(event) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 40 * 1024 * 1024) {
+        showToast('O vídeo deve ter no máximo 40MB', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${API_BASE}/aulas/upload-video`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            aulaVideoUrlTemp = data.url;
+            
+            const previewVideo = document.getElementById('aula-preview-video');
+            if (previewVideo) {
+                const video = previewVideo.querySelector('video');
+                if (video) {
+                    video.src = data.url;
+                    video.load();
+                }
+            }
+            
+            showToast('Vídeo enviado com sucesso!', 'success');
+        } else {
+            showToast('Erro ao enviar vídeo', 'error');
+        }
+    } catch (error) {
+        console.error('Erro no upload do vídeo:', error);
+        showToast('Erro ao enviar vídeo', 'error');
+    }
+}
+
+// 6. Salvar aula (criar ou atualizar)
+async function salvarAula() {
+    console.log('salvarAula chamado, authToken:', authToken ? 'presente' : 'ausente');
+    
+    if (!authToken) {
+        showToast('Você precisa fazer login primeiro para salvar aulas', 'warning');
+        console.error('Tentativa de salvar aula sem autenticação');
+        return;
+    }
+    
+    // Coletar dados do formulário
+    const nome = document.getElementById('aula-nome')?.value || '';
+    const tipo = document.getElementById('aula-tipo')?.value || 'Cardio';
+    const nivel = document.getElementById('aula-nivel')?.value || 'Todos os níveis';
+    const duracao = document.getElementById('aula-duracao')?.value || '';
+    const capacidade = document.getElementById('aula-capacidade')?.value || '';
+    const descricao = document.getElementById('aula-descricao')?.value || '';
+    
+    // Validar campos obrigatórios
+    if (!nome.trim()) {
+        showToast('Por favor, preencha o nome da aula', 'warning');
+        return;
+    }
+    
+    try {
+        const aulaData = {
+            nome: nome.trim(),
+            tipo: tipo,
+            nivel: nivel,
+            duracao: parseInt(duracao) || null,
+            capacidade: parseInt(capacidade) || null,
+            descricao: descricao.trim(),
+            foto_url: aulaFotoUrlTemp || null,
+            video_url: aulaVideoUrlTemp || null
+        };
+        
+        let response;
+        
+        if (aulaAtualId) {
+            // Atualizar aula existente
+            response = await fetch(`${API_BASE}/aulas/${aulaAtualId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(aulaData)
+            });
+        } else {
+            // Criar nova aula
+            response = await fetch(`${API_BASE}/aulas`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(aulaData)
+            });
+        }
+        
+        if (response.ok) {
+            const aula = await response.json();
+            console.log('Aula salva com sucesso:', aula);
+            showToast(`Aula ${aulaAtualId ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+            voltarParaAulas();
+        } else {
+            const error = await response.json();
+            console.error('Erro ao salvar aula:', response.status, error);
+            showToast(error.detail || 'Erro ao salvar aula', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar aula:', error);
+        showToast('Erro ao salvar aula', 'error');
+    }
+}
+
+// 7. Voltar para lista de aulas
+function voltarParaAulas() {
+    const pageEdicao = document.getElementById('page-edicao-aula');
+    const pageAulas = document.getElementById('tab-aulas');
+    
+    if (pageEdicao) pageEdicao.style.display = 'none';
+    if (pageAulas) pageAulas.style.display = 'block';
+    
+    aulaAtualId = null;
+    aulaFotoUrlTemp = null;
+    aulaVideoUrlTemp = null;
+    
+    loadAulas();
+}
+
+// 8. Abrir página de edição de aula existente
+async function abrirEdicaoAula(id) {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'warning');
+        return;
+    }
+    
+    aulaAtualId = id;
+    
+    const pageAulas = document.getElementById('tab-aulas');
+    const pageEdicao = document.getElementById('page-edicao-aula');
+    
+    if (pageAulas) pageAulas.style.display = 'none';
+    if (pageEdicao) pageEdicao.style.display = 'block';
+    
+    try {
+        const response = await fetch(`${API_BASE}/aulas/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const aula = await response.json();
+            
+            // Preencher header
+            const headerNome = pageEdicao.querySelector('.exercicio-header-info h1');
+            const headerSubtitulo = pageEdicao.querySelector('.exercicio-header-subtitulo');
+            if (headerNome) headerNome.textContent = aula.nome;
+            if (headerSubtitulo) headerSubtitulo.textContent = `Tipo: ${aula.tipo}`;
+            
+            // Preencher formulário
+            const campoNome = document.getElementById('aula-nome');
+            const campoTipo = document.getElementById('aula-tipo');
+            const campoNivel = document.getElementById('aula-nivel');
+            const campoDuracao = document.getElementById('aula-duracao');
+            const campoCapacidade = document.getElementById('aula-capacidade');
+            const campoDescricao = document.getElementById('aula-descricao');
+            
+            if (campoNome) campoNome.value = aula.nome || '';
+            if (campoTipo) campoTipo.value = aula.tipo || 'Cardio';
+            if (campoNivel) campoNivel.value = aula.nivel || 'Todos os níveis';
+            if (campoDuracao) campoDuracao.value = aula.duracao || '';
+            if (campoCapacidade) campoCapacidade.value = aula.capacidade || '';
+            if (campoDescricao) campoDescricao.value = aula.descricao || '';
+            
+            // Preview de foto
+            const previewFoto = document.getElementById('aula-preview-foto');
+            if (previewFoto && aula.foto_url) {
+                previewFoto.innerHTML = `<img src="${aula.foto_url}" alt="${aula.nome}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                previewFoto.onclick = () => document.getElementById('upload-foto-aula').click();
+                aulaFotoUrlTemp = aula.foto_url;
+            }
+            
+            // Preview de vídeo
+            const previewVideo = document.getElementById('aula-preview-video');
+            if (previewVideo && aula.video_url) {
+                const video = previewVideo.querySelector('video');
+                if (video) {
+                    video.src = aula.video_url;
+                    video.load();
+                }
+                aulaVideoUrlTemp = aula.video_url;
+            }
+        } else {
+            showToast('Erro ao carregar aula', 'error');
+            voltarParaAulas();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar aula:', error);
+        showToast('Erro ao carregar aula', 'error');
+        voltarParaAulas();
+    }
+}
+
+// Atualizar função antiga para manter compatibilidade
+if (view === 'exercicios') {
+        // Removido - agora está integrado nas tabs
     } else if (view === 'programas') {
-        if (pageExercicios) pageExercicios.style.display = 'none';
+        // Removido - agora está integrado nas tabs
         if (pageTreinamento) pageTreinamento.style.display = 'block';
         loadProgramas();
     }
