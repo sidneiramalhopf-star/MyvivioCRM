@@ -4,6 +4,18 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
+- **October 27, 2025**: **NOVA SEÇÃO "AULAS" IMPLEMENTADA** (Aprovado pelo Arquiteto):
+  - **Arquitetura de Subtabs**: Página Treinamento agora possui 3 subtabs: Fichas, Exercícios, Aulas
+  - **Navegação integrada**: Função `switchTreinamentoView(view, event)` controla navegação entre as 3 subtabs
+  - **Página de listagem**: Grid de cards de aulas com botão "NOVA AULA" (verde #3fa561 Technogym)
+  - **Workflow completo de criação/edição**: Similar ao de Exercícios com layout 2 colunas (60/40)
+  - **Campos implementados**: Nome, Tipo, Nível, Duração, Capacidade, Elaborado por (auto), Descrição
+  - **Upload de mídia**: Foto (600x450, jpg/png) e Vídeo promocional (max 40MB, mp4/webm/mov)
+  - **Funções CRUD**: loadAulas(), renderAulas(), abrirNovaAula(), salvarAula(), abrirEdicaoAula(), voltarParaAulas()
+  - **Uploads funcionais**: uploadFotoAula() e uploadVideoAula() com preview automático
+  - **Correções críticas**: Removida declaração duplicada de aulaAtualId, removido código órfão que causava SyntaxError
+  - **Cache atualizado**: v7 (20251026v7)
+  - **Resultado**: Seção Aulas completamente funcional no frontend, aguardando implementação dos endpoints backend
 - **October 26, 2025 - Afternoon (Update 3)**: **CORREÇÕES CRÍTICAS DE FUNCIONALIDADE** (Aprovado pelo Arquiteto):
   - **Box de foto aspect ratio 4:3**: Mudado de dimensões fixas para aspect-ratio 4:3 responsivo (igual ao vídeo)
   - **Função duplicada removida**: Havia duas definições de salvarExercicio() - a segunda (linha ~4186) sobrescrevia a primeira
