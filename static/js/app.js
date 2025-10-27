@@ -357,12 +357,14 @@ function displayAgendas(agendas) {
 function switchTreinamentoView(view, evt) {
     console.log('switchTreinamentoView:', view);
     
-    // Remove active de todos os botões da sidebar unificada
-    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
-    
-    // Ativa o botão clicado (se houver evento)
-    if (evt) {
-        evt.target.closest('.unified-menu-item').classList.add('active');
+    // Remove active de todos os botões da sidebar unificada (exceto para forms)
+    if (view !== 'exercicio-form' && view !== 'aula-form') {
+        document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+        
+        // Ativa o botão clicado (se houver evento)
+        if (evt) {
+            evt.target.closest('.unified-menu-item').classList.add('active');
+        }
     }
     
     // Esconder todas as páginas de treinamento
@@ -3686,11 +3688,10 @@ function abrirNovaAula() {
     aulaFotoUrlTemp = null;
     aulaVideoUrlTemp = null;
     
-    const pageAulas = document.getElementById('tab-aulas');
-    const pageEdicao = document.getElementById('page-edicao-aula');
+    // Navegar para página de formulário de aula
+    switchTreinamentoView('aula-form');
     
-    if (pageAulas) pageAulas.style.display = 'none';
-    if (pageEdicao) pageEdicao.style.display = 'block';
+    const pageEdicao = document.getElementById('treinamento-aula-form');
     
     // Limpar todos os campos
     const headerNome = pageEdicao.querySelector('.exercicio-header-info h1');
@@ -3899,11 +3900,8 @@ async function salvarAula() {
 
 // 7. Voltar para lista de aulas
 function voltarParaAulas() {
-    const pageEdicao = document.getElementById('page-edicao-aula');
-    const pageAulas = document.getElementById('tab-aulas');
-    
-    if (pageEdicao) pageEdicao.style.display = 'none';
-    if (pageAulas) pageAulas.style.display = 'block';
+    // Navegar de volta para lista de aulas
+    switchTreinamentoView('aulas');
     
     aulaAtualId = null;
     aulaFotoUrlTemp = null;
@@ -3921,11 +3919,10 @@ async function abrirEdicaoAula(id) {
     
     aulaAtualId = id;
     
-    const pageAulas = document.getElementById('tab-aulas');
-    const pageEdicao = document.getElementById('page-edicao-aula');
+    // Navegar para página de formulário de aula
+    switchTreinamentoView('aula-form');
     
-    if (pageAulas) pageAulas.style.display = 'none';
-    if (pageEdicao) pageEdicao.style.display = 'block';
+    const pageEdicao = document.getElementById('treinamento-aula-form');
     
     try {
         const response = await fetch(`${API_BASE}/aulas/${id}`, {
@@ -4140,11 +4137,10 @@ function abrirNovoExercicio() {
     fotoUrlTemp = null;
     videoUrlTemp = null;
     
-    const pageExercicios = document.getElementById('page-exercicios');
-    const pageEdicao = document.getElementById('page-edicao-exercicio');
+    // Navegar para página de formulário de exercício
+    switchTreinamentoView('exercicio-form');
     
-    if (pageExercicios) pageExercicios.style.display = 'none';
-    if (pageEdicao) pageEdicao.style.display = 'block';
+    const pageEdicao = document.getElementById('treinamento-exercicio-form');
     
     // Limpar todos os campos
     const headerNome = pageEdicao.querySelector('.exercicio-header-info h1');
@@ -4201,11 +4197,10 @@ async function abrirEdicaoExercicio(exercicioId) {
     fotoUrlTemp = null;
     videoUrlTemp = null;
     
-    const pageExercicios = document.getElementById('page-exercicios');
-    const pageEdicao = document.getElementById('page-edicao-exercicio');
+    // Navegar para página de formulário de exercício
+    switchTreinamentoView('exercicio-form');
     
-    if (pageExercicios) pageExercicios.style.display = 'none';
-    if (pageEdicao) pageEdicao.style.display = 'block';
+    const pageEdicao = document.getElementById('treinamento-exercicio-form');
     
     try {
         const response = await fetch(`${API_BASE}/exercicios/${exercicioId}`, {
@@ -4347,11 +4342,8 @@ async function salvarExercicio() {
 
 // 9. Voltar para biblioteca de exercícios
 function voltarParaExercicios() {
-    const pageEdicao = document.getElementById('page-edicao-exercicio');
-    const pageExercicios = document.getElementById('page-exercicios');
-    
-    if (pageEdicao) pageEdicao.style.display = 'none';
-    if (pageExercicios) pageExercicios.style.display = 'block';
+    // Navegar de volta para lista de exercícios
+    switchTreinamentoView('exercicios');
     
     exercicioAtualId = null;
     fotoUrlTemp = null;
