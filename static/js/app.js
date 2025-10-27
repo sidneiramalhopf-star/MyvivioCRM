@@ -610,7 +610,7 @@ const sidebarConfigs = {
         items: [
             { id: 'programas', icon: 'fa-dumbbell', label: 'Fichas', action: 'switchTreinamentoView' },
             { id: 'exercicios', icon: 'fa-running', label: 'Exercícios', action: 'switchTreinamentoView' },
-            { id: 'aulas', icon: 'fa-users-class', label: 'Aulas', action: 'switchTreinamentoView' }
+            { id: 'aulas', icon: 'fa-chalkboard-user', label: 'Aulas', action: 'switchTreinamentoView' }
         ]
     }
 };
