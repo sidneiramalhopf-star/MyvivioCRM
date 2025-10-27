@@ -4,18 +4,25 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 27, 2025**: **NOVA SEÇÃO "AULAS" IMPLEMENTADA VIA SIDEBAR** (Aprovado pelo Arquiteto):
+- **October 27, 2025 - Update 2**: **PÁGINAS SEPARADAS PARA FORMULÁRIOS DE EXERCÍCIOS E AULAS** (Aprovado pelo Arquiteto):
+  - **Ícone corrigido**: Opção "Aulas" na sidebar agora usa ícone válido `fa-chalkboard-user` (Font Awesome)
+  - **Páginas de formulário separadas**: Ao clicar em "+NOVO EXERCÍCIO" ou "+NOVA AULA", abre em página independente
+  - **Arquitetura atualizada**: 5 páginas em Treinamento (programas, exercicios, aulas, exercicio-form, aula-form)
+  - **Navegação otimizada**: Funções abrirNovoExercicio(), abrirNovaAula(), abrirEdicaoExercicio(), abrirEdicaoAula() usam switchTreinamentoView()
+  - **Botões voltar**: voltarParaExercicios() e voltarParaAulas() navegam de volta para listas
+  - **Estrutura limpa**: Removidas páginas antigas (page-edicao-exercicio, page-edicao-aula), tudo dentro de page-treinamento
+  - **Cache atualizado**: v3 (20251027v3)
+  - **Resultado**: Formulários de criação/edição abrem em páginas completamente separadas, melhorando UX e organização
+- **October 27, 2025 - Update 1**: **NOVA SEÇÃO "AULAS" IMPLEMENTADA VIA SIDEBAR** (Aprovado pelo Arquiteto):
   - **Navegação via Sidebar**: Sidebar colapsável direita agora possui 3 opções em Treinamento: Fichas, Exercícios, Aulas
   - **Arquitetura de Páginas Separadas**: Cada opção abre uma página independente (treinamento-programas, treinamento-exercicios, treinamento-aulas)
-  - **Função de navegação**: `switchTreinamentoView(view, event)` controla alternância entre as 3 páginas separadas
+  - **Função de navegação**: `switchTreinamentoView(view, event)` controla alternância entre as páginas separadas
   - **Página de listagem de Aulas**: Grid de cards com botão "NOVA AULA" (verde #3fa561 Technogym)
   - **Workflow completo de criação/edição**: Similar ao de Exercícios com layout 2 colunas (60/40)
   - **Campos implementados**: Nome, Tipo, Nível, Duração, Capacidade, Elaborado por (auto), Descrição
   - **Upload de mídia**: Foto (600x450, jpg/png) e Vídeo promocional (max 40MB, mp4/webm/mov)
   - **Funções CRUD**: loadAulas(), renderAulas(), abrirNovaAula(), salvarAula(), abrirEdicaoAula(), voltarParaAulas()
   - **Uploads funcionais**: uploadFotoAula() e uploadVideoAula() com preview automático
-  - **Correções aplicadas**: Removida função duplicada switchTreinamentoView, consolidada navegação via sidebar
-  - **Cache atualizado**: v1 (20251027v1)
   - **Resultado**: Sistema completo com 3 seções separadas controladas pela sidebar colapsável, aguardando apenas endpoints backend para Aulas
 - **October 26, 2025 - Afternoon (Update 3)**: **CORREÇÕES CRÍTICAS DE FUNCIONALIDADE** (Aprovado pelo Arquiteto):
   - **Box de foto aspect ratio 4:3**: Mudado de dimensões fixas para aspect-ratio 4:3 responsivo (igual ao vídeo)
