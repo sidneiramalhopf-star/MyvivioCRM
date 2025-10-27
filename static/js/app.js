@@ -355,6 +355,8 @@ function displayAgendas(agendas) {
 
 // Trocar entre visualizações de Treinamento
 function switchTreinamentoView(view, evt) {
+    console.log('switchTreinamentoView:', view);
+    
     // Remove active de todos os botões da sidebar unificada
     document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
     
@@ -363,9 +365,26 @@ function switchTreinamentoView(view, evt) {
         evt.target.closest('.unified-menu-item').classList.add('active');
     }
     
-    // Por enquanto, apenas carrega programas (pode ser expandido no futuro)
+    // Esconder todas as páginas de treinamento
+    document.querySelectorAll('.treinamento-page').forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Mostrar a página correta
+    const targetPage = document.getElementById(`treinamento-${view}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+    }
+    
+    // Carregar dados específicos de cada página
     if (view === 'programas') {
         loadProgramas();
+    } else if (view === 'exercicios') {
+        loadExercicios();
+    } else if (view === 'aulas') {
+        loadAulas();
     }
 }
 
@@ -589,8 +608,9 @@ const sidebarConfigs = {
     treinamento: {
         title: 'Treinamento',
         items: [
-            { id: 'programas', icon: 'fa-dumbbell', label: 'Programas', action: 'switchTreinamentoView' },
-            { id: 'exercicios', icon: 'fa-running', label: 'Exercícios', action: 'switchTreinamentoView' }
+            { id: 'programas', icon: 'fa-dumbbell', label: 'Fichas', action: 'switchTreinamentoView' },
+            { id: 'exercicios', icon: 'fa-running', label: 'Exercícios', action: 'switchTreinamentoView' },
+            { id: 'aulas', icon: 'fa-users-class', label: 'Aulas', action: 'switchTreinamentoView' }
         ]
     }
 };
@@ -3589,41 +3609,6 @@ function filtrarExercicios() {
 let exercicioAtualId = null;
 let fotoUrlTemp = null;
 let videoUrlTemp = null;
-
-// 1. Navegar entre 'programas' e 'exercicios'
-function switchTreinamentoView(view, evt) {
-    console.log('switchTreinamentoView:', view);
-    
-    // Remover active de todos os tabs
-    document.querySelectorAll('.treinamento-tab').forEach(tab => tab.classList.remove('active'));
-    
-    // Ativar tab clicado
-    if (evt && evt.target) {
-        evt.target.classList.add('active');
-    }
-    
-    // Esconder todos os conteúdos de tabs
-    document.querySelectorAll('.treinamento-tab-content').forEach(content => {
-        content.classList.remove('active');
-        content.style.display = 'none';
-    });
-    
-    // Mostrar o conteúdo correto
-    const targetTab = document.getElementById(`tab-${view}`);
-    if (targetTab) {
-        targetTab.classList.add('active');
-        targetTab.style.display = 'block';
-    }
-    
-    // Carregar dados específicos de cada tab
-    if (view === 'programas') {
-        loadProgramas();
-    } else if (view === 'exercicios') {
-        loadExercicios();
-    } else if (view === 'aulas') {
-        loadAulas();
-    }
-}
 
 // ===== AULAS =====
 

@@ -5739,11 +5739,11 @@ textarea.form-control {
     font-weight: 600;
 }
 
-.treinamento-tab-content {
+.treinamento-page {
     display: none;
 }
 
-.treinamento-tab-content.active {
+.treinamento-page.active {
     display: block;
 }
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251026v7">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251027v1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -843,15 +843,8 @@
                     </div>
 
                     <div id="page-treinamento" class="page-content">
-                        <!-- Subtabs de Treinamento -->
-                        <div class="treinamento-subtabs">
-                            <button class="treinamento-tab active" onclick="switchTreinamentoView('programas', event)">Fichas</button>
-                            <button class="treinamento-tab" onclick="switchTreinamentoView('exercicios', event)">Exercícios</button>
-                            <button class="treinamento-tab" onclick="switchTreinamentoView('aulas', event)">Aulas</button>
-                        </div>
-
-                        <!-- Tab Programas/Fichas -->
-                        <div id="tab-programas" class="treinamento-tab-content active">
+                        <!-- Página Programas/Fichas -->
+                        <div id="treinamento-programas" class="treinamento-page active">
                             <div class="page-header">
                                 <h1>Programas</h1>
                                 <button class="btn-primary" onclick="abrirModalNovoPrograma()">
@@ -877,8 +870,8 @@
                             </div>
                         </div>
 
-                        <!-- Tab Exercícios (movido de page-exercicios) -->
-                        <div id="tab-exercicios" class="treinamento-tab-content">
+                        <!-- Página Exercícios -->
+                        <div id="treinamento-exercicios" class="treinamento-page">
                             <!-- Barra no topo -->
                             <div class="exercicios-top-bar">
                                 <button class="btn-novo-exercicio" onclick="abrirNovoExercicio()">
@@ -926,8 +919,8 @@
                             </div>
                         </div>
 
-                        <!-- Tab Aulas (novo) -->
-                        <div id="tab-aulas" class="treinamento-tab-content">
+                        <!-- Página Aulas -->
+                        <div id="treinamento-aulas" class="treinamento-page">
                             <!-- Barra no topo -->
                             <div class="exercicios-top-bar">
                                 <button class="btn-nova-aula" onclick="abrirNovaAula()">
@@ -2044,7 +2037,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251026v7"></script>
-    <script src="/static/js/app.js?v=20251026v7"></script>
+    <script src="/static/js/mockData.js?v=20251027v1"></script>
+    <script src="/static/js/app.js?v=20251027v1"></script>
 </body>
 </html>
