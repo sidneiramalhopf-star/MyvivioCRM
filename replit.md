@@ -4,7 +4,18 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
-- **October 29, 2025**: **LAYOUT COMPACTO DA PÁGINA DE AULAS** (Aprovado pelo Arquiteto):
+- **October 29, 2025 - Update 2**: **LAYOUT COMPACTO DA PÁGINA DE EXERCÍCIOS** (Aprovado pelo Arquiteto):
+  - **Mídia lado a lado**: Foto (esquerda) e vídeo (direita) em grid 50/50
+  - **Proporção otimizada**: Ambos com aspect-ratio 4:3, espaço reduzido
+  - **Header compacto**: Botão voltar + título "Novo Exercício" + "Dados gerais" em linha única
+  - **Formulário otimizado**: 2 colunas - campos (Nome, Quem pode utilizar, Tipo, Elaborado por) à esquerda, descrição à direita
+  - **Espaçamentos reduzidos**: Padding de 1rem, gaps menores (0.75rem), fontes otimizadas
+  - **Nova classe CSS**: `.exercicio-form-compacta` com estilos específicos para layout enxuto
+  - **Responsive**: Grid vira 1 coluna em telas <768px
+  - **IDs preservados**: exercicio-preview-imagem, exercicio-preview-video compatíveis com funções de upload
+  - **Cache atualizado**: v5 (20251029v5)
+  - **Resultado**: Página de criação/edição de exercícios com mesmo layout compacto da página de Aulas
+- **October 29, 2025 - Update 1**: **LAYOUT COMPACTO DA PÁGINA DE AULAS** (Aprovado pelo Arquiteto):
   - **Mídia lado a lado**: Foto (esquerda) e vídeo promocional (direita) em grid 50/50
   - **Proporção otimizada**: Ambos com aspect-ratio 4:3, espaço reduzido
   - **Header compacto**: Botão voltar + título em linha única, sem thumbnail grande
