@@ -6577,3 +6577,202 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   PÁGINA DE EXERCÍCIO - LAYOUT COMPACTO
+   ======================================== */
+
+/* Container principal da página de exercício */
+.exercicio-form-compacta {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header compacto */
+.exercicio-form-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.exercicio-form-header-info h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1f2746;
+}
+
+.exercicio-form-header-info span {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+/* Seção de Mídia: Foto + Vídeo lado a lado */
+.exercicio-midia-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.exercicio-midia-box {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.exercicio-midia-box h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin-bottom: 0.75rem;
+}
+
+/* Preview de Foto */
+.exercicio-preview-foto {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #f5f7fa;
+    border: 2px dashed #d0d0d0;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.exercicio-preview-foto:hover {
+    border-color: #62b1ca;
+    background: #f0f8fb;
+}
+
+.exercicio-preview-foto i {
+    font-size: 2rem;
+    color: #d0d0d0;
+    margin-bottom: 0.5rem;
+}
+
+.exercicio-preview-foto span {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+}
+
+.exercicio-preview-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Preview de Vídeo */
+.exercicio-preview-video {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.exercicio-video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Specs */
+.exercicio-specs {
+    text-align: center;
+}
+
+.exercicio-specs small {
+    font-size: 0.7rem;
+    color: #7f8c8d;
+}
+
+/* Formulário 2 colunas */
+.exercicio-form-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.exercicio-form-coluna {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Campos do formulário */
+.exercicio-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.exercicio-campo label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2746;
+}
+
+.exercicio-campo input,
+.exercicio-campo select,
+.exercicio-campo textarea {
+    padding: 0.6rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.exercicio-campo input:focus,
+.exercicio-campo select:focus,
+.exercicio-campo textarea:focus {
+    outline: none;
+    border-color: #62b1ca;
+}
+
+/* Campo de descrição */
+.exercicio-campo-descricao {
+    height: 100%;
+}
+
+.exercicio-campo-descricao textarea {
+    height: 100%;
+    min-height: 240px;
+    resize: vertical;
+}
+
+/* Footer */
+.exercicio-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e8e8e8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .exercicio-midia-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .exercicio-form-campos {
+        grid-template-columns: 1fr;
+    }
+}

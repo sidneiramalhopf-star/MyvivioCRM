@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251027v4">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251029v5">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -969,69 +969,61 @@
                         </div>
 
                         <!-- Página de Formulário de Exercício -->
-                        <div id="treinamento-exercicio-form" class="treinamento-page">
-                            <!-- Header customizado -->
-                            <div class="exercicio-edit-header">
-                                <div class="exercicio-edit-header-left">
-                                    <button class="btn-voltar-circular" onclick="voltarParaExercicios()">
-                                        <i class="fas fa-arrow-left"></i>
-                                    </button>
-                                    <div class="exercicio-header-thumb">
-                                        <i class="fas fa-dumbbell" style="color: #ccc;"></i>
+                        <div id="treinamento-exercicio-form" class="treinamento-page exercicio-form-compacta">
+                            <!-- Header compacto -->
+                            <div class="exercicio-form-header">
+                                <button class="btn-voltar-circular" onclick="voltarParaExercicios()">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <div class="exercicio-form-header-info">
+                                    <h2>Novo Exercício</h2>
+                                    <span>Dados gerais</span>
+                                </div>
+                            </div>
+
+                            <!-- Seção Mídia: Foto (esquerda) + Vídeo (direita) -->
+                            <div class="exercicio-midia-container">
+                                <!-- Foto -->
+                                <div class="exercicio-midia-box">
+                                    <h3>Imagem</h3>
+                                    <div class="exercicio-preview-foto" id="exercicio-preview-imagem" onclick="document.getElementById('upload-foto-exercicio').click()">
+                                        <i class="fas fa-image"></i>
+                                        <span>Clique para upload</span>
                                     </div>
-                                    <div class="exercicio-header-info">
-                                        <h1>Agachamento Livre</h1>
-                                        <div class="exercicio-header-subtitulo">Movimento funcional</div>
+                                    <button class="btn-alterar-midia" onclick="document.getElementById('upload-foto-exercicio').click()">Modificar foto</button>
+                                    <input type="file" id="upload-foto-exercicio" accept="image/jpeg,image/png" style="display:none" onchange="uploadFotoExercicio(event)">
+                                    <div class="exercicio-specs">
+                                        <small>JPG, PNG | 600x450 sugerido</small>
                                     </div>
                                 </div>
-                                <div class="exercicio-header-right">
-                                    <div class="exercicio-dados-gerais-header">
-                                        <strong>Dados gerais</strong>
-                                        <div class="exercicio-ultima-atualizacao">
-                                            Última atualização quarta-feira, 1 de maio de 2024
-                                        </div>
+
+                                <!-- Vídeo -->
+                                <div class="exercicio-midia-box">
+                                    <h3>Vídeo</h3>
+                                    <div class="exercicio-preview-video" id="exercicio-preview-video">
+                                        <video class="exercicio-video-player" controls>
+                                            <source src="" type="video/mp4">
+                                        </video>
                                     </div>
-                                    <div class="exercicio-header-icons">
-                                        <button class="exercicio-header-icon">
-                                            <i class="fas fa-list"></i>
-                                        </button>
-                                        <button class="exercicio-header-icon">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
+                                    <button class="btn-alterar-midia" onclick="document.getElementById('upload-video-exercicio').click()">Alterar vídeo</button>
+                                    <input type="file" id="upload-video-exercicio" accept="video/mp4,video/webm,video/quicktime" style="display:none" onchange="uploadVideoExercicio(event)">
+                                    <div class="exercicio-specs">
+                                        <small>MP4, WEBM, MOV | Máx 40MB</small>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Layout 2 colunas -->
-                            <div class="exercicio-edit-layout">
-                                <!-- Coluna Esquerda (60%) -->
-                                <div class="exercicio-edit-coluna">
-                                    <!-- Seção Imagem -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Imagem</h3>
-                                        <div class="exercicio-imagem-upload" id="exercicio-preview-imagem" onclick="document.getElementById('upload-foto-exercicio').click()">
-                                            <div class="exercicio-imagem-placeholder">
-                                                <i class="fas fa-image"></i>
-                                                <div>Clique para fazer upload</div>
-                                            </div>
-                                        </div>
-                                        <button class="btn-modificar-foto" onclick="document.getElementById('upload-foto-exercicio').click()">Modificar a foto</button>
-                                        <input type="file" id="upload-foto-exercicio" accept="image/jpeg,image/png" style="display:none" onchange="uploadFotoExercicio(event)">
-                                        <div class="exercicio-specs-detalhado">
-                                            <div><strong>Formatos compatíveis:</strong> jpg, png</div>
-                                            <div><strong>Resolução sugerida:</strong> 600 x 450</div>
-                                        </div>
+                            <!-- Formulário 2 colunas -->
+                            <div class="exercicio-form-campos">
+                                <!-- Coluna Esquerda: Campos -->
+                                <div class="exercicio-form-coluna">
+                                    <div class="exercicio-campo">
+                                        <label>Nome</label>
+                                        <input type="text" id="exercicio-nome" placeholder="Ex: Agachamento Livre, Supino, Remada">
                                     </div>
 
-                                    <!-- Seção Nome -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Nome</h3>
-                                        <input type="text" id="exercicio-nome" value="Agachamento Livre">
-                                    </div>
-
-                                    <!-- Seção Quem pode utilizá-lo -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Quem pode utilizá-lo</h3>
+                                    <div class="exercicio-campo">
+                                        <label>Quem pode utilizá-lo</label>
                                         <select id="exercicio-quem-pode-utilizar">
                                             <option>Todos os instrutores</option>
                                             <option>Somente quem elaborou</option>
@@ -1039,9 +1031,8 @@
                                         </select>
                                     </div>
 
-                                    <!-- Seção Tipo -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Tipo</h3>
+                                    <div class="exercicio-campo">
+                                        <label>Tipo</label>
                                         <select id="exercicio-tipo">
                                             <option>Movimento funcional</option>
                                             <option>Peso do corpo</option>
@@ -1052,43 +1043,23 @@
                                         </select>
                                     </div>
 
-                                    <!-- Seção Elaborado por -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Elaborado por</h3>
-                                        <input type="text" id="exercicio-elaborado-por" value="João Silva" readonly style="background: #f5f5f5;">
+                                    <div class="exercicio-campo">
+                                        <label>Elaborado por</label>
+                                        <input type="text" id="exercicio-elaborado-por" readonly style="background: #f5f5f5;">
                                     </div>
                                 </div>
 
-                                <!-- Coluna Direita (40%) -->
-                                <div class="exercicio-edit-coluna">
-                                    <!-- Seção Vídeo -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Vídeo</h3>
-                                        <div class="exercicio-video-container" id="exercicio-preview-video">
-                                            <video class="exercicio-video-player" controls>
-                                                <source src="" type="video/mp4">
-                                                Seu navegador não suporta vídeo HTML5.
-                                            </video>
-                                        </div>
-                                        <button class="btn-alterar-video" onclick="document.getElementById('upload-video-exercicio').click()">Alterar vídeo</button>
-                                        <input type="file" id="upload-video-exercicio" accept="video/mp4,video/webm,video/quicktime" style="display:none" onchange="uploadVideoExercicio(event)">
-                                        <div class="exercicio-specs-detalhado">
-                                            <div><strong>Formatos compatíveis:</strong> mp4, webm, mov, wmv, mov</div>
-                                            <div><strong>Tamanho máximo:</strong> 40 MB</div>
-                                            <div><strong>Razão de aspecto:</strong> 4:3</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Seção Descrição -->
-                                    <div class="exercicio-edit-secao">
-                                        <h3>Descrição</h3>
+                                <!-- Coluna Direita: Descrição -->
+                                <div class="exercicio-form-coluna">
+                                    <div class="exercicio-campo exercicio-campo-descricao">
+                                        <label>Descrição</label>
                                         <textarea id="exercicio-descricao" placeholder="Descreva o exercício, seus benefícios, instruções de execução..."></textarea>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Footer com botão salvar -->
-                            <div class="exercicio-edit-footer">
+                            <div class="exercicio-form-footer">
                                 <button class="btn-salvar-exercicio" onclick="salvarExercicio()">SALVAR</button>
                             </div>
                         </div>
@@ -2017,7 +1988,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251027v4"></script>
-    <script src="/static/js/app.js?v=20251027v4"></script>
+    <script src="/static/js/mockData.js?v=20251029v5"></script>
+    <script src="/static/js/app.js?v=20251029v5"></script>
 </body>
 </html>
