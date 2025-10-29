@@ -420,8 +420,8 @@ button, .btn {
     left: 161px; /* 180px - 19px (0.5cm) */
     top: 50%;
     transform: translateY(-50%);
-    width: 13px;
-    height: 13px;
+    width: 16px;
+    height: 16px;
     background: white;
     border: 1.5px solid #123058;
     color: #123058;
@@ -452,7 +452,7 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .unified-sidebar-toggle-circle i {
     transition: transform 0.3s ease;
-    font-size: 0.45rem;
+    font-size: 0.5rem;
     color: #123058;
 }
 
