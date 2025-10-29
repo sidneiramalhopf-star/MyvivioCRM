@@ -72,6 +72,9 @@ function navigateTo(event, page) {
         } else if (page === 'treinamento') {
             // Mostrar view de programas por padrão
             switchTreinamentoView('programas');
+        } else if (page === 'automacao') {
+            // Mostrar view de jornadas por padrão
+            switchAutomacaoView('jornadas');
         }
     }
 }
@@ -108,6 +111,9 @@ function navigateToPage(page) {
         } else if (page === 'treinamento') {
             // Mostrar view de programas por padrão
             switchTreinamentoView('programas');
+        } else if (page === 'automacao') {
+            // Mostrar view de jornadas por padrão
+            switchAutomacaoView('jornadas');
         }
     }
 }
@@ -390,6 +396,165 @@ function switchTreinamentoView(view, evt) {
     }
 }
 
+// ============================================
+// AUTOMAÇÃO - Funções de Navegação
+// ============================================
+
+function switchAutomacaoView(view, evt) {
+    console.log('switchAutomacaoView:', view);
+    
+    // Remove active de todos os botões da sidebar unificada
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    // Ativa o botão clicado (se houver evento)
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    } else {
+        // Se não houver evento, ativar o botão correspondente à view
+        const btnToActivate = document.querySelector(`.unified-menu-item[data-menu-id="${view}"]`);
+        if (btnToActivate) {
+            btnToActivate.classList.add('active');
+        }
+    }
+    
+    // Esconder todas as páginas de automação
+    document.querySelectorAll('.automacao-page').forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Mostrar a página correta
+    const targetPage = document.getElementById(`automacao-${view}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+    }
+    
+    // Carregar dados específicos de cada página
+    if (view === 'jornadas') {
+        loadJornadas();
+    } else if (view === 'questionarios') {
+        loadQuestionarios();
+    } else if (view === 'grupos') {
+        loadGrupos();
+    } else if (view === 'atividades') {
+        loadAtividades();
+    }
+}
+
+async function loadJornadas() {
+    // Carregar jornadas (mock data por enquanto)
+    const jornadasGrid = document.getElementById('jornadas-grid');
+    
+    if (!jornadasGrid) return;
+    
+    // Mock data de exemplo
+    const jornadas = [
+        {
+            id: 1,
+            nome: 'Aulas em grupo - Se...',
+            descricao: 'Atividades para contatos que treinam em aulas de grupo',
+            tipo: 'EXPERIÊNCIAS EM DESTAQUE',
+            cor: 'purple',
+            icone: 'users',
+            status: 'ATIVO'
+        },
+        {
+            id: 2,
+            nome: 'NO GINÁSIO',
+            descricao: 'Jornada para membros que frequentam o ginásio',
+            tipo: 'RASCUNHO',
+            cor: 'gray',
+            icone: 'dumbbell',
+            status: 'RASCUNHO'
+        },
+        {
+            id: 3,
+            nome: 'Aulas em grupo',
+            descricao: 'Atividades para contatos que treinam em aulas de grupo',
+            tipo: 'RASCUNHO',
+            cor: 'gray',
+            icone: 'users',
+            status: 'RASCUNHO'
+        },
+        {
+            id: 4,
+            nome: 'Ausentes por mais ...',
+            descricao: 'Permitir todas as atividades mensais disponíveis',
+            tipo: 'RETENÇÃO',
+            cor: 'orange',
+            icone: 'user-clock',
+            status: 'ATIVO'
+        },
+        {
+            id: 5,
+            nome: 'Ausentes',
+            descricao: 'Permitir todas as atividades mensais disponíveis',
+            tipo: 'RETENÇÃO',
+            cor: 'orange',
+            icone: 'user-times',
+            status: 'ATIVO'
+        },
+        {
+            id: 6,
+            nome: 'Email aos ausentes',
+            descricao: 'Notificar membros ausentes por email',
+            tipo: 'RETENÇÃO',
+            cor: 'orange',
+            icone: 'envelope',
+            status: 'ATIVO'
+        }
+    ];
+    
+    // Renderizar cards
+    jornadasGrid.innerHTML = jornadas.map(jornada => `
+        <div class="jornada-card" data-id="${jornada.id}">
+            <div class="jornada-card-header ${jornada.tipo.toLowerCase().replace(/\s+/g, '-')}">
+                <span class="jornada-tipo">${jornada.tipo}</span>
+                ${jornada.status === 'ATIVO' ? '<span class="jornada-badge-ativo">ATIVO</span>' : ''}
+                ${jornada.status === 'RASCUNHO' ? '<span class="jornada-badge-rascunho">RASCUNHO</span>' : ''}
+            </div>
+            <div class="jornada-card-body">
+                <div class="jornada-icone">
+                    <i class="fas fa-${jornada.icone}"></i>
+                </div>
+                <h3>${jornada.nome}</h3>
+                <p>${jornada.descricao}</p>
+            </div>
+            <div class="jornada-card-footer">
+                <button class="btn-card-action" onclick="abrirJornada(${jornada.id})">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadQuestionarios() {
+    console.log('Carregando questionários...');
+    // Implementar carregamento de questionários
+}
+
+function loadGrupos() {
+    console.log('Carregando grupos...');
+    // Implementar carregamento de grupos
+}
+
+function loadAtividades() {
+    console.log('Carregando atividades...');
+    // Implementar carregamento de atividades
+}
+
+function abrirNovaJornada() {
+    console.log('Abrindo modal para criar nova jornada...');
+    showToast('Funcionalidade em desenvolvimento', 'info');
+}
+
+function abrirJornada(id) {
+    console.log('Abrindo jornada:', id);
+    showToast('Funcionalidade em desenvolvimento', 'info');
+}
+
 async function loadProgramas() {
     // Carregar programas do localStorage (criados localmente)
     const programasLocais = JSON.parse(localStorage.getItem('programas') || '[]');
@@ -613,6 +778,15 @@ const sidebarConfigs = {
             { id: 'programas', icon: 'fa-dumbbell', label: 'Fichas', action: 'switchTreinamentoView' },
             { id: 'exercicios', icon: 'fa-running', label: 'Exercícios', action: 'switchTreinamentoView' },
             { id: 'aulas', icon: 'fa-chalkboard-user', label: 'Aulas', action: 'switchTreinamentoView' }
+        ]
+    },
+    automacao: {
+        title: 'Automação',
+        items: [
+            { id: 'jornadas', icon: 'fa-route', label: 'Jornadas', action: 'switchAutomacaoView' },
+            { id: 'questionarios', icon: 'fa-clipboard-question', label: 'Questionários', action: 'switchAutomacaoView' },
+            { id: 'grupos', icon: 'fa-users', label: 'Grupos', action: 'switchAutomacaoView' },
+            { id: 'atividades', icon: 'fa-tasks', label: 'Atividades', action: 'switchAutomacaoView' }
         ]
     }
 };

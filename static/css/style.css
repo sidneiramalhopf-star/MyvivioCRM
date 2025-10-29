@@ -6776,3 +6776,236 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   AUTOMAÇÃO - Jornadas e Páginas
+   ======================================== */
+
+/* Páginas de Automação */
+.automacao-page {
+    display: none;
+}
+
+.automacao-page.active {
+    display: block;
+}
+
+/* Header de Jornadas */
+.jornadas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.jornadas-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2746;
+    margin: 0;
+}
+
+.btn-nova-jornada {
+    background: #3fa561;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-nova-jornada:hover {
+    background: #2d8748;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(63, 165, 97, 0.3);
+}
+
+/* Intro de Jornadas */
+.jornadas-intro {
+    background: linear-gradient(135deg, #4a7c59 0%, #3fa561 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.jornadas-intro h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.jornadas-intro p {
+    font-size: 0.875rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.link-destaque {
+    color: white;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.link-destaque:hover {
+    opacity: 0.8;
+}
+
+/* Grid de Jornadas */
+.jornadas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Card de Jornada */
+.jornada-card {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.jornada-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.jornada-card-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.jornada-card-header.experiências-em-destaque {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+}
+
+.jornada-card-header.rascunho {
+    background: #f5f7fa;
+}
+
+.jornada-card-header.retenção {
+    background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+}
+
+.jornada-tipo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.experiências-em-destaque .jornada-tipo,
+.retenção .jornada-tipo {
+    color: white;
+}
+
+.rascunho .jornada-tipo {
+    color: #7f8c8d;
+}
+
+.jornada-badge-ativo {
+    background: white;
+    color: #3fa561;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.jornada-badge-rascunho {
+    background: #e8e8e8;
+    color: #7f8c8d;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.jornada-card-body {
+    padding: 1.5rem;
+}
+
+.jornada-icone {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #62b1ca 0%, #4a90a4 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.jornada-icone i {
+    font-size: 1.75rem;
+    color: white;
+}
+
+.jornada-card-body h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0 0 0.5rem 0;
+}
+
+.jornada-card-body p {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.jornada-card-footer {
+    padding: 1rem 1.5rem;
+    background: #f5f7fa;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-card-action {
+    width: 36px;
+    height: 36px;
+    background: #123058;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-card-action:hover {
+    background: #0d2340;
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .jornadas-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .jornadas-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}

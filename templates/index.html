@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251029v5">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251029v6">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -96,6 +96,10 @@
                         <a href="#" class="nav-item" onclick="navigateTo(event, 'treinamento')">
                             <i class="fas fa-dumbbell"></i>
                             <span>Treinamento</span>
+                        </a>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'automacao')">
+                            <i class="fas fa-robot"></i>
+                            <span>Automação</span>
                         </a>
                         <div class="nav-divider"></div>
                         <a href="#" class="nav-item" onclick="navigateTo(event, 'config')">
@@ -1176,6 +1180,62 @@
                         </div>
                     </div>
 
+                    <!-- ========== AUTOMAÇÃO ========== -->
+                    <div id="page-automacao" class="page-content">
+                        <!-- Página Jornadas -->
+                        <div id="automacao-jornadas" class="automacao-page active">
+                            <div class="jornadas-header">
+                                <h1>Jornadas</h1>
+                                <button class="btn-nova-jornada" onclick="abrirNovaJornada()">
+                                    <i class="fas fa-plus"></i> JORNADA
+                                </button>
+                            </div>
+
+                            <div class="jornadas-intro">
+                                <h2>Como aproveitar ao máximo as jornadas</h2>
+                                <p>Para conhecer todo o potencial desta ferramenta, confira nosso <a href="#" class="link-destaque">Guia do produto</a></p>
+                            </div>
+
+                            <!-- Grid de cards de jornadas -->
+                            <div class="jornadas-grid" id="jornadas-grid">
+                                <!-- Cards de jornadas serão carregados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Página Questionários -->
+                        <div id="automacao-questionarios" class="automacao-page">
+                            <div class="page-header">
+                                <h1>Questionários</h1>
+                                <button class="btn-primary">
+                                    <i class="fas fa-plus"></i> NOVO QUESTIONÁRIO
+                                </button>
+                            </div>
+                            <p>Crie questionários personalizados para coletar dados dos seus membros.</p>
+                        </div>
+
+                        <!-- Página Grupos -->
+                        <div id="automacao-grupos" class="automacao-page">
+                            <div class="page-header">
+                                <h1>Grupos</h1>
+                                <button class="btn-primary">
+                                    <i class="fas fa-plus"></i> NOVO GRUPO
+                                </button>
+                            </div>
+                            <p>Organize seus membros em grupos para automações segmentadas.</p>
+                        </div>
+
+                        <!-- Página Atividades -->
+                        <div id="automacao-atividades" class="automacao-page">
+                            <div class="page-header">
+                                <h1>Atividades</h1>
+                                <button class="btn-primary">
+                                    <i class="fas fa-plus"></i> NOVA ATIVIDADE
+                                </button>
+                            </div>
+                            <p>Configure atividades automatizadas para engajamento dos membros.</p>
+                        </div>
+                    </div>
+
                     <!-- ========== BIBLIOTECA DE EXERCÍCIOS ========== -->
                     
                     <!-- Página Principal de Exercícios -->
@@ -1988,7 +2048,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251029v5"></script>
-    <script src="/static/js/app.js?v=20251029v5"></script>
+    <script src="/static/js/mockData.js?v=20251029v7"></script>
+    <script src="/static/js/app.js?v=20251029v7"></script>
 </body>
 </html>
