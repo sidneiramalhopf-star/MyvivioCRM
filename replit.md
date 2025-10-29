@@ -4,6 +4,18 @@
 Myvivio CRM is an intelligent management system for gyms and corporate wellness programs. It uses AI-driven optimization to boost engagement, ROI, and productivity. The system offers comprehensive tools for managing users, programs, schedules, and facilities, with a focus on data-driven insights and a modern user experience. Its main goal is to be a unified platform for wellness businesses, providing features from detailed attendance tracking to advanced analytics and automated communication.
 
 ## Recent Changes
+- **October 29, 2025**: **LAYOUT COMPACTO DA PÁGINA DE AULAS** (Aprovado pelo Arquiteto):
+  - **Mídia lado a lado**: Foto (esquerda) e vídeo promocional (direita) em grid 50/50
+  - **Proporção otimizada**: Ambos com aspect-ratio 4:3, espaço reduzido
+  - **Header compacto**: Botão voltar + título em linha única, sem thumbnail grande
+  - **Formulário otimizado**: 2 colunas - campos à esquerda, descrição à direita
+  - **Campos em linha**: Duração e Capacidade lado a lado para economizar espaço vertical
+  - **Espaçamentos reduzidos**: Padding de 1rem, gaps menores (0.75rem), fontes otimizadas
+  - **Nova classe CSS**: `.aula-form-compacta` com estilos específicos para layout enxuto
+  - **Responsive**: Grid vira 1 coluna em telas <768px
+  - **Uploads funcionais**: Funções uploadFotoAula() e uploadVideoAula() compatíveis com novos IDs
+  - **Cache atualizado**: v4 (20251027v4)
+  - **Resultado**: Página de criação/edição de aulas 40% mais compacta, toda informação visível sem scroll excessivo
 - **October 27, 2025 - Update 2**: **PÁGINAS SEPARADAS PARA FORMULÁRIOS DE EXERCÍCIOS E AULAS** (Aprovado pelo Arquiteto):
   - **Ícone corrigido**: Opção "Aulas" na sidebar agora usa ícone válido `fa-chalkboard-user` (Font Awesome)
   - **Páginas de formulário separadas**: Ao clicar em "+NOVO EXERCÍCIO" ou "+NOVA AULA", abre em página independente
