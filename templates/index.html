@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251029v8">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251029v10">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -1234,6 +1234,165 @@
                             </div>
                             <p>Configure atividades automatizadas para engajamento dos membros.</p>
                         </div>
+
+                        <!-- Página de Detalhes da Jornada -->
+                        <div id="automacao-jornada-detalhes" class="automacao-page">
+                            <!-- Breadcrumb e botão voltar -->
+                            <div class="jornada-detalhes-breadcrumb">
+                                <button class="btn-back-circle" onclick="voltarParaJornadas()">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <span class="breadcrumb-text">Jornadas</span>
+                                <i class="fas fa-chevron-right"></i>
+                                <span class="breadcrumb-text" id="jornada-detalhes-nome-breadcrumb">Padrão</span>
+                            </div>
+
+                            <!-- Barra horizontal de atividades -->
+                            <div class="jornada-atividades-barra" id="jornada-atividades-barra">
+                                <!-- Atividades serão carregadas dinamicamente -->
+                            </div>
+
+                            <!-- Card principal da jornada -->
+                            <div class="jornada-detalhes-card">
+                                <div class="jornada-detalhes-header">
+                                    <div class="jornada-detalhes-foto" id="jornada-detalhes-foto-container">
+                                        <img id="jornada-detalhes-imagem" style="display: none;" alt="Jornada">
+                                    </div>
+                                    <div class="jornada-detalhes-info">
+                                        <h2 id="jornada-detalhes-titulo">Bem-Vindos</h2>
+                                        <div class="jornada-detalhes-badges">
+                                            <span class="badge badge-clientes">
+                                                <i class="fas fa-users"></i> <span id="jornada-badge-grupo">CLIENTES</span>
+                                            </span>
+                                            <span class="badge badge-contatos">
+                                                <i class="fas fa-address-book"></i> <span id="jornada-badge-contatos">1040</span> CONTATOS
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button class="btn-desativar-jornada" onclick="desativarJornada()">
+                                        DESATIVAR JORNADA
+                                    </button>
+                                </div>
+
+                                <!-- Seção de etapas sequenciais -->
+                                <div class="jornada-etapas-section">
+                                    <h3>Etapas sequenciais</h3>
+                                    <p class="etapas-descricao">Etapas sequenciais com ações e condições específicas</p>
+                                    
+                                    <div class="etapa-card">
+                                        <div class="etapa-header">
+                                            <span class="etapa-nome">Bem-Vindos</span>
+                                            <button class="btn-etapa-menu">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                        <div class="etapa-metricas">
+                                            <div class="metrica">
+                                                <div class="metrica-icon">
+                                                    <i class="fas fa-flag-checkered"></i>
+                                                </div>
+                                                <div class="metrica-info">
+                                                    <span class="metrica-numero">100</span>
+                                                    <span class="metrica-label">12 contatos<br>Completado</span>
+                                                </div>
+                                            </div>
+                                            <div class="metrica">
+                                                <div class="metrica-icon metrica-icon-blue">
+                                                    <i class="fas fa-spinner"></i>
+                                                </div>
+                                                <div class="metrica-info">
+                                                    <span class="metrica-numero metrica-numero-blue">3</span>
+                                                    <span class="metrica-label">Contatos em andamento</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="etapa-footer">
+                                            <button class="btn-etapa-fluxo">
+                                                <i class="fas fa-project-diagram"></i> FLUXO DE TRABALHO
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Criação de Jornada -->
+                    <div id="modal-nova-jornada" class="modal-overlay" style="display: none;">
+                        <div class="modal-container modal-nova-jornada">
+                            <div class="modal-header">
+                                <h2>Criar uma nova jornada</h2>
+                                <button class="btn-close-modal" onclick="fecharModalNovaJornada()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="form-nova-jornada">
+                                    <!-- Campo Grupo -->
+                                    <div class="form-group">
+                                        <label>GRUPO</label>
+                                        <div class="input-with-button">
+                                            <select id="jornada-grupo" required>
+                                                <option value="">Escolher um grupo</option>
+                                                <option value="clientes">Clientes</option>
+                                                <option value="leads">Leads</option>
+                                                <option value="membros">Membros</option>
+                                                <option value="prospects">Prospects</option>
+                                            </select>
+                                            <button type="button" class="btn-add-inline">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Upload de Imagem -->
+                                    <div class="form-group">
+                                        <label>INFORMAÇÕES</label>
+                                        <div class="upload-area-jornada" onclick="document.getElementById('jornada-upload-imagem').click()">
+                                            <div class="upload-preview" id="jornada-upload-preview">
+                                                <i class="fas fa-image"></i>
+                                                <p>Adicionar imagem</p>
+                                                <span class="upload-formats">Formatos compatíveis: JPEG, PNG, GIF<br>Resolução sugerida: 100x100</span>
+                                            </div>
+                                            <button type="button" class="btn-upload-jornada">SELECIONAR UMA IMAGEM</button>
+                                        </div>
+                                        <input type="file" id="jornada-upload-imagem" accept="image/jpeg,image/png,image/gif" style="display: none;" onchange="previewImagemJornada(event)">
+                                    </div>
+
+                                    <!-- Campo Disparador -->
+                                    <div class="form-group">
+                                        <label>DISPARADOR</label>
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-bolt"></i>
+                                            <select id="jornada-disparador" required>
+                                                <option value="punicao">Punição</option>
+                                                <option value="inscricao">Inscrição</option>
+                                                <option value="primeiro-acesso">Primeiro Acesso</option>
+                                                <option value="inatividade">Inatividade</option>
+                                            </select>
+                                            <button type="button" class="btn-info-inline">
+                                                <i class="fas fa-circle-info"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Campo Nome -->
+                                    <div class="form-group">
+                                        <label>Nome</label>
+                                        <input type="text" id="jornada-nome" placeholder="Digite o nome da jornada" required>
+                                    </div>
+
+                                    <!-- Campo Descrição -->
+                                    <div class="form-group">
+                                        <label>Descrição</label>
+                                        <textarea id="jornada-descricao" placeholder="Descreva a jornada..." rows="4"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-criar-jornada" onclick="criarJornada()">CRIAR</button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ========== BIBLIOTECA DE EXERCÍCIOS ========== -->
@@ -2048,7 +2207,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251029v7"></script>
-    <script src="/static/js/app.js?v=20251029v7"></script>
+    <script src="/static/js/mockData.js?v=20251029v13"></script>
+    <script src="/static/js/app.js?v=20251029v13"></script>
 </body>
 </html>

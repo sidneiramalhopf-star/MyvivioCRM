@@ -448,75 +448,41 @@ async function loadJornadas() {
     
     if (!jornadasGrid) return;
     
-    // Mock data de exemplo
-    const jornadas = [
-        {
-            id: 1,
-            nome: 'Aulas em grupo - Se...',
-            descricao: 'Atividades para contatos que treinam em aulas de grupo',
-            tipo: 'EXPERIÊNCIAS EM DESTAQUE',
-            cor: 'purple',
-            icone: 'users',
-            status: 'ATIVO'
-        },
-        {
-            id: 2,
-            nome: 'NO GINÁSIO',
-            descricao: 'Jornada para membros que frequentam o ginásio',
-            tipo: 'RASCUNHO',
-            cor: 'gray',
-            icone: 'dumbbell',
-            status: 'RASCUNHO'
-        },
-        {
-            id: 3,
-            nome: 'Aulas em grupo',
-            descricao: 'Atividades para contatos que treinam em aulas de grupo',
-            tipo: 'RASCUNHO',
-            cor: 'gray',
-            icone: 'users',
-            status: 'RASCUNHO'
-        },
-        {
-            id: 4,
-            nome: 'Ausentes por mais ...',
-            descricao: 'Permitir todas as atividades mensais disponíveis',
-            tipo: 'RETENÇÃO',
-            cor: 'orange',
-            icone: 'user-clock',
-            status: 'ATIVO'
-        },
-        {
-            id: 5,
-            nome: 'Ausentes',
-            descricao: 'Permitir todas as atividades mensais disponíveis',
-            tipo: 'RETENÇÃO',
-            cor: 'orange',
-            icone: 'user-times',
-            status: 'ATIVO'
-        },
-        {
-            id: 6,
-            nome: 'Email aos ausentes',
-            descricao: 'Notificar membros ausentes por email',
-            tipo: 'RETENÇÃO',
-            cor: 'orange',
-            icone: 'envelope',
-            status: 'ATIVO'
-        }
-    ];
+    // Inicializar window.mockJornadas com dados mockData se ainda não existir
+    if (!window.mockJornadas) {
+        window.mockJornadas = [...mockData.jornadas];
+    }
+    
+    // Usar window.mockJornadas que contém tanto jornadas mockadas quanto criadas
+    const jornadas = window.mockJornadas;
+    
+    // Mapear ícone e cor baseado no tipo
+    const getIcone = (tipo) => {
+        const tipoNorm = tipo.toLowerCase();
+        if (tipoNorm.includes('experiências')) return 'users';
+        if (tipoNorm.includes('retenção')) return 'user-clock';
+        if (tipoNorm === 'rascunho') return 'code';
+        return 'envelope';
+    };
+    
+    const getCorClasse = (tipo) => {
+        const tipoNorm = tipo.toLowerCase();
+        if (tipoNorm.includes('experiências')) return 'experiências-em-destaque';
+        if (tipoNorm.includes('retenção')) return 'retenção';
+        return 'rascunho';
+    };
     
     // Renderizar cards
     jornadasGrid.innerHTML = jornadas.map(jornada => `
         <div class="jornada-card" data-id="${jornada.id}">
-            <div class="jornada-card-header ${jornada.tipo.toLowerCase().replace(/\s+/g, '-')}">
-                <span class="jornada-tipo">${jornada.tipo}</span>
+            <div class="jornada-card-header ${getCorClasse(jornada.tipo)}">
+                <span class="jornada-tipo">${jornada.tipo.toUpperCase()}</span>
                 ${jornada.status === 'ATIVO' ? '<span class="jornada-badge-ativo">ATIVO</span>' : ''}
                 ${jornada.status === 'RASCUNHO' ? '<span class="jornada-badge-rascunho">RASCUNHO</span>' : ''}
             </div>
             <div class="jornada-card-body">
                 <div class="jornada-icone">
-                    <i class="fas fa-${jornada.icone}"></i>
+                    <i class="fas fa-${getIcone(jornada.tipo)}"></i>
                 </div>
                 <h3>${jornada.nome}</h3>
                 <p>${jornada.descricao}</p>
@@ -547,12 +513,145 @@ function loadAtividades() {
 
 function abrirNovaJornada() {
     console.log('Abrindo modal para criar nova jornada...');
-    showToast('Funcionalidade em desenvolvimento', 'info');
+    document.getElementById('modal-nova-jornada').style.display = 'flex';
+    
+    // Limpar formulário
+    document.getElementById('form-nova-jornada').reset();
+    document.getElementById('jornada-upload-preview').innerHTML = `
+        <i class="fas fa-image"></i>
+        <p>Adicionar imagem</p>
+        <span class="upload-formats">Formatos compatíveis: JPEG, PNG, GIF<br>Resolução sugerida: 100x100</span>
+    `;
+}
+
+function fecharModalNovaJornada() {
+    document.getElementById('modal-nova-jornada').style.display = 'none';
+}
+
+function previewImagemJornada(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('jornada-upload-preview').innerHTML = `
+                <img src="${e.target.result}" alt="Preview">
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function criarJornada() {
+    const grupo = document.getElementById('jornada-grupo').value;
+    const disparador = document.getElementById('jornada-disparador').value;
+    const nome = document.getElementById('jornada-nome').value;
+    const descricao = document.getElementById('jornada-descricao').value;
+    const imagem = document.getElementById('jornada-upload-imagem').files[0];
+    
+    if (!grupo || !disparador || !nome) {
+        showToast('Preencha os campos obrigatórios', 'error');
+        return;
+    }
+    
+    // Criar objeto da jornada
+    const novaJornada = {
+        id: Date.now(),
+        nome: nome,
+        descricao: descricao,
+        grupo: grupo,
+        disparador: disparador,
+        tipo: 'rascunho',
+        status: 'RASCUNHO',
+        imagem: imagem ? URL.createObjectURL(imagem) : null,
+        contatos: 0,
+        atividades: [
+            {
+                id: 1,
+                nome: nome,
+                icon: 'fa-envelope',
+                status: 'RASCUNHO'
+            }
+        ]
+    };
+    
+    // Inicializar window.mockJornadas com dados mockData se ainda não existir
+    if (!window.mockJornadas) {
+        window.mockJornadas = [...mockData.jornadas];
+    }
+    
+    // Adicionar ao mock data
+    window.mockJornadas.push(novaJornada);
+    
+    // Fechar modal
+    fecharModalNovaJornada();
+    
+    // Recarregar jornadas
+    loadJornadas();
+    
+    // Abrir página de detalhes
+    setTimeout(() => {
+        abrirJornadaDetalhes(novaJornada.id);
+    }, 300);
 }
 
 function abrirJornada(id) {
     console.log('Abrindo jornada:', id);
-    showToast('Funcionalidade em desenvolvimento', 'info');
+    abrirJornadaDetalhes(id);
+}
+
+function abrirJornadaDetalhes(id) {
+    // Buscar jornada no mock data
+    const jornadas = window.mockJornadas || mockData.jornadas;
+    const jornada = jornadas.find(j => j.id === id);
+    
+    if (!jornada) {
+        showToast('Jornada não encontrada', 'error');
+        return;
+    }
+    
+    // Preencher informações da página
+    document.getElementById('jornada-detalhes-nome-breadcrumb').textContent = jornada.nome;
+    document.getElementById('jornada-detalhes-titulo').textContent = jornada.nome;
+    document.getElementById('jornada-badge-grupo').textContent = jornada.grupo.toUpperCase();
+    document.getElementById('jornada-badge-contatos').textContent = jornada.contatos || 0;
+    
+    // Atualizar imagem
+    const imgElement = document.getElementById('jornada-detalhes-imagem');
+    const containerElement = document.getElementById('jornada-detalhes-foto-container');
+    if (jornada.imagem) {
+        imgElement.src = jornada.imagem;
+        imgElement.style.display = 'block';
+        containerElement.style.background = 'none';
+    } else {
+        imgElement.style.display = 'none';
+        containerElement.style.background = 'linear-gradient(135deg, #62b1ca 0%, #4a90a4 100%)';
+    }
+    
+    // Renderizar barra de atividades
+    const barraAtividades = document.getElementById('jornada-atividades-barra');
+    barraAtividades.innerHTML = jornada.atividades.map((atividade, index) => `
+        <div class="atividade-card ${index === 0 ? 'ativo' : ''}">
+            <div class="atividade-icon">
+                <i class="fas ${atividade.icon}"></i>
+            </div>
+            <div class="atividade-info">
+                <span class="atividade-nome">${atividade.nome}</span>
+                <span class="atividade-status">${atividade.status}</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // Navegar para página de detalhes
+    switchAutomacaoView('jornada-detalhes');
+}
+
+function voltarParaJornadas() {
+    switchAutomacaoView('jornadas');
+}
+
+function desativarJornada() {
+    showToast('Jornada desativada com sucesso', 'success');
+    voltarParaJornadas();
 }
 
 async function loadProgramas() {

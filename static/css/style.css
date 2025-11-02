@@ -6997,6 +6997,547 @@ textarea.form-control {
     transform: scale(1.1);
 }
 
+/* ============================================ */
+/* MODAL DE CRIAÇÃO DE JORNADA */
+/* ============================================ */
+
+.modal-nova-jornada {
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal-nova-jornada .modal-header {
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 1.5rem;
+}
+
+.modal-nova-jornada .modal-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0;
+}
+
+.modal-nova-jornada .modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-nova-jornada .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.modal-nova-jornada .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.modal-nova-jornada .form-group input,
+.modal-nova-jornada .form-group select,
+.modal-nova-jornada .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.modal-nova-jornada .form-group input:focus,
+.modal-nova-jornada .form-group select:focus,
+.modal-nova-jornada .form-group textarea:focus {
+    outline: none;
+    border-color: #62b1ca;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-with-button select {
+    flex: 1;
+}
+
+.btn-add-inline {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #123058;
+    transition: all 0.3s ease;
+}
+
+.btn-add-inline:hover {
+    background: #f5f7fa;
+    border-color: #123058;
+}
+
+.upload-area-jornada {
+    background: #f5f7fa;
+    border: 2px dashed #e8e8e8;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area-jornada:hover {
+    background: #e8f4f8;
+    border-color: #62b1ca;
+}
+
+.upload-preview {
+    margin-bottom: 1rem;
+}
+
+.upload-preview i {
+    font-size: 2.5rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+}
+
+.upload-preview p {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0.5rem 0;
+}
+
+.upload-formats {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    line-height: 1.5;
+}
+
+.upload-preview img {
+    max-width: 100%;
+    max-height: 150px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.btn-upload-jornada {
+    background: #123058;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-jornada:hover {
+    background: #0d2340;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-with-icon i.fa-bolt {
+    position: absolute;
+    left: 0.75rem;
+    color: #7f8c8d;
+    font-size: 0.875rem;
+}
+
+.input-with-icon select {
+    flex: 1;
+    padding-left: 2.5rem;
+}
+
+.btn-info-inline {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #62b1ca;
+    transition: all 0.3s ease;
+}
+
+.btn-info-inline:hover {
+    background: #e8f4f8;
+    border-color: #62b1ca;
+}
+
+.modal-nova-jornada .modal-footer {
+    padding: 1.5rem;
+    background: #f5f7fa;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-criar-jornada {
+    background: #3fa561;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-criar-jornada:hover {
+    background: #358a51;
+}
+
+/* ============================================ */
+/* PÁGINA DE DETALHES DA JORNADA */
+/* ============================================ */
+
+.jornada-detalhes-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.btn-back-circle {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #123058;
+    transition: all 0.3s ease;
+}
+
+.btn-back-circle:hover {
+    background: #f5f7fa;
+    border-color: #123058;
+}
+
+.breadcrumb-text {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+}
+
+.jornada-atividades-barra {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+    overflow-x: auto;
+}
+
+.atividade-card {
+    min-width: 200px;
+    background: white;
+    border: 2px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.atividade-card.ativo {
+    border-color: #62b1ca;
+    background: #e8f4f8;
+}
+
+.atividade-card:hover {
+    border-color: #123058;
+}
+
+.atividade-icon {
+    width: 48px;
+    height: 48px;
+    background: #62b1ca;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.atividade-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.atividade-nome {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+}
+
+.atividade-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #3fa561;
+}
+
+.jornada-detalhes-card {
+    background: white;
+    margin: 2rem;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.jornada-detalhes-header {
+    display: flex;
+    gap: 1.5rem;
+    padding: 2rem;
+    border-bottom: 1px solid #e8e8e8;
+    align-items: flex-start;
+}
+
+.jornada-detalhes-foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #62b1ca 0%, #4a90a4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jornada-detalhes-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.jornada-detalhes-foto:empty::before {
+    content: '\f1ad';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 3rem;
+    color: white;
+}
+
+.jornada-detalhes-info {
+    flex: 1;
+}
+
+.jornada-detalhes-info h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0 0 1rem 0;
+}
+
+.jornada-detalhes-badges {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-clientes {
+    background: #e8f4f8;
+    color: #123058;
+}
+
+.badge-contatos {
+    background: #f5f7fa;
+    color: #7f8c8d;
+}
+
+.btn-desativar-jornada {
+    background: #fb923c;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-desativar-jornada:hover {
+    background: #f97316;
+}
+
+.jornada-etapas-section {
+    padding: 2rem;
+}
+
+.jornada-etapas-section h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0 0 0.5rem 0;
+}
+
+.etapas-descricao {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+    margin: 0 0 1.5rem 0;
+}
+
+.etapa-card {
+    background: #f5f7fa;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.etapa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.etapa-nome {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2746;
+}
+
+.btn-etapa-menu {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.btn-etapa-menu:hover {
+    border-color: #123058;
+    color: #123058;
+}
+
+.etapa-metricas {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.metrica {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.metrica-icon {
+    width: 48px;
+    height: 48px;
+    background: #3fa561;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.metrica-icon-blue {
+    background: #62b1ca;
+}
+
+.metrica-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.metrica-numero {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3fa561;
+}
+
+.metrica-numero-blue {
+    color: #62b1ca;
+}
+
+.metrica-label {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+}
+
+.etapa-footer {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.btn-etapa-fluxo {
+    background: white;
+    border: 1px solid #e8e8e8;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #123058;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-etapa-fluxo:hover {
+    background: #f5f7fa;
+    border-color: #123058;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .jornadas-grid {
@@ -7006,6 +7547,19 @@ textarea.form-control {
     .jornadas-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .jornada-detalhes-header {
+        flex-direction: column;
+    }
+    
+    .jornada-atividades-barra {
+        padding: 1rem;
+    }
+    
+    .etapa-metricas {
+        flex-direction: column;
         gap: 1rem;
     }
 }

@@ -856,10 +856,147 @@ const mockData = {
             modo: "Online",
             recorrente: true
         }
+    ],
+    
+    // Jornadas de Automação
+    jornadas: [
+        {
+            id: 1,
+            nome: "Boas-vindas aos Novos Membros",
+            descricao: "Jornada automática de boas-vindas para novos membros",
+            tipo: "experiências em destaque",
+            status: "ATIVO",
+            grupo: "clientes",
+            disparador: "inscricao",
+            contatos: 1040,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Bem-Vindos",
+                    icon: "fa-envelope",
+                    status: "ATIVO"
+                },
+                {
+                    id: 2,
+                    nome: "Osteopatia - Galp",
+                    icon: "fa-calendar",
+                    status: "ATIVO"
+                },
+                {
+                    id: 3,
+                    nome: "Osteopatia - Galp",
+                    icon: "fa-calendar",
+                    status: "ATIVO"
+                },
+                {
+                    id: 4,
+                    nome: "URGENTE + Novas Aulas de Grupo",
+                    icon: "fa-exclamation-circle",
+                    status: "ATIVO"
+                }
+            ]
+        },
+        {
+            id: 2,
+            nome: "Reengajamento",
+            descricao: "Recuperar membros inativos",
+            tipo: "retenção",
+            status: "ATIVO",
+            grupo: "leads",
+            disparador: "inatividade",
+            contatos: 245,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Lembrete de Inatividade",
+                    icon: "fa-bell",
+                    status: "ATIVO"
+                }
+            ]
+        },
+        {
+            id: 3,
+            nome: "Onboarding Corporativo",
+            descricao: "Integração de novos funcionários",
+            tipo: "rascunho",
+            status: "RASCUNHO",
+            grupo: "membros",
+            disparador: "primeiro-acesso",
+            contatos: 0,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Apresentação",
+                    icon: "fa-handshake",
+                    status: "RASCUNHO"
+                }
+            ]
+        },
+        {
+            id: 4,
+            nome: "Programa de Incentivo",
+            descricao: "Incentivar uso regular",
+            tipo: "experiências em destaque",
+            status: "ATIVO",
+            grupo: "clientes",
+            disparador: "inscricao",
+            contatos: 532,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Desafio Mensal",
+                    icon: "fa-trophy",
+                    status: "ATIVO"
+                }
+            ]
+        },
+        {
+            id: 5,
+            nome: "Feedback Pós-Treino",
+            descricao: "Coletar feedback após sessões",
+            tipo: "retenção",
+            status: "ATIVO",
+            grupo: "clientes",
+            disparador: "punicao",
+            contatos: 890,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Questionário Satisfação",
+                    icon: "fa-clipboard-question",
+                    status: "ATIVO"
+                }
+            ]
+        },
+        {
+            id: 6,
+            nome: "Nova Jornada em Construção",
+            descricao: "Jornada em desenvolvimento",
+            tipo: "rascunho",
+            status: "RASCUNHO",
+            grupo: "prospects",
+            disparador: "inscricao",
+            contatos: 0,
+            imagem: null,
+            atividades: [
+                {
+                    id: 1,
+                    nome: "Em Desenvolvimento",
+                    icon: "fa-code",
+                    status: "RASCUNHO"
+                }
+            ]
+        }
     ]
 };
 
 // Exportar para uso global
 if (typeof window !== 'undefined') {
     window.mockData = mockData;
+    window.mockJornadas = mockData.jornadas;
 }
