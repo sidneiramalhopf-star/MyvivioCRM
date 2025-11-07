@@ -5966,10 +5966,15 @@ let currentEdgeForInsertion = null;
 
 // Renderizar botões + entre elementos
 function renderEdgeAddButtons() {
-    // Remover botões existentes
-    document.querySelectorAll('.edge-add-button').forEach(btn => btn.remove());
+    // Garantir que todos os botões antigos sejam removidos
+    const stage = document.getElementById('canvas-stage');
+    if (!stage) return;
     
-    // Adicionar botão + para cada edge
+    // Remover todos os botões + existentes do stage
+    const oldButtons = stage.querySelectorAll('.edge-add-button');
+    oldButtons.forEach(btn => btn.remove());
+    
+    // Adicionar botão + para cada edge existente
     workflowState.edges.forEach(edge => {
         const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
         const targetNode = workflowState.nodes.find(n => n.id === edge.target);
@@ -5989,7 +5994,6 @@ function renderEdgeAddButtons() {
         button.innerHTML = '<i class="fas fa-plus"></i>';
         button.onclick = () => abrirNestedSidebar(edge.id);
         
-        const stage = document.getElementById('canvas-stage');
         stage.appendChild(button);
     });
 }
@@ -6015,10 +6019,17 @@ function fecharNestedSidebar() {
 
 // Selecionar trigger e inserir node no meio
 function selecionarTrigger(triggerId) {
-    if (!currentEdgeForInsertion) return;
+    if (!currentEdgeForInsertion) {
+        showToast('Erro: nenhuma conexão selecionada', 'error');
+        return;
+    }
     
     const edge = workflowState.edges.find(e => e.id === currentEdgeForInsertion);
-    if (!edge) return;
+    if (!edge) {
+        showToast('Erro: conexão não encontrada. Tente novamente.', 'error');
+        fecharNestedSidebar();
+        return;
+    }
     
     const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
     const targetNode = workflowState.nodes.find(n => n.id === edge.target);
