@@ -38,6 +38,7 @@ The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend a
 - **Exercise Library System**: Complete CRUD for exercises, 3-screen workflow (Library grid → Quick creation modal → Full editor), file upload system, search, filter, favorite, and hide functionality.
 - **Class Scheduling & Booking**: Management of classes with instructors, rooms, capacity, recurrence, and booking/cancellation.
 - **Automation**: Implementation of an "Automação" section with sub-tabs for Journeys, Questionnaires, Groups, and Activities, featuring a responsive grid for automation cards and status badges.
+- **Workflow Builder**: Full-featured drag-and-drop visual workflow builder for customer journeys with 70/30 canvas/sidebar layout, SVG-based node connections using cubic Bézier curves, zoom/pan controls, localStorage persistence, and 8 node types (3 REGRAS: Aguardar, Condição, Sair; 5 AÇÕES: Tarefa, Enviar mensagem, E-mail, Questionário, Tipo de contato). Supports complete create→edit→save→reopen cycle keyed by journeyId.
 - **Engagement Metrics**: Tracking engagement rates, ROI, productivity, and churn risk for AI optimization.
 
 ## External Dependencies

@@ -5349,7 +5349,11 @@ function startNodeDrag(e) {
     const offsetY = e.clientY - rect.top;
     
     function onMouseMove(e) {
+        if (!draggedNode) return;
+        
         requestAnimationFrame(() => {
+            if (!draggedNode) return;
+            
             const x = (e.clientX - canvasRect.left - offsetX - workflowState.viewport.offsetX) / workflowState.viewport.zoom;
             const y = (e.clientY - canvasRect.top - offsetY - workflowState.viewport.offsetY) / workflowState.viewport.zoom;
             
