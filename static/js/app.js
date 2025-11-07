@@ -5216,14 +5216,53 @@ function abrirWorkflowBuilder() {
 
 // Inicializar workflow vazio
 function initEmptyWorkflow(journeyId, name) {
+    // Criar START node
+    const startNode = {
+        id: 'node-start',
+        type: 'start',
+        label: 'Ponto de partida',
+        position: { x: 300, y: 100 },
+        ports: { input: false, output: true },
+        config: {},
+        isSpecial: true
+    };
+    
+    // Criar END node
+    const endNode = {
+        id: 'node-end',
+        type: 'end',
+        label: 'Etapa concluída',
+        position: { x: 300, y: 400 },
+        ports: { input: true, output: false },
+        config: {},
+        isSpecial: true
+    };
+    
+    // Criar edge conectando START -> END
+    const edge = {
+        id: 'edge-0',
+        source: 'node-start',
+        target: 'node-end'
+    };
+    
     workflowState = {
         id: null,
         journeyId: journeyId,
         name: name,
-        nodes: [],
-        edges: [],
+        nodes: [startNode, endNode],
+        edges: [edge],
         viewport: { zoom: 1, offsetX: 0, offsetY: 0 }
     };
+    
+    // Renderizar START e END
+    renderNode(startNode);
+    renderNode(endNode);
+    renderEdge(edge);
+    
+    // Inicializar counter após nodes especiais
+    nodeIdCounter = 1;
+    edgeIdCounter = 1;
+    
     applyViewportTransform();
 }
 
@@ -5299,9 +5338,7 @@ function createNode(type, x, y) {
 
 // Renderizar node no canvas
 function renderNode(node) {
-    const def = nodeDefinitions[node.type];
     const stage = document.getElementById('canvas-stage');
-    
     const nodeEl = document.createElement('div');
     nodeEl.className = 'workflow-node';
     nodeEl.id = node.id;
@@ -5309,31 +5346,58 @@ function renderNode(node) {
     nodeEl.style.top = `${node.position.y}px`;
     nodeEl.dataset.nodeId = node.id;
     
-    nodeEl.innerHTML = `
-        <div class="node-mini-toolbar">
-            <button class="toolbar-btn" onclick="editNode('${node.id}')" title="Editar">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="toolbar-btn" onclick="duplicateNode('${node.id}')" title="Duplicar">
-                <i class="fas fa-copy"></i>
-            </button>
-            <button class="toolbar-btn btn-delete" onclick="deleteNodeById('${node.id}')" title="Deletar">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-        <div class="node-header">
-            <div class="node-icon ${def.category === 'acao' ? 'node-icon-acao' : ''}">
-                <i class="fas ${def.icon}"></i>
+    // Nodes especiais (START/END) têm rendering diferente
+    if (node.type === 'start') {
+        nodeEl.innerHTML = `
+            <div class="node-header">
+                <div class="node-icon">
+                    <i class="fas fa-play"></i>
+                </div>
+                <div class="node-title">${node.label}</div>
             </div>
-            <div class="node-title">${node.label}</div>
-        </div>
-        <div class="node-description">${def.description}</div>
-        ${node.ports.input ? '<div class="node-port node-port-input" data-port="input"></div>' : ''}
-        ${node.ports.output ? '<div class="node-port node-port-output" data-port="output"></div>' : ''}
-    `;
+            ${node.ports.output ? '<div class="node-port node-port-output" data-port="output"></div>' : ''}
+        `;
+    } else if (node.type === 'end') {
+        nodeEl.innerHTML = `
+            <div class="node-header">
+                <div class="node-icon">
+                    <i class="fas fa-flag-checkered"></i>
+                </div>
+                <div class="node-title">${node.label}</div>
+            </div>
+            ${node.ports.input ? '<div class="node-port node-port-input" data-port="input"></div>' : ''}
+        `;
+    } else {
+        // Nodes normais
+        const def = nodeDefinitions[node.type];
+        nodeEl.innerHTML = `
+            <div class="node-mini-toolbar">
+                <button class="toolbar-btn" onclick="editNode('${node.id}')" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="toolbar-btn" onclick="duplicateNode('${node.id}')" title="Duplicar">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="toolbar-btn btn-delete" onclick="deleteNodeById('${node.id}')" title="Deletar">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="node-header">
+                <div class="node-icon ${def.category === 'acao' ? 'node-icon-acao' : ''}">
+                    <i class="fas ${def.icon}"></i>
+                </div>
+                <div class="node-title">${node.label}</div>
+            </div>
+            <div class="node-description">${def.description}</div>
+            ${node.ports.input ? '<div class="node-port node-port-input" data-port="input"></div>' : ''}
+            ${node.ports.output ? '<div class="node-port node-port-output" data-port="output"></div>' : ''}
+        `;
+    }
     
-    // Adicionar eventos
-    nodeEl.addEventListener('mousedown', startNodeDrag);
+    // Adicionar eventos de drag apenas se não for node especial
+    if (!node.isSpecial) {
+        nodeEl.addEventListener('mousedown', startNodeDrag);
+    }
     
     // Click para selecionar
     nodeEl.addEventListener('click', (e) => {
@@ -5403,6 +5467,13 @@ function duplicateNode(nodeId) {
 
 // Deletar node por ID
 function deleteNodeById(nodeId) {
+    // Prevenir deleção de nodes especiais (START/END)
+    const node = workflowState.nodes.find(n => n.id === nodeId);
+    if (node && node.isSpecial) {
+        showToast('Ponto de partida e etapa concluída não podem ser deletados', 'error');
+        return;
+    }
+    
     // Confirmar
     if (!confirm('Deseja deletar este elemento?')) return;
     

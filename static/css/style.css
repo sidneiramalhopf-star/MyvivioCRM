@@ -7712,6 +7712,24 @@ textarea.form-control {
     box-shadow: 0 0 0 3px rgba(98, 177, 202, 0.2);
 }
 
+/* Nodes Especiais: START e END */
+.workflow-node#node-start,
+.workflow-node#node-end {
+    border-color: #3fa561;
+    background: #f0f9f4;
+}
+
+.workflow-node#node-start .node-icon,
+.workflow-node#node-end .node-icon {
+    background: #3fa561;
+}
+
+.workflow-node#node-start:hover,
+.workflow-node#node-end:hover {
+    border-color: #2d8a4d;
+    box-shadow: 0 4px 16px rgba(63, 165, 97, 0.3);
+}
+
 .node-header {
     display: flex;
     align-items: center;
