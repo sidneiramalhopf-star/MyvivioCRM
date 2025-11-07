@@ -5191,6 +5191,9 @@ function abrirWorkflowBuilder() {
             // Renderizar edges salvos
             workflowState.edges.forEach(edge => renderEdge(edge));
             
+            // Renderizar botões + entre elementos
+            renderEdgeAddButtons();
+            
             // Aplicar viewport salvo
             applyViewportTransform();
             
@@ -5258,6 +5261,9 @@ function initEmptyWorkflow(journeyId, name) {
     renderNode(startNode);
     renderNode(endNode);
     renderEdge(edge);
+    
+    // Renderizar botões + entre elementos
+    renderEdgeAddButtons();
     
     // Inicializar counter após nodes especiais
     nodeIdCounter = 1;
@@ -5951,6 +5957,175 @@ function fitToScreen() {
     workflowState.viewport.offsetY = (rect.height - height * workflowState.viewport.zoom) / 2 - minY * workflowState.viewport.zoom;
     
     applyViewportTransform();
+}
+
+/* ===== NESTED SIDEBAR E BOTÕES + ===== */
+
+// Variável global para armazenar edge atual
+let currentEdgeForInsertion = null;
+
+// Renderizar botões + entre elementos
+function renderEdgeAddButtons() {
+    // Remover botões existentes
+    document.querySelectorAll('.edge-add-button').forEach(btn => btn.remove());
+    
+    // Adicionar botão + para cada edge
+    workflowState.edges.forEach(edge => {
+        const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
+        const targetNode = workflowState.nodes.find(n => n.id === edge.target);
+        
+        if (!sourceNode || !targetNode) return;
+        
+        // Calcular midpoint da edge
+        const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+        const midY = (sourceNode.position.y + targetNode.position.y) / 2;
+        
+        // Criar botão +
+        const button = document.createElement('div');
+        button.className = 'edge-add-button';
+        button.style.left = `${midX + 100}px`; // +100 para centralizar no node (width ~200px)
+        button.style.top = `${midY + 50}px`;  // +50 para centralizar no node (height ~100px)
+        button.dataset.edgeId = edge.id;
+        button.innerHTML = '<i class="fas fa-plus"></i>';
+        button.onclick = () => abrirNestedSidebar(edge.id);
+        
+        const stage = document.getElementById('canvas-stage');
+        stage.appendChild(button);
+    });
+}
+
+// Abrir nested sidebar para inserir elemento
+function abrirNestedSidebar(edgeId) {
+    currentEdgeForInsertion = edgeId;
+    
+    const nestedSidebar = document.getElementById('nested-sidebar');
+    if (nestedSidebar) {
+        nestedSidebar.style.display = 'flex';
+    }
+}
+
+// Fechar nested sidebar
+function fecharNestedSidebar() {
+    const nestedSidebar = document.getElementById('nested-sidebar');
+    if (nestedSidebar) {
+        nestedSidebar.style.display = 'none';
+    }
+    currentEdgeForInsertion = null;
+}
+
+// Selecionar trigger e inserir node no meio
+function selecionarTrigger(triggerId) {
+    if (!currentEdgeForInsertion) return;
+    
+    const edge = workflowState.edges.find(e => e.id === currentEdgeForInsertion);
+    if (!edge) return;
+    
+    const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
+    const targetNode = workflowState.nodes.find(n => n.id === edge.target);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    // Mapear trigger para tipo de node
+    const triggerToNodeType = {
+        'aula-reservada': 'aguardar',
+        'ausencia': 'aguardar',
+        'app-vivio': 'aguardar',
+        'conta-vivio': 'aguardar',
+        'servico-realizado': 'aguardar',
+        'sessoes': 'aguardar',
+        'tarefa-fazer': 'tarefa',
+        'tarefa-concluida': 'tarefa',
+        'tempo': 'aguardar',
+        'assinatura-ativa': 'condicao',
+        'assinatura-cancelada': 'condicao',
+        'meta-atingida': 'condicao',
+        'treino-completado': 'aguardar',
+        'avaliacao-fisica': 'aguardar'
+    };
+    
+    const nodeType = triggerToNodeType[triggerId] || 'aguardar';
+    const def = nodeDefinitions[nodeType];
+    
+    // Calcular posição no meio
+    const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+    const midY = (sourceNode.position.y + targetNode.position.y) / 2;
+    
+    // Criar novo node
+    const newNode = {
+        id: `node-${nodeIdCounter++}`,
+        type: nodeType,
+        label: def.label,
+        position: { x: midX, y: midY },
+        ports: { input: true, output: true },
+        config: {}
+    };
+    
+    // Adicionar node ao state
+    workflowState.nodes.push(newNode);
+    renderNode(newNode);
+    
+    // Remover edge original
+    const edgeIndex = workflowState.edges.findIndex(e => e.id === currentEdgeForInsertion);
+    if (edgeIndex > -1) {
+        workflowState.edges.splice(edgeIndex, 1);
+        const pathEl = document.getElementById(currentEdgeForInsertion);
+        if (pathEl) pathEl.remove();
+    }
+    
+    // Criar duas novas edges: source → newNode e newNode → target
+    const edge1 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: edge.source,
+        target: newNode.id
+    };
+    
+    const edge2 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: newNode.id,
+        target: edge.target
+    };
+    
+    workflowState.edges.push(edge1, edge2);
+    renderEdge(edge1);
+    renderEdge(edge2);
+    
+    // Atualizar botões +
+    renderEdgeAddButtons();
+    
+    // Fechar sidebar
+    fecharNestedSidebar();
+    
+    showToast(`Elemento ${def.label} inserido!`, 'success');
+}
+
+// Filtrar triggers na nested sidebar
+function filtrarTriggers() {
+    const input = document.getElementById('nested-search-input');
+    const filter = input.value.toLowerCase();
+    const items = document.querySelectorAll('.nested-trigger-item');
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(filter)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Toggle collapsible na nested sidebar
+function toggleNestedCollapsible(button) {
+    const section = button.parentElement;
+    const content = section.querySelector('.nested-collapsible-content');
+    
+    if (section.classList.contains('active')) {
+        section.classList.remove('active');
+        content.style.display = 'none';
+    } else {
+        section.classList.add('active');
+        content.style.display = 'block';
+    }
 }
 
 // Deletar selecionado

@@ -7988,6 +7988,206 @@ textarea.form-control {
     cursor: grabbing;
 }
 
+/* =====  NESTED SIDEBAR ===== */
+.workflow-nested-sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.nested-sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 2px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-back-nested {
+    width: 36px;
+    height: 36px;
+    background: #f5f7fa;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #1f2746;
+    transition: all 0.2s ease;
+}
+
+.btn-back-nested:hover {
+    background: #e8e8e8;
+    border-color: #1f2746;
+}
+
+.nested-sidebar-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1f2746;
+    margin: 0;
+}
+
+.nested-element-type {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+.nested-sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.nested-collapsible-section {
+    margin-bottom: 1rem;
+}
+
+.nested-collapsible-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f5f7fa;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+}
+
+.nested-collapsible-header:hover {
+    background: #e8e8e8;
+}
+
+.nested-collapsible-header .toggle-icon {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.nested-collapsible-section.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.nested-collapsible-content {
+    padding: 1rem 0;
+}
+
+.nested-search-box {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.nested-search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    font-size: 0.875rem;
+}
+
+.nested-search-box input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.nested-search-box input:focus {
+    outline: none;
+    border-color: #62b1ca;
+    box-shadow: 0 0 0 3px rgba(98, 177, 202, 0.1);
+}
+
+.nested-trigger-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.nested-trigger-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #1f2746;
+}
+
+.nested-trigger-item:hover {
+    border-color: #62b1ca;
+    background: #f0f9fc;
+    transform: translateX(4px);
+}
+
+.nested-trigger-item i {
+    color: #62b1ca;
+    font-size: 1rem;
+}
+
+/* ===== BOTÕES + ENTRE ELEMENTOS ===== */
+.edge-add-button {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 2px solid #1f2746;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    pointer-events: auto;
+}
+
+.edge-add-button:hover {
+    background: #1f2746;
+    color: white;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.edge-add-button i {
+    font-size: 0.875rem;
+    color: inherit;
+}
+
 .element-icon {
     width: 40px;
     height: 40px;

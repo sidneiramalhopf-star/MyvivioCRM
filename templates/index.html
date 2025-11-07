@@ -1466,6 +1466,93 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Nested Sidebar: Configurações de elementos -->
+                                <div class="workflow-nested-sidebar" id="nested-sidebar" style="display: none;">
+                                    <div class="nested-sidebar-header">
+                                        <button class="btn-back-nested" onclick="fecharNestedSidebar()">
+                                            <i class="fas fa-arrow-left"></i>
+                                        </button>
+                                        <h3 class="nested-sidebar-title">Configurações de elementos</h3>
+                                        <span class="nested-element-type" id="nested-element-name">Aguardar</span>
+                                    </div>
+                                    
+                                    <div class="nested-sidebar-body">
+                                        <div class="nested-collapsible-section active">
+                                            <button class="nested-collapsible-header" onclick="toggleNestedCollapsible(this)">
+                                                <i class="fas fa-plus"></i>
+                                                <span>Adicionar um evento a ser aguardado</span>
+                                                <i class="fas fa-chevron-down toggle-icon"></i>
+                                            </button>
+                                            <div class="nested-collapsible-content" style="display: block;">
+                                                <div class="nested-search-box">
+                                                    <i class="fas fa-search"></i>
+                                                    <input type="text" placeholder="Buscar" id="nested-search-input" onkeyup="filtrarTriggers()">
+                                                </div>
+                                                
+                                                <div class="nested-trigger-list" id="nested-trigger-list">
+                                                    <!-- TRIGGERS serão populados via JS -->
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('aula-reservada')">
+                                                        <i class="fas fa-calendar-check"></i>
+                                                        Aula reservada
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('ausencia')">
+                                                        <i class="fas fa-user-slash"></i>
+                                                        Ausência
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('app-vivio')">
+                                                        <i class="fas fa-mobile-alt"></i>
+                                                        App VIVIO
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('conta-vivio')">
+                                                        <i class="fas fa-user"></i>
+                                                        Conta VIVIO
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('servico-realizado')">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        Serviço realizado
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('sessoes')">
+                                                        <i class="fas fa-dumbbell"></i>
+                                                        Sessões
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('tarefa-fazer')">
+                                                        <i class="fas fa-tasks"></i>
+                                                        Tarefa a fazer
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('tarefa-concluida')">
+                                                        <i class="fas fa-check-double"></i>
+                                                        Tarefa concluída
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('tempo')">
+                                                        <i class="fas fa-clock"></i>
+                                                        Tempo
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('assinatura-ativa')">
+                                                        <i class="fas fa-star"></i>
+                                                        Assinatura ativa
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('assinatura-cancelada')">
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                        Assinatura cancelada
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('meta-atingida')">
+                                                        <i class="fas fa-trophy"></i>
+                                                        Meta atingida
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('treino-completado')">
+                                                        <i class="fas fa-running"></i>
+                                                        Treino completado
+                                                    </div>
+                                                    <div class="nested-trigger-item" onclick="selecionarTrigger('avaliacao-fisica')">
+                                                        <i class="fas fa-heartbeat"></i>
+                                                        Avaliação física
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
