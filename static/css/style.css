@@ -7580,6 +7580,309 @@ textarea.form-control {
     border-color: #123058;
 }
 
+/* ============================================ */
+/* WORKFLOW BUILDER */
+/* ============================================ */
+
+.workflow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.workflow-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #7f8c8d;
+}
+
+.workflow-container {
+    display: flex;
+    height: calc(100vh - 200px);
+    background: #f5f7fa;
+}
+
+/* Canvas Wrapper (70%) */
+.workflow-canvas-wrapper {
+    flex: 7;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: white;
+    border-right: 1px solid #e8e8e8;
+}
+
+.workflow-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.btn-workflow-control {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #1f2746;
+    transition: all 0.3s ease;
+}
+
+.btn-workflow-control:hover {
+    background: #f5f7fa;
+    border-color: #1f2746;
+}
+
+/* Canvas com Grid Pontilhado */
+.workflow-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px),
+        repeating-linear-gradient(90deg, transparent, transparent 19px, #e8e8e8 19px, #e8e8e8 20px);
+    background-size: 20px 20px;
+    background-position: 0 0;
+}
+
+.canvas-stage {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+}
+
+/* SVG para Conexões */
+.connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.connections-layer path {
+    fill: none;
+    stroke: #1f2746;
+    stroke-width: 2;
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.connections-layer path:hover {
+    stroke: #62b1ca;
+    stroke-width: 3;
+}
+
+/* Workflow Nodes */
+.workflow-node {
+    position: absolute;
+    background: white;
+    border: 2px solid #1f2746;
+    border-radius: 12px;
+    padding: 1rem;
+    min-width: 200px;
+    cursor: move;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.workflow-node:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-color: #62b1ca;
+}
+
+.workflow-node.selected {
+    border-color: #62b1ca;
+    box-shadow: 0 0 0 3px rgba(98, 177, 202, 0.2);
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.node-icon {
+    width: 32px;
+    height: 32px;
+    background: #1f2746;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.node-icon.node-icon-acao {
+    background: #123058;
+}
+
+.node-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+    flex: 1;
+}
+
+.node-description {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+}
+
+/* Portas de Conexão */
+.node-port {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid #1f2746;
+    border-radius: 50%;
+    cursor: crosshair;
+    z-index: 20;
+    transition: all 0.2s ease;
+}
+
+.node-port:hover {
+    background: #62b1ca;
+    border-color: #62b1ca;
+    transform: scale(1.3);
+}
+
+.node-port-input {
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+}
+
+.node-port-output {
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+}
+
+.node-port.connecting {
+    background: #3fa561;
+    border-color: #3fa561;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.4); }
+}
+
+/* Sidebar (30%) */
+.workflow-sidebar {
+    flex: 3;
+    background: white;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.sidebar-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1f2746;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e8e8e8;
+}
+
+.sidebar-category {
+    margin-bottom: 2rem;
+}
+
+.category-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+/* Element Cards */
+.element-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    cursor: grab;
+    transition: all 0.3s ease;
+}
+
+.element-card:hover {
+    border-color: #1f2746;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(4px);
+}
+
+.element-card:active {
+    cursor: grabbing;
+}
+
+.element-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.element-icon-regra {
+    background: #1f2746;
+}
+
+.element-icon-acao {
+    background: #123058;
+}
+
+.element-info {
+    flex: 1;
+}
+
+.element-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2746;
+    margin: 0 0 0.25rem 0;
+}
+
+.element-description {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .jornadas-grid {
@@ -7591,6 +7894,16 @@ textarea.form-control {
         align-items: flex-start;
         gap: 1rem;
     }
+    
+    .workflow-container {
+        flex-direction: column;
+    }
+    
+    .workflow-canvas-wrapper,
+    .workflow-sidebar {
+        flex: 1;
+    }
+}
     
     .jornada-detalhes-header {
         flex-direction: column;

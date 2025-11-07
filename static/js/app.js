@@ -5047,3 +5047,562 @@ async function removerDosFavoritos() {
         showToast('Erro ao remover dos favoritos', 'error');
     }
 }
+
+/* ============================================ */
+/* WORKFLOW BUILDER */
+/* ============================================ */
+
+// Estado global do workflow
+let workflowState = {
+    id: null,
+    journeyId: null,
+    name: '',
+    nodes: [],
+    edges: [],
+    viewport: {
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0
+    }
+};
+
+// Variáveis de controle
+let selectedNode = null;
+let draggedNode = null;
+let connectingFrom = null;
+let nodeIdCounter = 1;
+let edgeIdCounter = 1;
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+
+// Definições de tipos de nodes
+const nodeDefinitions = {
+    aguardar: {
+        icon: 'fa-clock',
+        label: 'Aguardar',
+        description: 'Aguarde um período de tempo',
+        category: 'regra',
+        config: { time: 1, unit: 'days' }
+    },
+    condicao: {
+        icon: 'fa-code-branch',
+        label: 'Condição',
+        description: 'Verifique uma condição',
+        category: 'regra',
+        config: { condition: '' }
+    },
+    sair: {
+        icon: 'fa-sign-out-alt',
+        label: 'Sair',
+        description: 'Sair da fase',
+        category: 'regra',
+        config: {}
+    },
+    tarefa: {
+        icon: 'fa-tasks',
+        label: 'Tarefa',
+        description: 'Criar nova tarefa',
+        category: 'acao',
+        config: { title: '', assignee: '' }
+    },
+    mensagem: {
+        icon: 'fa-comment',
+        label: 'Enviar mensagem',
+        description: 'Enviar mensagem ao contato',
+        category: 'acao',
+        config: { message: '' }
+    },
+    email: {
+        icon: 'fa-envelope',
+        label: 'E-mail',
+        description: 'Enviar e-mail de boas-vindas',
+        category: 'acao',
+        config: { subject: '', body: '' }
+    },
+    questionario: {
+        icon: 'fa-clipboard-question',
+        label: 'Questionário',
+        description: 'Enviar questionário',
+        category: 'acao',
+        config: { questionId: '' }
+    },
+    'tipo-contato': {
+        icon: 'fa-user-tag',
+        label: 'Tipo de contato',
+        description: 'Alterar tipo de contato',
+        category: 'acao',
+        config: { newType: '' }
+    }
+};
+
+// Navegar para workflow builder
+function abrirWorkflowBuilder() {
+    // Pegar journeyId da jornada atual (ID real da jornada atualmente visualizada)
+    const currentJornada = window.mockJornadas?.find(j => 
+        j.nome === document.getElementById('jornada-detalhes-titulo')?.textContent
+    );
+    const journeyId = currentJornada ? currentJornada.id : Date.now();
+    
+    const journeyName = document.getElementById('jornada-detalhes-titulo')?.textContent || 'Fluxo de Trabalho';
+    
+    // Atualizar breadcrumb
+    const breadcrumbName = document.getElementById('workflow-jornada-nome');
+    if (breadcrumbName) {
+        breadcrumbName.textContent = journeyName;
+    }
+    
+    // Limpar canvas
+    const stage = document.getElementById('canvas-stage');
+    if (stage) {
+        const nodes = stage.querySelectorAll('.workflow-node');
+        nodes.forEach(node => node.remove());
+    }
+    
+    // Limpar SVG (todas as paths exceto markers)
+    const svg = document.getElementById('connections-svg');
+    if (svg) {
+        const paths = svg.querySelectorAll('path');
+        paths.forEach(path => path.remove());
+    }
+    
+    // Tentar carregar workflow existente
+    const savedWorkflow = localStorage.getItem(`workflow_${journeyId}`);
+    
+    if (savedWorkflow) {
+        try {
+            workflowState = JSON.parse(savedWorkflow);
+            
+            // Restaurar counters
+            if (workflowState.nodes.length > 0) {
+                const maxNodeId = Math.max(...workflowState.nodes.map(n => parseInt(n.id.split('-')[1]) || 0));
+                nodeIdCounter = maxNodeId + 1;
+            }
+            if (workflowState.edges.length > 0) {
+                const maxEdgeId = Math.max(...workflowState.edges.map(e => parseInt(e.id.split('-')[1]) || 0));
+                edgeIdCounter = maxEdgeId + 1;
+            }
+            
+            // Renderizar nodes salvos
+            workflowState.nodes.forEach(node => renderNode(node));
+            
+            // Renderizar edges salvos
+            workflowState.edges.forEach(edge => renderEdge(edge));
+            
+            // Aplicar viewport salvo
+            applyViewportTransform();
+            
+        } catch (error) {
+            console.error('Erro ao carregar workflow:', error);
+            // Se falhar, inicializar vazio
+            initEmptyWorkflow(journeyId, journeyName);
+        }
+    } else {
+        // Inicializar workflow vazio
+        initEmptyWorkflow(journeyId, journeyName);
+    }
+    
+    // Inicializar drag & drop
+    initWorkflowDragDrop();
+    
+    // Inicializar pan
+    initCanvasPan();
+    
+    // Mostrar página de workflow
+    switchAutomacaoView('workflow-builder');
+}
+
+// Inicializar workflow vazio
+function initEmptyWorkflow(journeyId, name) {
+    workflowState = {
+        id: null,
+        journeyId: journeyId,
+        name: name,
+        nodes: [],
+        edges: [],
+        viewport: { zoom: 1, offsetX: 0, offsetY: 0 }
+    };
+    applyViewportTransform();
+}
+
+// Voltar do workflow builder
+function voltarDeWorkflow() {
+    switchAutomacaoView('jornada-detalhes');
+}
+
+// Inicializar drag & drop
+function initWorkflowDragDrop() {
+    const elementCards = document.querySelectorAll('.element-card');
+    const canvas = document.getElementById('workflow-canvas');
+    
+    elementCards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+    });
+    
+    if (canvas) {
+        canvas.addEventListener('dragover', handleDragOver);
+        canvas.addEventListener('drop', handleDrop);
+    }
+}
+
+// Handler de drag start
+function handleDragStart(e) {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('nodeType', e.currentTarget.dataset.type);
+}
+
+// Handler de drag over
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+}
+
+// Handler de drop
+function handleDrop(e) {
+    e.preventDefault();
+    
+    const nodeType = e.dataTransfer.getData('nodeType');
+    if (!nodeType || !nodeDefinitions[nodeType]) return;
+    
+    const canvas = document.getElementById('workflow-canvas');
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calcular posição considerando zoom e offset
+    const x = (e.clientX - rect.left - workflowState.viewport.offsetX) / workflowState.viewport.zoom;
+    const y = (e.clientY - rect.top - workflowState.viewport.offsetY) / workflowState.viewport.zoom;
+    
+    createNode(nodeType, x, y);
+}
+
+// Criar node
+function createNode(type, x, y) {
+    const def = nodeDefinitions[type];
+    if (!def) return;
+    
+    const node = {
+        id: `node-${nodeIdCounter++}`,
+        type: type,
+        label: def.label,
+        position: { x, y },
+        ports: {
+            input: true,
+            output: true
+        },
+        config: { ...def.config }
+    };
+    
+    workflowState.nodes.push(node);
+    renderNode(node);
+}
+
+// Renderizar node no canvas
+function renderNode(node) {
+    const def = nodeDefinitions[node.type];
+    const stage = document.getElementById('canvas-stage');
+    
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'workflow-node';
+    nodeEl.id = node.id;
+    nodeEl.style.left = `${node.position.x}px`;
+    nodeEl.style.top = `${node.position.y}px`;
+    nodeEl.dataset.nodeId = node.id;
+    
+    nodeEl.innerHTML = `
+        <div class="node-header">
+            <div class="node-icon ${def.category === 'acao' ? 'node-icon-acao' : ''}">
+                <i class="fas ${def.icon}"></i>
+            </div>
+            <div class="node-title">${node.label}</div>
+        </div>
+        <div class="node-description">${def.description}</div>
+        ${node.ports.input ? '<div class="node-port node-port-input" data-port="input"></div>' : ''}
+        ${node.ports.output ? '<div class="node-port node-port-output" data-port="output"></div>' : ''}
+    `;
+    
+    // Adicionar eventos
+    nodeEl.addEventListener('mousedown', startNodeDrag);
+    
+    // Adicionar eventos às portas
+    const ports = nodeEl.querySelectorAll('.node-port');
+    ports.forEach(port => {
+        port.addEventListener('click', handlePortClick);
+    });
+    
+    stage.appendChild(nodeEl);
+}
+
+// Iniciar drag de node existente
+function startNodeDrag(e) {
+    if (e.target.closest('.node-port')) return;
+    
+    e.stopPropagation();
+    draggedNode = e.currentTarget;
+    const nodeId = draggedNode.dataset.nodeId;
+    const node = workflowState.nodes.find(n => n.id === nodeId);
+    
+    if (!node) return;
+    
+    const rect = draggedNode.getBoundingClientRect();
+    const canvas = document.getElementById('workflow-canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    
+    function onMouseMove(e) {
+        requestAnimationFrame(() => {
+            const x = (e.clientX - canvasRect.left - offsetX - workflowState.viewport.offsetX) / workflowState.viewport.zoom;
+            const y = (e.clientY - canvasRect.top - offsetY - workflowState.viewport.offsetY) / workflowState.viewport.zoom;
+            
+            node.position.x = x;
+            node.position.y = y;
+            
+            draggedNode.style.left = `${x}px`;
+            draggedNode.style.top = `${y}px`;
+            
+            updateConnections();
+        });
+    }
+    
+    function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        draggedNode = null;
+    }
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+// Click em porta para conectar
+function handlePortClick(e) {
+    e.stopPropagation();
+    
+    const port = e.currentTarget;
+    const nodeEl = port.closest('.workflow-node');
+    const nodeId = nodeEl.dataset.nodeId;
+    const portType = port.dataset.port;
+    
+    if (!connectingFrom) {
+        // Iniciar conexão (só pode começar de output)
+        if (portType === 'output') {
+            connectingFrom = { nodeId, port: portType };
+            port.classList.add('connecting');
+        }
+    } else {
+        // Finalizar conexão (só pode terminar em input)
+        if (portType === 'input' && nodeId !== connectingFrom.nodeId) {
+            createEdge(connectingFrom.nodeId, nodeId);
+        }
+        
+        // Limpar estado de conexão
+        const connectingPort = document.querySelector('.node-port.connecting');
+        if (connectingPort) {
+            connectingPort.classList.remove('connecting');
+        }
+        connectingFrom = null;
+    }
+}
+
+// Criar edge
+function createEdge(sourceNodeId, targetNodeId) {
+    const edge = {
+        id: `edge-${edgeIdCounter++}`,
+        source: { nodeId: sourceNodeId, port: 'output' },
+        target: { nodeId: targetNodeId, port: 'input' },
+        type: 'bezier'
+    };
+    
+    workflowState.edges.push(edge);
+    renderEdge(edge);
+}
+
+// Renderizar edge
+function renderEdge(edge) {
+    const sourceNode = document.getElementById(edge.source.nodeId);
+    const targetNode = document.getElementById(edge.target.nodeId);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    const svg = document.getElementById('connections-svg');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.id = edge.id;
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    
+    updateEdgePath(edge, path, sourceNode, targetNode);
+    
+    svg.appendChild(path);
+}
+
+// Atualizar path da edge
+function updateEdgePath(edge, path, sourceNode, targetNode) {
+    const sourcePort = sourceNode.querySelector('.node-port-output');
+    const targetPort = targetNode.querySelector('.node-port-input');
+    
+    const sourceRect = sourcePort.getBoundingClientRect();
+    const targetRect = targetPort.getBoundingClientRect();
+    const canvas = document.getElementById('workflow-canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    const x1 = (sourceRect.left + sourceRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+    const y1 = (sourceRect.top + sourceRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+    const x2 = (targetRect.left + targetRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+    const y2 = (targetRect.top + targetRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+    
+    const dx = Math.abs(x2 - x1) * 0.5;
+    
+    const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+    path.setAttribute('d', d);
+}
+
+// Atualizar todas as conexões
+function updateConnections() {
+    workflowState.edges.forEach(edge => {
+        const path = document.getElementById(edge.id);
+        const sourceNode = document.getElementById(edge.source.nodeId);
+        const targetNode = document.getElementById(edge.target.nodeId);
+        
+        if (path && sourceNode && targetNode) {
+            updateEdgePath(edge, path, sourceNode, targetNode);
+        }
+    });
+}
+
+// Inicializar pan do canvas
+function initCanvasPan() {
+    const canvas = document.getElementById('workflow-canvas');
+    
+    canvas.addEventListener('mousedown', (e) => {
+        if (e.target === canvas || e.target.classList.contains('canvas-stage')) {
+            isPanning = true;
+            panStart = { x: e.clientX - workflowState.viewport.offsetX, y: e.clientY - workflowState.viewport.offsetY };
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            workflowState.viewport.offsetX = e.clientX - panStart.x;
+            workflowState.viewport.offsetY = e.clientY - panStart.y;
+            applyViewportTransform();
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            const canvas = document.getElementById('workflow-canvas');
+            canvas.style.cursor = 'default';
+        }
+    });
+}
+
+// Aplicar transform de viewport
+function applyViewportTransform() {
+    const stage = document.getElementById('canvas-stage');
+    if (stage) {
+        stage.style.transform = `translate(${workflowState.viewport.offsetX}px, ${workflowState.viewport.offsetY}px) scale(${workflowState.viewport.zoom})`;
+    }
+    updateConnections();
+}
+
+// Zoom in
+function zoomIn() {
+    workflowState.viewport.zoom = Math.min(2, workflowState.viewport.zoom + 0.1);
+    applyViewportTransform();
+}
+
+// Zoom out
+function zoomOut() {
+    workflowState.viewport.zoom = Math.max(0.5, workflowState.viewport.zoom - 0.1);
+    applyViewportTransform();
+}
+
+// Fit to screen
+function fitToScreen() {
+    if (workflowState.nodes.length === 0) {
+        workflowState.viewport = { zoom: 1, offsetX: 0, offsetY: 0 };
+        applyViewportTransform();
+        return;
+    }
+    
+    // Calcular bounding box
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    workflowState.nodes.forEach(node => {
+        minX = Math.min(minX, node.position.x);
+        minY = Math.min(minY, node.position.y);
+        maxX = Math.max(maxX, node.position.x + 200);
+        maxY = Math.max(maxY, node.position.y + 100);
+    });
+    
+    const canvas = document.getElementById('workflow-canvas');
+    const rect = canvas.getBoundingClientRect();
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    const scaleX = (rect.width - 100) / width;
+    const scaleY = (rect.height - 100) / height;
+    
+    workflowState.viewport.zoom = Math.min(scaleX, scaleY, 1);
+    workflowState.viewport.offsetX = (rect.width - width * workflowState.viewport.zoom) / 2 - minX * workflowState.viewport.zoom;
+    workflowState.viewport.offsetY = (rect.height - height * workflowState.viewport.zoom) / 2 - minY * workflowState.viewport.zoom;
+    
+    applyViewportTransform();
+}
+
+// Deletar selecionado
+function deleteSelected() {
+    if (!selectedNode) {
+        showToast('Selecione um elemento para deletar', 'info');
+        return;
+    }
+    
+    // Remover node
+    const nodeIndex = workflowState.nodes.findIndex(n => n.id === selectedNode);
+    if (nodeIndex > -1) {
+        workflowState.nodes.splice(nodeIndex, 1);
+    }
+    
+    // Remover edges conectadas
+    workflowState.edges = workflowState.edges.filter(edge => {
+        if (edge.source.nodeId === selectedNode || edge.target.nodeId === selectedNode) {
+            const pathEl = document.getElementById(edge.id);
+            if (pathEl) pathEl.remove();
+            return false;
+        }
+        return true;
+    });
+    
+    // Remover elemento do DOM
+    const nodeEl = document.getElementById(selectedNode);
+    if (nodeEl) nodeEl.remove();
+    
+    selectedNode = null;
+    showToast('Elemento deletado', 'success');
+}
+
+// Salvar workflow
+async function salvarWorkflow() {
+    try {
+        // Por enquanto, salvar no localStorage
+        const workflowData = JSON.stringify(workflowState);
+        localStorage.setItem(`workflow_${workflowState.journeyId}`, workflowData);
+        
+        showToast('Fluxo de trabalho salvo com sucesso!', 'success');
+        
+        // TODO: Implementar chamada à API
+        // const response = await fetch(`${API_BASE}/workflows/${workflowState.journeyId}`, {
+        //     method: 'PUT',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${authToken}`
+        //     },
+        //     body: workflowData
+        // });
+        
+    } catch (error) {
+        console.error('Erro ao salvar workflow:', error);
+        showToast('Erro ao salvar fluxo de trabalho', 'error');
+    }
+}

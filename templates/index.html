@@ -1307,9 +1307,162 @@
                                             </div>
                                         </div>
                                         <div class="etapa-footer">
-                                            <button class="btn-etapa-fluxo">
+                                            <button class="btn-etapa-fluxo" onclick="abrirWorkflowBuilder()">
                                                 <i class="fas fa-project-diagram"></i> FLUXO DE TRABALHO
                                             </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Página de Workflow Builder -->
+                        <div id="automacao-workflow-builder" class="automacao-page" style="display: none;">
+                            <!-- Header com Breadcrumb e Botão Salvar -->
+                            <div class="workflow-header">
+                                <div class="workflow-breadcrumb">
+                                    <button class="btn-back-circle" onclick="voltarDeWorkflow()">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                    <span class="breadcrumb-text">Jornadas</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                    <span class="breadcrumb-text" id="workflow-jornada-nome">Bem-Vindos</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                    <span class="breadcrumb-text">Fluxo de Trabalho</span>
+                                </div>
+                                <button class="btn-primary" onclick="salvarWorkflow()">
+                                    <i class="fas fa-save"></i> SALVAR
+                                </button>
+                            </div>
+
+                            <!-- Container Principal (70% Canvas + 30% Sidebar) -->
+                            <div class="workflow-container">
+                                <!-- Canvas Central (70%) -->
+                                <div class="workflow-canvas-wrapper">
+                                    <!-- Toolbar de Controles -->
+                                    <div class="workflow-toolbar">
+                                        <button class="btn-workflow-control" onclick="zoomIn()" title="Aumentar Zoom">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="btn-workflow-control" onclick="zoomOut()" title="Diminuir Zoom">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button class="btn-workflow-control" onclick="fitToScreen()" title="Ajustar à Tela">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                        <button class="btn-workflow-control" onclick="deleteSelected()" title="Deletar Selecionado">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Canvas com Grid -->
+                                    <div class="workflow-canvas" id="workflow-canvas">
+                                        <div class="canvas-stage" id="canvas-stage">
+                                            <!-- SVG para Conexões -->
+                                            <svg class="connections-layer" id="connections-svg">
+                                                <defs>
+                                                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                                        <polygon points="0 0, 10 3, 0 6" fill="#1f2746" />
+                                                    </marker>
+                                                </defs>
+                                            </svg>
+
+                                            <!-- Nodes serão adicionados aqui dinamicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Painel Lateral Direito (30%) -->
+                                <div class="workflow-sidebar">
+                                    <h3 class="sidebar-title">ELEMENTOS DO FLUXO DE TRABALHO</h3>
+
+                                    <!-- Categoria: REGRAS -->
+                                    <div class="sidebar-category">
+                                        <h4 class="category-title">REGRAS</h4>
+                                        
+                                        <div class="element-card" draggable="true" data-type="aguardar" data-category="regra">
+                                            <div class="element-icon element-icon-regra">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Aguardar</h5>
+                                                <p class="element-description">Aguarde um período de tempo ou condição antes de prosseguir.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="condicao" data-category="regra">
+                                            <div class="element-icon element-icon-regra">
+                                                <i class="fas fa-code-branch"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Condição</h5>
+                                                <p class="element-description">Verifique uma condição e siga caminhos diferentes.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="sair" data-category="regra">
+                                            <div class="element-icon element-icon-regra">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Sair</h5>
+                                                <p class="element-description">Sair da fase.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Categoria: AÇÕES -->
+                                    <div class="sidebar-category">
+                                        <h4 class="category-title">AÇÕES</h4>
+                                        
+                                        <div class="element-card" draggable="true" data-type="tarefa" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-tasks"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Tarefa</h5>
+                                                <p class="element-description">Crie uma nova tarefa para a equipe.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="mensagem" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-comment"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Enviar mensagem</h5>
+                                                <p class="element-description">Envie uma mensagem ao contato.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="email" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-envelope"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">E-mail de boas-vindas</h5>
+                                                <p class="element-description">Envie um e-mail de boas-vindas ao contato.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="questionario" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-clipboard-question"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Questionário</h5>
+                                                <p class="element-description">Envie um questionário ao contato.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="tipo-contato" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-user-tag"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Tipo de contato</h5>
+                                                <p class="element-description">Altere o tipo de contato.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2200,7 +2353,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251102v14"></script>
-    <script src="/static/js/app.js?v=20251102v14"></script>
+    <script src="/static/js/mockData.js?v=20251107v16"></script>
+    <script src="/static/js/app.js?v=20251107v16"></script>
 </body>
 </html>

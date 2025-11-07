@@ -1,0 +1,130 @@
+Prompt: Página Principal de Automação — Projeto VIVIO
+
+Objetivo:
+Criar a página principal do módulo Automação de Jornadas do sistema VIVIO, com foco visual no construtor de fluxos (canvas de automação) e no painel de elementos à direita.
+Não incluir a sidebar lateral esquerda (menus gerais do sistema).
+
+🧱 1. Estrutura geral da página
+
+Desenvolver a página em React + TailwindCSS.
+
+O layout deve ser dividido horizontalmente em duas áreas principais:
+
+Área Central (Canvas de Automação) — onde os blocos e conexões serão exibidos.
+
+Painel Lateral Direito (Elementos do Fluxo de Trabalho) — onde o usuário escolhe ações e regras para adicionar ao fluxo.
+
+O design deve utilizar a mesma paleta de cores e identidade visual já em uso no projeto VIVIO no Replit, respeitando tons, botões e tipografia existentes (não criar novas cores).
+
+Fundo da página em tom cinza muito claro (#f7f8fa ou equivalente à cor neutra do VIVIO), com separadores sutis entre áreas.
+
+⚙️ 2. Cabeçalho superior
+
+Exibir na parte superior da página:
+
+Breadcrumb: Jornadas / Bem-Vindos / Bem-Vindos
+
+Campo de busca: placeholder “Buscar no VIVIO CRM”
+
+Botão à direita: Salvar (usar o estilo de botão primário da marca VIVIO — cor principal já usada no Replit, com ícone de disquete).
+
+O cabeçalho deve ter fundo branco e sombra leve (ou o equivalente usado no tema padrão do VIVIO).
+
+🎨 3. Área Central — Canvas de Automação
+
+Essa é a área visual onde o fluxo será montado.
+
+Ocupa 70% da largura da tela (lado esquerdo).
+
+Deve conter:
+
+Um grid pontilhado leve ou linhas guias (seguindo estilo VIVIO).
+
+Cada bloco de automação será representado como um card estilizado:
+
+Ícone correspondente (no padrão de ícones já usado no projeto).
+
+Título (ex.: “Tem conta VIVIO?”)
+
+Descrição curta abaixo.
+
+Setas ou conectores de entrada e saída para ligação com outros blocos.
+
+As conexões entre blocos devem ser feitas com linhas curvas (ex.: biblioteca react-flow ou d3 futuramente).
+
+Blocos de exemplo (mockup inicial):
+
+Ponto de partida
+
+Tem conta VIVIO? (condição com caminhos “Sim” e “Não”)
+
+Notificação Push
+
+Avaliação Inicial
+
+PAR-Q
+
+O usuário preencheu PAR-Q?
+
+Aguardar 7 dias
+
+E-mail de boas-vindas
+
+Adicionar botões flutuantes no topo direito do canvas:
+
++ Zoom / – Zoom
+
+Centralizar fluxo
+
+Estilo dos botões coerente com o restante do sistema VIVIO.
+
+🧰 4. Painel Lateral Direito — Elementos do Fluxo de Trabalho
+
+Ocupa 30% da largura da tela.
+
+Fundo branco, sombra leve e rolagem vertical suave (scroll).
+
+Tipografia e cores de títulos seguindo o padrão já usado no VIVIO.
+
+Título: ELEMENTOS DO FLUXO DE TRABALHO
+
+Subtítulos e blocos clicáveis listados em categorias.
+
+🔵 Categoria: REGRAS
+
+Cada item deve ter:
+
+Ícone circular azul (usar o tom azul oficial do VIVIO).
+
+Nome em negrito.
+
+Descrição curta em cinza médio.
+
+Itens:
+
+Aguardar – “Aguarde um período de tempo ou condição antes de prosseguir.”
+
+Condição – “Verifique uma condição e siga caminhos diferentes.”
+
+Sair – “Sair da fase.”
+
+🟢 Categoria: AÇÕES
+
+Itens:
+4. Tarefa – “Crie uma nova tarefa para a equipe.”
+5. Enviar mensagem – “Envie uma mensagem ao contato.”
+6. E-mail de boas-vindas – “Envie um e-mail de boas-vindas ao contato.”
+7. Questionário – “Envie um questionário ao contato.”
+8. Tipo de contato – “Altere o tipo de contato.”
+
+Cada bloco deve ser arrastável para o canvas, preparado para integração com drag & drop em versões futuras.
+
+💾 5. Considerações finais
+
+Layout limpo, responsivo e minimalista.
+
+Usar a paleta de cores, tipografia e estilo já definidos no projeto VIVIO no Replit.
+
+Evitar criar novos componentes visuais fora do padrão atual do projeto.
+
+Preparar o layout para receber integração posterior com backend (dados e automações reais).
