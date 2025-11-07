@@ -967,7 +967,7 @@ if (document.readyState === 'loading') {
     window.addEventListener('scroll', updateSidebarPosition, { passive: true });
 }
 
-// Atualizar conteúdo da sidebar unificada baseado na página (estilo Technogym)
+// Atualizar conteúdo da sidebar unificada baseado na página (estilo VIVIO)
 function updateUnifiedSidebar(page) {
     const sidebar = document.getElementById('unified-sidebar');
     const sidebarContent = document.getElementById('unified-sidebar-content');
@@ -1037,7 +1037,7 @@ function updateUnifiedSidebar(page) {
     }
 }
 
-// Toggle da sidebar unificada (estilo Technogym - sidebar no meio)
+// Toggle da sidebar unificada (estilo VIVIO - sidebar no meio)
 function toggleUnifiedSidebar() {
     const sidebar = document.getElementById('unified-sidebar');
     const toggleIcon = document.getElementById('sidebar-toggle-icon-circle');
@@ -2874,7 +2874,7 @@ function switchAulasTab(tab) {
     }
 }
 
-// Renderizar Grade Technogym - Horários de 6h a 22h (hora em hora)
+// Renderizar Grade VIVIO - Horários de 6h a 22h (hora em hora)
 function renderCalendarioSemanalAulas() {
     // Obter aulas do mockData
     const aulas = window.mockData?.aulasSemanais || [];

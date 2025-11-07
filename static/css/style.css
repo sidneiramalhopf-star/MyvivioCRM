@@ -4148,7 +4148,7 @@ textarea.form-control {
     transform: translateY(-2px);
 }
 
-/* ========== GRADE TECHNOGYM - SLOTS 30MIN ========== */
+/* ========== GRADE VIVIO - SLOTS 30MIN ========== */
 
 .grade-technogym-container {
     background: white;
@@ -4257,7 +4257,7 @@ textarea.form-control {
     border-right: none;
 }
 
-/* Blocos de Aula Technogym Style */
+/* Blocos de Aula VIVIO Style */
 .bloco-aula-tech {
     background: linear-gradient(135deg, #e8f4f8, #d5e9f0);
     border-left: 4px solid var(--primary-color);

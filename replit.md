@@ -10,7 +10,7 @@ I prefer detailed explanations. Do not make changes to the folder `Z`. Do not ma
 The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend and a vanilla HTML, CSS, and JavaScript frontend, implemented as a Single Page Application (SPA).
 
 ### UI/UX Decisions
-- **Branding**: Professional aesthetic inspired by Technogym.
+- **Branding**: Professional aesthetic inspired by VIVIO wellness platforms.
 - **Color Palette**: Professional palette including Accent Blue (#62b1ca), Dark Blue (#1f2746), Medium Blue (#333f6e), White, and Black.
 - **Iconography**: Exclusively uses Font Awesome 6.4.0 icons.
 - **Layout**: Fixed left-hand navigation sidebar (6 main pages) and a dynamic, collapsible unified right sidebar that adapts content based on the active page.
