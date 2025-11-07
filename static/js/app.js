@@ -5070,6 +5070,9 @@ let workflowState = {
 let selectedNode = null;
 let draggedNode = null;
 let connectingFrom = null;
+let rubberBandLine = null;
+let snapTarget = null;
+let selectedEdge = null;
 let nodeIdCounter = 1;
 let edgeIdCounter = 1;
 let isPanning = false;
@@ -5307,6 +5310,17 @@ function renderNode(node) {
     nodeEl.dataset.nodeId = node.id;
     
     nodeEl.innerHTML = `
+        <div class="node-mini-toolbar">
+            <button class="toolbar-btn" onclick="editNode('${node.id}')" title="Editar">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="toolbar-btn" onclick="duplicateNode('${node.id}')" title="Duplicar">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="toolbar-btn btn-delete" onclick="deleteNodeById('${node.id}')" title="Deletar">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
         <div class="node-header">
             <div class="node-icon ${def.category === 'acao' ? 'node-icon-acao' : ''}">
                 <i class="fas ${def.icon}"></i>
@@ -5321,6 +5335,13 @@ function renderNode(node) {
     // Adicionar eventos
     nodeEl.addEventListener('mousedown', startNodeDrag);
     
+    // Click para selecionar
+    nodeEl.addEventListener('click', (e) => {
+        if (!e.target.closest('.node-port') && !e.target.closest('.toolbar-btn')) {
+            selectNode(node.id);
+        }
+    });
+    
     // Adicionar eventos às portas
     const ports = nodeEl.querySelectorAll('.node-port');
     ports.forEach(port => {
@@ -5328,6 +5349,85 @@ function renderNode(node) {
     });
     
     stage.appendChild(nodeEl);
+}
+
+// Selecionar node
+function selectNode(nodeId) {
+    // Remover seleção anterior
+    document.querySelectorAll('.workflow-node').forEach(n => {
+        n.classList.remove('selected');
+    });
+    
+    // Adicionar seleção
+    const nodeEl = document.getElementById(nodeId);
+    if (nodeEl) {
+        nodeEl.classList.add('selected');
+        selectedNode = nodeId;
+    }
+}
+
+// Editar node
+function editNode(nodeId) {
+    const node = workflowState.nodes.find(n => n.id === nodeId);
+    if (!node) return;
+    
+    // TODO: Implementar modal de edição
+    showToast('Modal de edição em desenvolvimento', 'info');
+}
+
+// Duplicar node
+function duplicateNode(nodeId) {
+    const node = workflowState.nodes.find(n => n.id === nodeId);
+    if (!node) return;
+    
+    // Deep clone para evitar referências compartilhadas
+    const newNode = {
+        id: `node-${nodeIdCounter++}`,
+        type: node.type,
+        label: node.label,
+        position: {
+            x: node.position.x + 50,
+            y: node.position.y + 50
+        },
+        ports: {
+            input: node.ports.input,
+            output: node.ports.output
+        },
+        config: JSON.parse(JSON.stringify(node.config)) // Deep clone do config
+    };
+    
+    workflowState.nodes.push(newNode);
+    renderNode(newNode);
+    showToast('Node duplicado!', 'success');
+}
+
+// Deletar node por ID
+function deleteNodeById(nodeId) {
+    // Confirmar
+    if (!confirm('Deseja deletar este elemento?')) return;
+    
+    // Remover node
+    const nodeIndex = workflowState.nodes.findIndex(n => n.id === nodeId);
+    if (nodeIndex > -1) {
+        workflowState.nodes.splice(nodeIndex, 1);
+    }
+    
+    // Remover edges conectadas
+    workflowState.edges = workflowState.edges.filter(edge => {
+        if (edge.source.nodeId === nodeId || edge.target.nodeId === nodeId) {
+            const pathEl = document.getElementById(edge.id);
+            if (pathEl) pathEl.remove();
+            return false;
+        }
+        return true;
+    });
+    
+    // Remover do DOM
+    const nodeEl = document.getElementById(nodeId);
+    if (nodeEl) nodeEl.remove();
+    
+    selectedNode = null;
+    showToast('Elemento deletado', 'success');
 }
 
 // Iniciar drag de node existente
@@ -5389,22 +5489,214 @@ function handlePortClick(e) {
     if (!connectingFrom) {
         // Iniciar conexão (só pode começar de output)
         if (portType === 'output') {
-            connectingFrom = { nodeId, port: portType };
+            connectingFrom = { nodeId, port: portType, element: port };
             port.classList.add('connecting');
+            
+            // Highlight portas disponíveis
+            highlightAvailablePorts(nodeId);
+            
+            // Iniciar rubber band
+            startRubberBand(port);
         }
     } else {
         // Finalizar conexão (só pode terminar em input)
         if (portType === 'input' && nodeId !== connectingFrom.nodeId) {
-            createEdge(connectingFrom.nodeId, nodeId);
+            // Validar conexão
+            if (validateConnection(connectingFrom.nodeId, nodeId)) {
+                createEdge(connectingFrom.nodeId, nodeId);
+                showToast('Conexão criada!', 'success');
+            } else {
+                showToast('Conexão inválida!', 'error');
+            }
         }
         
         // Limpar estado de conexão
-        const connectingPort = document.querySelector('.node-port.connecting');
-        if (connectingPort) {
-            connectingPort.classList.remove('connecting');
-        }
-        connectingFrom = null;
+        cleanupConnection();
     }
+}
+
+// Highlight de portas disponíveis
+function highlightAvailablePorts(excludeNodeId) {
+    const inputPorts = document.querySelectorAll('.node-port-input');
+    inputPorts.forEach(port => {
+        const nodeEl = port.closest('.workflow-node');
+        if (nodeEl.dataset.nodeId !== excludeNodeId) {
+            // Verificar se a porta já tem conexão
+            const hasConnection = workflowState.edges.some(edge => 
+                edge.target.nodeId === nodeEl.dataset.nodeId
+            );
+            
+            if (!hasConnection) {
+                port.classList.add('port-available');
+            }
+        }
+    });
+}
+
+// Iniciar rubber band
+function startRubberBand(sourcePort) {
+    const svg = document.getElementById('connections-svg');
+    rubberBandLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    rubberBandLine.classList.add('rubber-band-line');
+    svg.appendChild(rubberBandLine);
+    
+    // Atualizar rubber band com movimento do mouse
+    const canvas = document.getElementById('workflow-canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    function updateRubberBand(e) {
+        if (!rubberBandLine || !connectingFrom) return;
+        
+        const sourceRect = sourcePort.getBoundingClientRect();
+        const x1 = (sourceRect.left + sourceRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+        const y1 = (sourceRect.top + sourceRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+        const x2 = (e.clientX - canvasRect.left) / workflowState.viewport.zoom;
+        const y2 = (e.clientY - canvasRect.top) / workflowState.viewport.zoom;
+        
+        // Verificar snap to port
+        const nearPort = findNearestPort(e.clientX, e.clientY, 30);
+        if (nearPort) {
+            const portRect = nearPort.getBoundingClientRect();
+            const px = (portRect.left + portRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+            const py = (portRect.top + portRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+            
+            const dx = Math.abs(px - x1) * 0.5;
+            const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${px - dx} ${py}, ${px} ${py}`;
+            rubberBandLine.setAttribute('d', d);
+            
+            snapTarget = nearPort;
+            nearPort.style.transform = 'translateY(-50%) scale(1.5)';
+        } else {
+            snapTarget = null;
+            
+            const dx = Math.abs(x2 - x1) * 0.5;
+            const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+            rubberBandLine.setAttribute('d', d);
+            
+            // Resetar scales
+            document.querySelectorAll('.port-available').forEach(p => {
+                if (p.dataset.port === 'input') {
+                    p.style.transform = '';
+                }
+            });
+        }
+    }
+    
+    canvas.addEventListener('mousemove', updateRubberBand);
+    
+    // Limpar ao clicar fora
+    function cleanupOnClick(e) {
+        if (!e.target.closest('.node-port')) {
+            cleanupConnection();
+            canvas.removeEventListener('mousemove', updateRubberBand);
+            canvas.removeEventListener('click', cleanupOnClick);
+        }
+    }
+    
+    canvas.addEventListener('click', cleanupOnClick);
+}
+
+// Encontrar porta mais próxima
+function findNearestPort(mouseX, mouseY, threshold) {
+    const availablePorts = document.querySelectorAll('.node-port.port-available');
+    let nearest = null;
+    let minDist = threshold;
+    
+    availablePorts.forEach(port => {
+        const rect = port.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dist = Math.sqrt(Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2));
+        
+        if (dist < minDist) {
+            minDist = dist;
+            nearest = port;
+        }
+    });
+    
+    return nearest;
+}
+
+// Validar conexão
+function validateConnection(sourceNodeId, targetNodeId) {
+    // Prevenir auto-conexão
+    if (sourceNodeId === targetNodeId) {
+        return false;
+    }
+    
+    // Prevenir múltiplas entradas na mesma porta
+    const hasExistingConnection = workflowState.edges.some(edge => 
+        edge.target.nodeId === targetNodeId
+    );
+    
+    if (hasExistingConnection) {
+        return false;
+    }
+    
+    // Prevenir ciclos (DFS)
+    if (wouldCreateCycle(sourceNodeId, targetNodeId)) {
+        return false;
+    }
+    
+    return true;
+}
+
+// Detectar ciclos usando DFS
+function wouldCreateCycle(sourceNodeId, targetNodeId) {
+    const visited = new Set();
+    const tempEdges = [...workflowState.edges, {
+        source: { nodeId: sourceNodeId },
+        target: { nodeId: targetNodeId }
+    }];
+    
+    function dfs(nodeId, path) {
+        if (path.has(nodeId)) {
+            return true; // Ciclo detectado
+        }
+        
+        if (visited.has(nodeId)) {
+            return false;
+        }
+        
+        visited.add(nodeId);
+        path.add(nodeId);
+        
+        const outgoingEdges = tempEdges.filter(edge => edge.source.nodeId === nodeId);
+        for (const edge of outgoingEdges) {
+            if (dfs(edge.target.nodeId, new Set(path))) {
+                return true;
+            }
+        }
+        
+        path.delete(nodeId);
+        return false;
+    }
+    
+    return dfs(sourceNodeId, new Set());
+}
+
+// Limpar estado de conexão
+function cleanupConnection() {
+    // Remover highlight
+    document.querySelectorAll('.port-available').forEach(port => {
+        port.classList.remove('port-available');
+        port.style.transform = '';
+    });
+    
+    // Remover connecting class
+    const connectingPort = document.querySelector('.node-port.connecting');
+    if (connectingPort) {
+        connectingPort.classList.remove('connecting');
+    }
+    
+    // Remover rubber band
+    if (rubberBandLine) {
+        rubberBandLine.remove();
+        rubberBandLine = null;
+    }
+    
+    connectingFrom = null;
+    snapTarget = null;
 }
 
 // Criar edge
@@ -5431,10 +5723,45 @@ function renderEdge(edge) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.id = edge.id;
     path.setAttribute('marker-end', 'url(#arrowhead)');
+    path.dataset.edgeId = edge.id;
+    
+    // Eventos de hover
+    path.addEventListener('mouseenter', () => {
+        path.classList.add('edge-hover');
+    });
+    
+    path.addEventListener('mouseleave', () => {
+        path.classList.remove('edge-hover');
+    });
+    
+    // Click para deletar
+    path.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('Deseja deletar esta conexão?')) {
+            deleteEdge(edge.id);
+        }
+    });
     
     updateEdgePath(edge, path, sourceNode, targetNode);
     
     svg.appendChild(path);
+}
+
+// Deletar edge
+function deleteEdge(edgeId) {
+    // Remover do estado
+    const edgeIndex = workflowState.edges.findIndex(e => e.id === edgeId);
+    if (edgeIndex > -1) {
+        workflowState.edges.splice(edgeIndex, 1);
+    }
+    
+    // Remover do DOM
+    const pathEl = document.getElementById(edgeId);
+    if (pathEl) {
+        pathEl.remove();
+    }
+    
+    showToast('Conexão deletada', 'success');
 }
 
 // Atualizar path da edge

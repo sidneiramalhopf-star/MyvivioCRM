@@ -7607,9 +7607,9 @@ textarea.form-control {
     background: #f5f7fa;
 }
 
-/* Canvas Wrapper (70%) */
+/* Canvas Wrapper (80%) */
 .workflow-canvas-wrapper {
-    flex: 7;
+    flex: 8;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -7790,9 +7790,134 @@ textarea.form-control {
     50% { transform: translateY(-50%) scale(1.4); }
 }
 
-/* Sidebar (30%) */
+/* Port States Avançados */
+.node-port.port-available {
+    background: #3fa561;
+    border-color: #3fa561;
+    box-shadow: 0 0 0 4px rgba(63, 165, 97, 0.2);
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(63, 165, 97, 0.2); }
+    50% { box-shadow: 0 0 0 8px rgba(63, 165, 97, 0.4); }
+}
+
+.node-port.port-connected {
+    background: #3fa561;
+    border-color: #3fa561;
+}
+
+.node-port.port-disabled {
+    background: #d1d5db;
+    border-color: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Rubber Band Line */
+.rubber-band-line {
+    stroke: #62b1ca;
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+    animation: dash 0.5s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Edge Hover Effects */
+.connections-layer path.edge-hover {
+    stroke: #62b1ca;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 4px rgba(98, 177, 202, 0.5));
+}
+
+/* Mini Toolbar */
+.node-mini-toolbar {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.workflow-node.selected .node-mini-toolbar {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.toolbar-btn {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #1f2746;
+    transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+    background: #f5f7fa;
+    border-color: #1f2746;
+}
+
+.toolbar-btn.btn-delete:hover {
+    background: #fee;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* Edge Delete Button */
+.edge-delete-btn {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: #ef4444;
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.edge-delete-btn.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.edge-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Sidebar (20%) */
 .workflow-sidebar {
-    flex: 3;
+    flex: 2;
     background: white;
     overflow-y: auto;
     padding: 1.5rem;
