@@ -8064,19 +8064,20 @@ textarea.form-control {
 .workflow-sidebar {
     flex: 2;
     background: white;
-    overflow-y: hidden;
-    padding: 1.5rem;
+    overflow-y: auto;
+    padding: 1rem;
 }
 
 .sidebar-title {
-    font-size: 0.875rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: #1f2746;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
     border-bottom: 2px solid #e8e8e8;
+    line-height: 1.2;
 }
 
 .sidebar-category {
@@ -8084,23 +8085,23 @@ textarea.form-control {
 }
 
 .category-title {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     color: #7f8c8d;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 1rem;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.5rem;
 }
 
 /* Element Cards */
 .element-card {
     display: flex;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.5rem;
     background: white;
     border: 1px solid #e8e8e8;
-    border-radius: 8px;
-    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
     cursor: grab;
     transition: all 0.3s ease;
 }
@@ -8316,14 +8317,14 @@ textarea.form-control {
 }
 
 .element-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.125rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
 }
 
@@ -8340,16 +8341,16 @@ textarea.form-control {
 }
 
 .element-name {
-    font-size: 0.875rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: #1f2746;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.15rem 0;
 }
 
 .element-description {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: #7f8c8d;
-    line-height: 1.4;
+    line-height: 1.3;
     margin: 0;
 }
 
