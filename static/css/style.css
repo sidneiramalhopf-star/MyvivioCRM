@@ -322,17 +322,16 @@ button, .btn {
 }
 
 .logo-section {
-    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    padding: 0 0.5rem 0.5rem 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    min-height: 100px;
 }
 
 .logo-vivio {
     text-align: center;
-    padding: 0.5rem;
+    padding: 4px 0.5rem 0.5rem 0.5rem;
 }
 
 .logo-vivio-text {
@@ -579,7 +578,7 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .search-bar {
     flex: 1;
-    max-width: 500px;
+    max-width: 350px;
     position: relative;
 }
 
@@ -601,7 +600,7 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     border-radius: 4px;
     font-size: 0.75rem;
     transition: all 0.3s;
-    height: 28px;
+    height: 25px;
 }
 
 .search-bar input::placeholder {
@@ -7641,21 +7640,53 @@ textarea.form-control {
 .workflow-breadcrumb {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
     font-size: 0.875rem;
     color: #7f8c8d;
     padding: 0.5rem 1.5rem;
     background: white;
     border-bottom: 1px solid #e8e8e8;
-    margin-top: 15px;
+    margin-top: 10px;
+    height: 40px;
+}
+
+.workflow-breadcrumb-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.workflow-breadcrumb-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .workflow-container {
     display: flex;
-    height: calc(100vh - 95px);
+    height: calc(100vh - 100px);
     background: #f5f7fa;
-    margin-top: 20px;
+    margin-top: 10px;
     overflow: hidden;
+}
+
+.workflow-save-btn {
+    background: var(--btn-primary) !important;
+    color: white !important;
+    border: none;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem !important;
+    height: 30px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.workflow-save-btn:hover {
+    background: var(--btn-primary-hover) !important;
 }
 
 /* Canvas Wrapper (80%) */
