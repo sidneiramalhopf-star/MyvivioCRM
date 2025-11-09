@@ -5213,6 +5213,9 @@ function abrirWorkflowBuilder() {
     // Inicializar pan
     initCanvasPan();
     
+    // Inicializar zoom via mouse wheel
+    initCanvasMouseWheelZoom();
+    
     // Mostrar página de workflow
     switchAutomacaoView('workflow-builder');
 }
@@ -5902,6 +5905,34 @@ function initCanvasPan() {
             canvas.style.cursor = 'default';
         }
     });
+}
+
+// Inicializar zoom via scroll do mouse
+function initCanvasMouseWheelZoom() {
+    const canvas = document.getElementById('workflow-canvas');
+    
+    if (!canvas) return;
+    
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        
+        const zoomIntensity = 0.1;
+        const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+        const newZoom = Math.max(0.5, Math.min(2, workflowState.viewport.zoom + delta));
+        
+        // Calcular posição do mouse relativa ao canvas
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Ajustar offset para zoom centrado no mouse
+        const scale = newZoom / workflowState.viewport.zoom;
+        workflowState.viewport.offsetX = mouseX - (mouseX - workflowState.viewport.offsetX) * scale;
+        workflowState.viewport.offsetY = mouseY - (mouseY - workflowState.viewport.offsetY) * scale;
+        workflowState.viewport.zoom = newZoom;
+        
+        applyViewportTransform();
+    }, { passive: false });
 }
 
 // Aplicar transform de viewport
