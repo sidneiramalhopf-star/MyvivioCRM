@@ -8026,7 +8026,7 @@ textarea.form-control {
 .workflow-sidebar {
     flex: 2;
     background: white;
-    overflow-y: auto;
+    overflow-y: hidden;
     padding: 1.5rem;
 }
 

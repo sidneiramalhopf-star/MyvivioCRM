@@ -1324,8 +1324,8 @@
                         <!-- Página de Workflow Builder -->
                         <div id="automacao-workflow-builder" class="automacao-page" style="display: none;">
                             <!-- Header com Breadcrumb e Botão Salvar -->
-                            <div class="workflow-header">
-                                <div class="workflow-breadcrumb">
+                            <div class="workflow-breadcrumb">
+                                <div class="workflow-breadcrumb-left">
                                     <button class="btn-back-circle" onclick="voltarDeWorkflow()">
                                         <i class="fas fa-arrow-left"></i>
                                     </button>
@@ -1335,9 +1335,11 @@
                                     <i class="fas fa-chevron-right"></i>
                                     <span class="breadcrumb-text">Fluxo de Trabalho</span>
                                 </div>
-                                <button class="btn-primary" onclick="salvarWorkflow()">
-                                    <i class="fas fa-save"></i> SALVAR
-                                </button>
+                                <div class="workflow-breadcrumb-right">
+                                    <button class="workflow-save-btn" onclick="salvarWorkflow()">
+                                        <i class="fas fa-save"></i> SALVAR
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Container Principal (70% Canvas + 30% Sidebar) -->
