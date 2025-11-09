@@ -10,13 +10,14 @@ I prefer detailed explanations. Do not make changes to the folder `Z`. Do not ma
 The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend and a vanilla HTML, CSS, and JavaScript frontend, implemented as a Single Page Application (SPA).
 
 ### UI/UX Decisions
-- **Branding**: Professional aesthetic inspired by VIVIO wellness platforms.
-- **Color Palette**: Professional palette including Accent Blue (#62b1ca), Dark Blue (#1f2746), Medium Blue (#333f6e), White, and Black.
+- **Branding**: Professional aesthetic inspired by VIVIO wellness platforms. VIVIO logo displayed prominently above client logo in sidebar.
+- **Color Palette**: Professional palette including Accent Blue (#62b1ca), Dark Blue (#1f2746), Medium Blue (#333f6e), White, and Black. Top header uses Dark Blue (#1f2746) background matching sidebar.
 - **Iconography**: Exclusively uses Font Awesome 6.4.0 icons.
-- **Layout**: Fixed left-hand navigation sidebar (6 main pages) and a dynamic, collapsible unified right sidebar that adapts content based on the active page.
+- **Layout**: Fixed left-hand navigation sidebar (180px, compact spacing) and a dynamic, collapsible unified right sidebar that adapts content based on the active page. Top header reduced to 95px height.
 - **Dashboard**: Tab-based Home dashboard with "Day-to-day" and "Performance" views.
 - **Interactivity**: Dynamic calendar, quick event creation, interactive sidebar elements with animations, and toast notifications.
 - **Responsiveness**: Designed to be responsive, with the sidebar adapting to full width on mobile.
+- **Workflow Builder**: Maximized canvas area with bottom-left floating toolbar (zoom controls), mouse wheel zoom support, and clean professional interface following Zapier/Make/n8n design patterns.
 
 ### Technical Implementations
 - **Backend Framework**: FastAPI.

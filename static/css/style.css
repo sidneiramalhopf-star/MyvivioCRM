@@ -322,12 +322,12 @@ button, .btn {
 }
 
 .logo-section {
-    padding: 1rem 0.5rem 0.5rem 0.5rem;
+    padding: 1.5rem 0.5rem 0.75rem 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    min-height: 120px;
+    min-height: 155px;
 }
 
 .logo-vivio {
@@ -548,8 +548,8 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .top-header {
     background: var(--sidebar-bg);
-    padding: 0.5rem 2rem;
-    height: 60px;
+    padding: 1rem 2rem;
+    height: 95px;
     border-bottom: 2px solid var(--border-color);
     display: flex;
     justify-content: space-between;

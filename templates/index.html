@@ -1344,9 +1344,15 @@
                                 <div class="workflow-canvas-wrapper">
                                     <!-- Toolbar de Controles -->
                                     <div class="workflow-toolbar">
-                                        <span style="font-size: 0.75rem; color: #7f8c8d; padding: 0.25rem 0.5rem;">
-                                            Use a rolagem do mouse para zoom
-                                        </span>
+                                        <button class="btn-workflow-control" onclick="zoomIn()" title="Aumentar Zoom">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="btn-workflow-control" onclick="zoomOut()" title="Diminuir Zoom">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button class="btn-workflow-control" onclick="fitToScreen()" title="Ajustar à Tela">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
                                     </div>
 
                                     <!-- Canvas com Grid -->
@@ -2434,7 +2440,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251107v22"></script>
-    <script src="/static/js/app.js?v=20251107v22"></script>
+    <script src="/static/js/mockData.js?v=20251109v2"></script>
+    <script src="/static/js/app.js?v=20251109v2"></script>
 </body>
 </html>
