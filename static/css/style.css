@@ -322,12 +322,12 @@ button, .btn {
 }
 
 .logo-section {
-    padding: 1.5rem 0.5rem 0.75rem 0.5rem;
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-height: 155px;
+    gap: 0.5rem;
+    min-height: 100px;
 }
 
 .logo-vivio {
@@ -336,7 +336,7 @@ button, .btn {
 }
 
 .logo-vivio-text {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: white;
     letter-spacing: 2px;
@@ -344,21 +344,39 @@ button, .btn {
 
 .logo-placeholder {
     background: var(--accent-blue);
-    padding: 0.75rem 0.5rem;
+    padding: 0.5rem;
     border-radius: 8px;
     text-align: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+.logo-placeholder:hover {
+    background: #4ea0b5;
+}
+
+.logo-placeholder img {
+    max-width: 100%;
+    max-height: 50px;
+    object-fit: contain;
 }
 
 .logo-text {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: white;
+}
+
+.logo-upload-input {
+    display: none;
 }
 
 .main-nav {
     flex: 1;
     padding: 1rem 0;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .nav-item {
@@ -548,9 +566,9 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .top-header {
     background: var(--sidebar-bg);
-    padding: 1rem 2rem;
-    height: 95px;
-    border-bottom: 2px solid var(--border-color);
+    padding: 0.5rem 1.5rem;
+    height: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -567,21 +585,23 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 
 .search-bar i {
     position: absolute;
-    left: 1rem;
+    left: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
     color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 0.5rem 1rem 0.5rem 3rem;
+    padding: 0.35rem 0.75rem 0.35rem 2.5rem;
     border: 1px solid rgba(255,255,255,0.2);
     background: rgba(255,255,255,0.1);
     color: white;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
     transition: all 0.3s;
+    height: 28px;
 }
 
 .search-bar input::placeholder {
@@ -604,10 +624,10 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     position: relative;
     background: transparent;
     border: none;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: rgba(255,255,255,0.8);
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.25rem 0.4rem;
     transition: color 0.3s;
 }
 
@@ -7624,15 +7644,18 @@ textarea.form-control {
     gap: 0.75rem;
     font-size: 0.875rem;
     color: #7f8c8d;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1.5rem;
     background: white;
     border-bottom: 1px solid #e8e8e8;
+    margin-top: 15px;
 }
 
 .workflow-container {
     display: flex;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 95px);
     background: #f5f7fa;
+    margin-top: 20px;
+    overflow: hidden;
 }
 
 /* Canvas Wrapper (80%) */
@@ -7643,6 +7666,7 @@ textarea.form-control {
     position: relative;
     background: white;
     border-right: 1px solid #e8e8e8;
+    overflow: hidden;
 }
 
 .workflow-toolbar {

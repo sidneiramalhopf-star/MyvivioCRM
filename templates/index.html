@@ -74,8 +74,10 @@
                         <div class="logo-vivio">
                             <span class="logo-vivio-text">VIVIO</span>
                         </div>
-                        <div class="logo-placeholder">
-                            <span class="logo-text">Logo</span>
+                        <div class="logo-placeholder" onclick="document.getElementById('logo-upload').click()">
+                            <img id="company-logo-img" src="" alt="" style="display: none;">
+                            <span class="logo-text" id="logo-text">Logo</span>
+                            <input type="file" id="logo-upload" class="logo-upload-input" accept="image/*" onchange="handleLogoUpload(event)">
                         </div>
                     </div>
 

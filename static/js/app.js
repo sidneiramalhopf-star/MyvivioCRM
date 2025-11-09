@@ -6,6 +6,7 @@ let currentPage = 'home';
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
+    loadSavedLogo();
 });
 
 function setupEventListeners() {
@@ -863,6 +864,54 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
+}
+
+// Upload de logo da empresa
+function handleLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+        showToast('Por favor, selecione uma imagem válida', 'error');
+        return;
+    }
+    
+    // Validar tamanho (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('Imagem muito grande. Máximo 2MB', 'error');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const logoImg = document.getElementById('company-logo-img');
+        const logoText = document.getElementById('logo-text');
+        
+        logoImg.src = e.target.result;
+        logoImg.style.display = 'block';
+        logoText.style.display = 'none';
+        
+        // Salvar no localStorage
+        localStorage.setItem('company_logo', e.target.result);
+        showToast('Logo atualizada com sucesso!', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+// Carregar logo salva ao iniciar
+function loadSavedLogo() {
+    const savedLogo = localStorage.getItem('company_logo');
+    if (savedLogo) {
+        const logoImg = document.getElementById('company-logo-img');
+        const logoText = document.getElementById('logo-text');
+        
+        if (logoImg && logoText) {
+            logoImg.src = savedLogo;
+            logoImg.style.display = 'block';
+            logoText.style.display = 'none';
+        }
+    }
 }
 
 window.onclick = function(event) {
