@@ -6064,8 +6064,16 @@ function fitToScreen() {
 
 /* ===== NESTED SIDEBAR E BOTÕES + ===== */
 
-// Variável global para armazenar edge atual
-let currentEdgeForInsertion = null;
+// Estado centralizado para nested sidebar
+let sidebarContext = {
+    mode: null,  // 'card' | 'edge' | null
+    elementType: null,  // 'aguardar' | 'tarefa' | etc
+    pendingEdgeId: null,  // Edge para inserção
+    configData: {}  // Dados de configuração
+};
+
+// Último elemento inserido (para inserção rápida via edge +)
+let lastInsertedType = 'aguardar';
 
 // Renderizar botões + entre elementos
 function renderEdgeAddButtons() {
@@ -6095,20 +6103,109 @@ function renderEdgeAddButtons() {
         button.style.top = `${midY + 50}px`;  // +50 para centralizar no node (height ~100px)
         button.dataset.edgeId = edge.id;
         button.innerHTML = '<i class="fas fa-plus"></i>';
-        button.onclick = () => abrirNestedSidebar(edge.id);
+        button.onclick = () => inserirElementoDireto(edge.id);
         
         stage.appendChild(button);
     });
 }
 
-// Abrir nested sidebar para inserir elemento
-function abrirNestedSidebar(edgeId) {
-    currentEdgeForInsertion = edgeId;
+// Abrir nested sidebar a partir do card
+function abrirNestedSidebarCard(elementType) {
+    sidebarContext = {
+        mode: 'card',
+        elementType: elementType,
+        pendingEdgeId: null,
+        configData: {}
+    };
     
     const nestedSidebar = document.getElementById('nested-sidebar');
     if (nestedSidebar) {
         nestedSidebar.style.display = 'flex';
     }
+}
+
+// Inserir elemento diretamente via edge + (sem abrir sidebar)
+function inserirElementoDireto(edgeId) {
+    const edge = workflowState.edges.find(e => e.id === edgeId);
+    if (!edge) {
+        showToast('Erro: conexão não encontrada', 'error');
+        return;
+    }
+    
+    const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
+    const targetNode = workflowState.nodes.find(n => n.id === edge.target);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    // Usar último tipo inserido ou aguardar como padrão
+    const elementType = lastInsertedType || 'aguardar';
+    
+    // Definições de elementos
+    const elementDefinitions = {
+        'aguardar': { label: 'Aguardar', icon: 'clock', color: '#1f2746' },
+        'condicao': { label: 'Condição', icon: 'code-branch', color: '#1f2746' },
+        'sair': { label: 'Sair', icon: 'sign-out-alt', color: '#1f2746' },
+        'tarefa': { label: 'Tarefa', icon: 'tasks', color: '#123058' },
+        'mensagem': { label: 'Mensagem', icon: 'comment', color: '#123058' },
+        'email': { label: 'E-mail', icon: 'envelope', color: '#123058' },
+        'questionario': { label: 'Questionário', icon: 'clipboard-question', color: '#123058' },
+        'tipo-contato': { label: 'Tipo de Contato', icon: 'user-tag', color: '#123058' }
+    };
+    
+    const def = elementDefinitions[elementType] || elementDefinitions['aguardar'];
+    
+    // Calcular posição do novo node (midpoint entre source e target)
+    const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+    const midY = (sourceNode.position.y + targetNode.position.y) / 2;
+    
+    // Criar novo node
+    const newNode = {
+        id: `node-${nodeIdCounter++}`,
+        type: elementType,
+        label: def.label,
+        position: { x: midX, y: midY },
+        data: {}
+    };
+    
+    // Adicionar node ao state
+    workflowState.nodes.push(newNode);
+    renderNode(newNode);
+    
+    // Remover edge original
+    const edgeIndex = workflowState.edges.findIndex(e => e.id === edgeId);
+    if (edgeIndex > -1) {
+        workflowState.edges.splice(edgeIndex, 1);
+        const pathEl = document.getElementById(edgeId);
+        if (pathEl) pathEl.remove();
+    }
+    
+    // Criar duas novas edges: source → newNode e newNode → target
+    const edge1 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: edge.source,
+        target: newNode.id
+    };
+    
+    const edge2 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: newNode.id,
+        target: edge.target
+    };
+    
+    workflowState.edges.push(edge1, edge2);
+    renderEdge(edge1);
+    renderEdge(edge2);
+    
+    // Atualizar botões +
+    renderEdgeAddButtons();
+    
+    // Atualizar último tipo inserido
+    lastInsertedType = elementType;
+    
+    // Salvar workflow
+    salvarWorkflowState();
+    
+    showToast(`Elemento ${def.label} inserido!`, 'success');
 }
 
 // Fechar nested sidebar
@@ -6117,17 +6214,34 @@ function fecharNestedSidebar() {
     if (nestedSidebar) {
         nestedSidebar.style.display = 'none';
     }
-    currentEdgeForInsertion = null;
+    
+    // Resetar contexto
+    sidebarContext = {
+        mode: null,
+        elementType: null,
+        pendingEdgeId: null,
+        configData: {}
+    };
 }
 
-// Selecionar trigger e inserir node no meio
+// Selecionar trigger e inserir node no meio (LEGACY - mantido para compatibilidade)
 function selecionarTrigger(triggerId) {
-    if (!currentEdgeForInsertion) {
-        showToast('Erro: nenhuma conexão selecionada', 'error');
+    // Modo card: configurar elemento via sidebar
+    if (sidebarContext.mode === 'card') {
+        // Adicionar trigger à configuração
+        sidebarContext.configData.trigger = triggerId;
+        
+        // TODO: Implementar inserção via card quando tiver edge selecionada
+        showToast('Configuração salva! (Implementação em progresso)', 'info');
+        fecharNestedSidebar();
         return;
     }
     
-    const edge = workflowState.edges.find(e => e.id === currentEdgeForInsertion);
+    // Modo legacy (não deve ocorrer mais)
+    showToast('Erro: modo de inserção inválido', 'error');
+    return;
+    
+    const edge = null; // Removido: workflowState.edges.find(e => e.id === currentEdgeForInsertion);
     if (!edge) {
         showToast('Erro: conexão não encontrada. Tente novamente.', 'error');
         fecharNestedSidebar();
