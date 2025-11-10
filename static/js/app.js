@@ -6066,16 +6066,205 @@ function fitToScreen() {
 
 /* ===== NESTED SIDEBAR E BOTÕES + ===== */
 
-// Estado centralizado para nested sidebar
-let sidebarContext = {
-    mode: null,  // 'card' | 'edge' | null
-    elementType: null,  // 'aguardar' | 'tarefa' | etc
-    pendingEdgeId: null,  // Edge para inserção
-    configData: {}  // Dados de configuração
+// Estado de inserção por edge
+let edgeInsertionMode = false;
+let activeEdgeId = null;
+
+// Estado da nested sidebar
+let nestedSidebarState = {
+    elementType: null,
+    values: {},
+    validators: {}
 };
 
-// Último elemento inserido (para inserção rápida via edge +)
-let lastInsertedType = 'aguardar';
+// Config map declarativo para nested sidebars
+const ELEMENT_CONFIGS = {
+    'aguardar': {
+        title: 'Aguardar',
+        sections: [
+            {
+                label: 'Adicionar um evento a ser aguardado',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'search',
+                        placeholder: 'Buscar'
+                    },
+                    {
+                        type: 'list',
+                        items: [
+                            { id: 'aula-reservada', icon: 'calendar-check', label: 'Aula reservada' },
+                            { id: 'ausencia', icon: 'user-slash', label: 'Ausência' },
+                            { id: 'app-vivio', icon: 'mobile-alt', label: 'App VIVIO' },
+                            { id: 'conta-vivio', icon: 'user', label: 'Conta VIVIO' },
+                            { id: 'servico-realizado', icon: 'check-circle', label: 'Serviço realizado' },
+                            { id: 'sessoes', icon: 'dumbbell', label: 'Sessões' },
+                            { id: 'tarefa-fazer', icon: 'tasks', label: 'Tarefa a fazer' },
+                            { id: 'tarefa-concluida', icon: 'check-double', label: 'Tarefa concluída' },
+                            { id: 'tempo', icon: 'clock', label: 'Tempo' },
+                            { id: 'assinatura-ativa', icon: 'star', label: 'Assinatura ativa' },
+                            { id: 'assinatura-cancelada', icon: 'star-half-alt', label: 'Assinatura cancelada' },
+                            { id: 'meta-atingida', icon: 'trophy', label: 'Meta atingida' },
+                            { id: 'treino-completado', icon: 'running', label: 'Treino completado' },
+                            { id: 'avaliacao-fisica', icon: 'heartbeat', label: 'Avaliação física' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    'condicao': {
+        title: 'Condição',
+        sections: [
+            {
+                label: 'Adicionar uma condição',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'search',
+                        placeholder: 'Buscar'
+                    },
+                    {
+                        type: 'list',
+                        items: [
+                            { id: 'sessoes', icon: 'dumbbell', label: 'Sessões' },
+                            { id: 'tarefa-fazer', icon: 'tasks', label: 'Tarefa a fazer' },
+                            { id: 'tarefa-concluida', icon: 'check-double', label: 'Tarefa concluída' },
+                            { id: 'tempo-pertencimento', icon: 'clock', label: 'Tempo de pertencimento ao grupo' },
+                            { id: 'teste-checkup', icon: 'heartbeat', label: 'Teste Technogym Checkup' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    'sair': {
+        title: 'Sair',
+        sections: [
+            {
+                label: 'RESULTADO DA SAÍDA DA ETAPA',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'radio',
+                        name: 'exit-outcome',
+                        required: true,
+                        options: [
+                            { value: 'completed', label: 'Etapa concluída', default: true },
+                            { value: 'incomplete', label: 'Etapa não concluída' },
+                            { value: 'skipped', label: 'Etapa pulada' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    'tarefa': {
+        title: 'Tarefa',
+        sections: [
+            {
+                label: 'Configurar tarefa',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'text',
+                        name: 'task-title',
+                        placeholder: 'Título da tarefa',
+                        required: true
+                    },
+                    {
+                        type: 'textarea',
+                        name: 'task-description',
+                        placeholder: 'Descrição da tarefa'
+                    }
+                ]
+            }
+        ]
+    },
+    'mensagem': {
+        title: 'Enviar mensagem',
+        sections: [
+            {
+                label: 'Configurar mensagem',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'textarea',
+                        name: 'message-content',
+                        placeholder: 'Digite a mensagem',
+                        required: true
+                    }
+                ]
+            }
+        ]
+    },
+    'email': {
+        title: 'E-mail',
+        sections: [
+            {
+                label: 'Configurar e-mail',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'text',
+                        name: 'email-subject',
+                        placeholder: 'Assunto do e-mail',
+                        required: true
+                    },
+                    {
+                        type: 'textarea',
+                        name: 'email-body',
+                        placeholder: 'Corpo do e-mail',
+                        required: true
+                    }
+                ]
+            }
+        ]
+    },
+    'questionario': {
+        title: 'Questionário',
+        sections: [
+            {
+                label: 'Selecionar questionário',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'search',
+                        placeholder: 'Buscar questionário'
+                    },
+                    {
+                        type: 'list',
+                        items: [
+                            { id: 'satisfacao', icon: 'smile', label: 'Questionário de Satisfação' },
+                            { id: 'avaliacao', icon: 'clipboard-check', label: 'Avaliação de Progresso' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    'tipo-contato': {
+        title: 'Tipo de contato',
+        sections: [
+            {
+                label: 'Alterar tipo de contato',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'radio',
+                        name: 'contact-type',
+                        required: true,
+                        options: [
+                            { value: 'lead', label: 'Lead' },
+                            { value: 'cliente', label: 'Cliente' },
+                            { value: 'prospect', label: 'Prospect' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+};
 
 // Renderizar botões + entre elementos
 function renderEdgeAddButtons() {
@@ -6110,25 +6299,335 @@ function renderEdgeAddButtons() {
         button.style.top = `${midY + (NODE_HEIGHT / 2) - (BUTTON_SIZE / 2)}px`;
         button.dataset.edgeId = edge.id;
         button.innerHTML = '<i class="fas fa-plus"></i>';
-        button.onclick = () => inserirElementoDireto(edge.id);
+        button.onclick = () => ativarModoInsercao(edge.id);
         
         stage.appendChild(button);
     });
 }
 
+// Ativar modo de inserção ao clicar no + entre nodes
+function ativarModoInsercao(edgeId) {
+    edgeInsertionMode = true;
+    activeEdgeId = edgeId;
+    
+    // Mostrar todos os botões + dos cards
+    document.querySelectorAll('.element-card-add-btn').forEach(btn => {
+        btn.style.display = 'flex';
+    });
+    
+    showToast('Selecione um elemento para inserir', 'info');
+}
+
 // Abrir nested sidebar a partir do card
 function abrirNestedSidebarCard(elementType) {
-    sidebarContext = {
-        mode: 'card',
-        elementType: elementType,
-        pendingEdgeId: null,
-        configData: {}
-    };
+    if (!edgeInsertionMode || !activeEdgeId) {
+        showToast('Erro: nenhuma conexão selecionada', 'error');
+        return;
+    }
     
+    const config = ELEMENT_CONFIGS[elementType];
+    if (!config) {
+        showToast('Erro: elemento não encontrado', 'error');
+        return;
+    }
+    
+    // Atualizar título
+    const titleEl = document.getElementById('nested-element-name');
+    if (titleEl) {
+        titleEl.textContent = config.title;
+    }
+    
+    // Renderizar conteúdo específico do elemento
+    renderNestedSidebarContent(elementType, config);
+    
+    // Abrir nested sidebar
     const nestedSidebar = document.getElementById('nested-sidebar');
     if (nestedSidebar) {
         nestedSidebar.style.display = 'flex';
     }
+}
+
+// Renderizar conteúdo da nested sidebar
+function renderNestedSidebarContent(elementType, config) {
+    nestedSidebarState.elementType = elementType;
+    nestedSidebarState.values = {};
+    
+    const body = document.querySelector('.nested-sidebar-body');
+    if (!body) return;
+    
+    body.innerHTML = '';
+    
+    config.sections.forEach(section => {
+        const sectionEl = renderCollapsibleSection(section, elementType);
+        body.appendChild(sectionEl);
+    });
+    
+    // Adicionar botão de confirmar
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn btn-primary';
+    confirmBtn.textContent = 'Confirmar';
+    confirmBtn.style.cssText = 'margin: 1rem; width: calc(100% - 2rem);';
+    confirmBtn.onclick = () => confirmarNestedSidebar(elementType);
+    body.appendChild(confirmBtn);
+}
+
+// Renderizar seção colapsável
+function renderCollapsibleSection(section, elementType) {
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'nested-collapsible-section active';
+    
+    const header = document.createElement('button');
+    header.className = 'nested-collapsible-header';
+    header.onclick = function() { toggleNestedCollapsible(this); };
+    header.innerHTML = `
+        <i class="fas fa-plus"></i>
+        <span>${section.label}</span>
+        <i class="fas fa-chevron-down toggle-icon"></i>
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'nested-collapsible-content';
+    content.style.display = 'block';
+    
+    section.components.forEach(component => {
+        const compEl = renderComponent(component, elementType);
+        if (compEl) content.appendChild(compEl);
+    });
+    
+    sectionDiv.appendChild(header);
+    sectionDiv.appendChild(content);
+    
+    return sectionDiv;
+}
+
+// Renderizar componente
+function renderComponent(component, elementType) {
+    switch (component.type) {
+        case 'search':
+            return renderSearchBox(component);
+        case 'list':
+            return renderListComponent(component, elementType);
+        case 'radio':
+            return renderRadioGroup(component);
+        case 'text':
+            return renderTextInput(component);
+        case 'textarea':
+            return renderTextarea(component);
+        default:
+            return null;
+    }
+}
+
+// Renderizar search box
+function renderSearchBox(component) {
+    const div = document.createElement('div');
+    div.className = 'nested-search-box';
+    div.innerHTML = `
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="${component.placeholder}" oninput="filtrarNestedList(this)">
+    `;
+    return div;
+}
+
+// Renderizar lista
+function renderListComponent(component, elementType) {
+    const div = document.createElement('div');
+    div.className = 'nested-trigger-list';
+    div.dataset.filterable = 'true';
+    
+    component.items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'nested-trigger-item';
+        itemDiv.dataset.searchText = item.label.toLowerCase();
+        itemDiv.innerHTML = `
+            <i class="fas fa-${item.icon}"></i>
+            ${item.label}
+        `;
+        itemDiv.onclick = () => selecionarItemNested(elementType, item.id, item.label);
+        div.appendChild(itemDiv);
+    });
+    
+    return div;
+}
+
+// Renderizar radio group
+function renderRadioGroup(component) {
+    const div = document.createElement('div');
+    div.className = 'nested-radio-group';
+    div.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem;';
+    
+    component.options.forEach(option => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; cursor: pointer;';
+        
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = component.name;
+        input.value = option.value;
+        if (option.default) input.checked = true;
+        input.onchange = () => {
+            nestedSidebarState.values[component.name] = option.value;
+        };
+        
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(option.label));
+        div.appendChild(label);
+    });
+    
+    return div;
+}
+
+// Renderizar text input
+function renderTextInput(component) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.style.padding = '0.5rem';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = component.name;
+    input.placeholder = component.placeholder || '';
+    input.required = component.required || false;
+    input.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid #e8e8e8; border-radius: 4px;';
+    input.oninput = () => {
+        nestedSidebarState.values[component.name] = input.value;
+    };
+    
+    div.appendChild(input);
+    return div;
+}
+
+// Renderizar textarea
+function renderTextarea(component) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.style.padding = '0.5rem';
+    
+    const textarea = document.createElement('textarea');
+    textarea.name = component.name;
+    textarea.placeholder = component.placeholder || '';
+    textarea.required = component.required || false;
+    textarea.rows = 4;
+    textarea.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid #e8e8e8; border-radius: 4px; resize: vertical;';
+    textarea.oninput = () => {
+        nestedSidebarState.values[component.name] = textarea.value;
+    };
+    
+    div.appendChild(textarea);
+    return div;
+}
+
+// Filtrar lista nested
+function filtrarNestedList(input) {
+    const searchText = input.value.toLowerCase();
+    const list = input.closest('.nested-collapsible-content').querySelector('[data-filterable="true"]');
+    if (!list) return;
+    
+    const items = list.querySelectorAll('.nested-trigger-item');
+    items.forEach(item => {
+        const itemText = item.dataset.searchText || item.textContent.toLowerCase();
+        item.style.display = itemText.includes(searchText) ? 'flex' : 'none';
+    });
+}
+
+// Selecionar item da nested list
+function selecionarItemNested(elementType, itemId, itemLabel) {
+    nestedSidebarState.values.selectedItem = { id: itemId, label: itemLabel };
+    confirmarNestedSidebar(elementType);
+}
+
+// Definições de elementos (labels e ícones)
+const ELEMENT_DEFINITIONS = {
+    'aguardar': { label: 'Aguardar', icon: 'clock', color: '#1f2746' },
+    'condicao': { label: 'Condição', icon: 'code-branch', color: '#1f2746' },
+    'sair': { label: 'Sair', icon: 'sign-out-alt', color: '#1f2746' },
+    'tarefa': { label: 'Tarefa', icon: 'tasks', color: '#123058' },
+    'mensagem': { label: 'Mensagem', icon: 'comment', color: '#123058' },
+    'email': { label: 'E-mail', icon: 'envelope', color: '#123058' },
+    'questionario': { label: 'Questionário', icon: 'clipboard-question', color: '#123058' },
+    'tipo-contato': { label: 'Tipo de Contato', icon: 'user-tag', color: '#123058' }
+};
+
+// Confirmar nested sidebar e inserir elemento
+function confirmarNestedSidebar(elementType) {
+    if (!activeEdgeId) {
+        showToast('Erro: nenhuma conexão selecionada', 'error');
+        return;
+    }
+    
+    // Inserir elemento no workflow
+    inserirElementoComConfig(elementType, nestedSidebarState.values);
+    
+    // Fechar sidebar e resetar estado
+    fecharNestedSidebar();
+}
+
+// Inserir elemento com configuração
+function inserirElementoComConfig(elementType, configValues) {
+    const edge = workflowState.edges.find(e => e.id === activeEdgeId);
+    if (!edge) {
+        showToast('Erro: conexão não encontrada', 'error');
+        return;
+    }
+    
+    const sourceNode = workflowState.nodes.find(n => n.id === edge.source.nodeId);
+    const targetNode = workflowState.nodes.find(n => n.id === edge.target.nodeId);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    const def = ELEMENT_DEFINITIONS[elementType] || ELEMENT_DEFINITIONS['aguardar'];
+    
+    // Calcular posição do novo node (midpoint entre source e target)
+    const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+    const midY = (sourceNode.position.y + targetNode.position.y) / 2;
+    
+    // Criar novo node com configuração
+    const newNode = {
+        id: `node-${nodeIdCounter++}`,
+        type: elementType,
+        label: def.label,
+        position: { x: midX, y: midY },
+        data: configValues
+    };
+    
+    // Adicionar node ao state
+    workflowState.nodes.push(newNode);
+    renderNode(newNode);
+    
+    // Remover edge original
+    const edgeIndex = workflowState.edges.findIndex(e => e.id === activeEdgeId);
+    if (edgeIndex > -1) {
+        workflowState.edges.splice(edgeIndex, 1);
+        const pathEl = document.getElementById(activeEdgeId);
+        if (pathEl) pathEl.remove();
+    }
+    
+    // Criar duas novas edges: source → newNode e newNode → target
+    const edge1 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: { nodeId: edge.source.nodeId, port: 'output' },
+        target: { nodeId: newNode.id, port: 'input' },
+        type: 'bezier'
+    };
+    
+    const edge2 = {
+        id: `edge-${edgeIdCounter++}`,
+        source: { nodeId: newNode.id, port: 'output' },
+        target: { nodeId: edge.target.nodeId, port: 'input' },
+        type: 'bezier'
+    };
+    
+    workflowState.edges.push(edge1, edge2);
+    renderEdge(edge1);
+    renderEdge(edge2);
+    
+    // Atualizar botões +
+    renderEdgeAddButtons();
+    
+    // Salvar workflow
+    salvarWorkflowState();
+    
+    showToast(`Elemento ${def.label} inserido!`, 'success');
 }
 
 // Inserir elemento diretamente via edge + (sem abrir sidebar)
@@ -6224,13 +6723,14 @@ function fecharNestedSidebar() {
         nestedSidebar.style.display = 'none';
     }
     
-    // Resetar contexto
-    sidebarContext = {
-        mode: null,
-        elementType: null,
-        pendingEdgeId: null,
-        configData: {}
-    };
+    // Resetar estado de inserção
+    edgeInsertionMode = false;
+    activeEdgeId = null;
+    
+    // Esconder todos os botões + dos cards
+    document.querySelectorAll('.element-card-add-btn').forEach(btn => {
+        btn.style.display = 'none';
+    });
 }
 
 // Selecionar trigger e inserir node no meio (LEGACY - mantido para compatibilidade)
