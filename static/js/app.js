@@ -6092,15 +6092,20 @@ function renderEdgeAddButtons() {
         
         if (!sourceNode || !targetNode) return;
         
-        // Calcular midpoint da edge
+        // Constantes de dimensões
+        const NODE_WIDTH = 200;
+        const NODE_HEIGHT = 100;
+        const BUTTON_SIZE = 32;
+        
+        // Calcular midpoint perfeito entre os nodes
         const midX = (sourceNode.position.x + targetNode.position.x) / 2;
         const midY = (sourceNode.position.y + targetNode.position.y) / 2;
         
-        // Criar botão +
+        // Criar botão + centralizado
         const button = document.createElement('div');
         button.className = 'edge-add-button';
-        button.style.left = `${midX + 100}px`; // +100 para centralizar no node (width ~200px)
-        button.style.top = `${midY + 50}px`;  // +50 para centralizar no node (height ~100px)
+        button.style.left = `${midX + (NODE_WIDTH / 2) - (BUTTON_SIZE / 2)}px`;
+        button.style.top = `${midY + (NODE_HEIGHT / 2) - (BUTTON_SIZE / 2)}px`;
         button.dataset.edgeId = edge.id;
         button.innerHTML = '<i class="fas fa-plus"></i>';
         button.onclick = () => inserirElementoDireto(edge.id);
