@@ -7804,8 +7804,9 @@ textarea.form-control {
 
 .connections-layer path {
     fill: none;
-    stroke: #1f2746;
+    stroke: #d0d0d0;
     stroke-width: 2;
+    stroke-dasharray: 5, 5;
     pointer-events: stroke;
     cursor: pointer;
 }
