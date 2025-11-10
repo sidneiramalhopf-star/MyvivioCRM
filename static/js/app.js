@@ -5319,8 +5319,9 @@ function initEmptyWorkflow(journeyId, name) {
     // Criar edge conectando START -> END
     const edge = {
         id: 'edge-0',
-        source: 'node-start',
-        target: 'node-end'
+        source: { nodeId: 'node-start', port: 'output' },
+        target: { nodeId: 'node-end', port: 'input' },
+        type: 'bezier'
     };
     
     workflowState = {
@@ -6088,8 +6089,8 @@ function renderEdgeAddButtons() {
     
     // Adicionar botão + para cada edge existente
     workflowState.edges.forEach(edge => {
-        const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
-        const targetNode = workflowState.nodes.find(n => n.id === edge.target);
+        const sourceNode = workflowState.nodes.find(n => n.id === edge.source.nodeId);
+        const targetNode = workflowState.nodes.find(n => n.id === edge.target.nodeId);
         
         if (!sourceNode || !targetNode) return;
         
@@ -6138,8 +6139,8 @@ function inserirElementoDireto(edgeId) {
         return;
     }
     
-    const sourceNode = workflowState.nodes.find(n => n.id === edge.source);
-    const targetNode = workflowState.nodes.find(n => n.id === edge.target);
+    const sourceNode = workflowState.nodes.find(n => n.id === edge.source.nodeId);
+    const targetNode = workflowState.nodes.find(n => n.id === edge.target.nodeId);
     
     if (!sourceNode || !targetNode) return;
     
@@ -6188,14 +6189,16 @@ function inserirElementoDireto(edgeId) {
     // Criar duas novas edges: source → newNode e newNode → target
     const edge1 = {
         id: `edge-${edgeIdCounter++}`,
-        source: edge.source,
-        target: newNode.id
+        source: { nodeId: edge.source.nodeId, port: 'output' },
+        target: { nodeId: newNode.id, port: 'input' },
+        type: 'bezier'
     };
     
     const edge2 = {
         id: `edge-${edgeIdCounter++}`,
-        source: newNode.id,
-        target: edge.target
+        source: { nodeId: newNode.id, port: 'output' },
+        target: { nodeId: edge.target.nodeId, port: 'input' },
+        type: 'bezier'
     };
     
     workflowState.edges.push(edge1, edge2);
@@ -6309,14 +6312,16 @@ function selecionarTrigger(triggerId) {
     // Criar duas novas edges: source → newNode e newNode → target
     const edge1 = {
         id: `edge-${edgeIdCounter++}`,
-        source: edge.source,
-        target: newNode.id
+        source: { nodeId: edge.source.nodeId, port: 'output' },
+        target: { nodeId: newNode.id, port: 'input' },
+        type: 'bezier'
     };
     
     const edge2 = {
         id: `edge-${edgeIdCounter++}`,
-        source: newNode.id,
-        target: edge.target
+        source: { nodeId: newNode.id, port: 'output' },
+        target: { nodeId: edge.target.nodeId, port: 'input' },
+        type: 'bezier'
     };
     
     workflowState.edges.push(edge1, edge2);
