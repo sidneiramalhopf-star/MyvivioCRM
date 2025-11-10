@@ -6587,6 +6587,7 @@ function inserirElementoComConfig(elementType, configValues) {
         type: elementType,
         label: def.label,
         position: { x: midX, y: midY },
+        ports: { input: true, output: true },
         data: configValues
     };
     
@@ -6624,8 +6625,11 @@ function inserirElementoComConfig(elementType, configValues) {
     // Atualizar botões +
     renderEdgeAddButtons();
     
-    // Salvar workflow
-    salvarWorkflowState();
+    // Salvar workflow no localStorage
+    if (workflowState.journeyId) {
+        const workflowData = JSON.stringify(workflowState);
+        localStorage.setItem(`workflow_${workflowState.journeyId}`, workflowData);
+    }
     
     showToast(`Elemento ${def.label} inserido!`, 'success');
 }
