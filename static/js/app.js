@@ -5931,9 +5931,10 @@ function updateEdgePath(edge, path, sourceNode, targetNode) {
     const x2 = (targetRect.left + targetRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
     const y2 = (targetRect.top + targetRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
     
-    const dx = Math.abs(x2 - x1) * 0.5;
-    
-    const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+    // Linhas verticais retas (estilo Zapier/Make)
+    // Se nodes estão alinhados verticalmente (mesma coluna), usar linha reta
+    // Caso contrário, usar linha com segmentos verticais e horizontais
+    const d = `M ${x1} ${y1} L ${x2} ${y2}`;
     path.setAttribute('d', d);
 }
 
