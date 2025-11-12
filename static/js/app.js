@@ -6127,11 +6127,19 @@ const ELEMENT_CONFIGS = {
                     {
                         type: 'list',
                         items: [
-                            { id: 'sessoes', icon: 'dumbbell', label: 'Sessões' },
+                            { id: 'app-vivio', icon: 'mobile-alt', label: 'App VIVIO' },
+                            { id: 'aula-reservada', icon: 'calendar-check', label: 'Aula reservada' },
+                            { id: 'ausencia', icon: 'user-slash', label: 'Ausência' },
+                            { id: 'conta-vivio', icon: 'user', label: 'Conta VIVIO' },
+                            { id: 'data-afiliacao', icon: 'calendar-alt', label: 'Data da afiliação' },
+                            { id: 'grupo', icon: 'users', label: 'Grupo' },
+                            { id: 'questionario-preenchido', icon: 'clipboard-check', label: 'Questionário Preenchido' },
+                            { id: 'resultado-questionario', icon: 'poll', label: 'Resultado do Questionário' },
+                            { id: 'servico-realizado', icon: 'check-circle', label: 'Serviço realizado' },
+                            { id: 'tempo', icon: 'clock', label: 'Tempo' },
                             { id: 'tarefa-fazer', icon: 'tasks', label: 'Tarefa a fazer' },
                             { id: 'tarefa-concluida', icon: 'check-double', label: 'Tarefa concluída' },
-                            { id: 'tempo-pertencimento', icon: 'clock', label: 'Tempo de pertencimento ao grupo' },
-                            { id: 'teste-checkup', icon: 'heartbeat', label: 'Teste Technogym Checkup' }
+                            { id: 'sessoes', icon: 'dumbbell', label: 'Sessões' }
                         ]
                     }
                 ]
