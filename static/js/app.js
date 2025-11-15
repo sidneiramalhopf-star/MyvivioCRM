@@ -6647,7 +6647,10 @@ function ativarModoInsercao(edgeId) {
 
 // Abrir nested sidebar a partir do card
 function abrirNestedSidebarCard(elementType) {
-    if (!edgeInsertionMode || !activeEdgeId) {
+    // Verificar se há edge selecionada (modo antigo) ou edge de inserção (modo novo)
+    const edgeId = window.currentInsertEdgeId || activeEdgeId;
+    
+    if (!edgeId) {
         showToast('Erro: nenhuma conexão selecionada', 'error');
         return;
     }
@@ -7184,6 +7187,7 @@ function fecharNestedSidebar() {
     // Resetar estado de inserção
     edgeInsertionMode = false;
     activeEdgeId = null;
+    window.currentInsertEdgeId = null;  // Limpar também o novo modo
     
     // Esconder todos os botões + dos cards
     document.querySelectorAll('.element-card-add-btn').forEach(btn => {
