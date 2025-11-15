@@ -6598,18 +6598,27 @@ const ELEMENT_CONFIGS = {
 
 // Abrir nested sidebar a partir do card
 function abrirNestedSidebarCard(elementType) {
-    // Verificar se há edge selecionada (modo antigo) ou edge de inserção (modo novo)
-    const edgeId = window.currentInsertEdgeId || activeEdgeId;
-    
-    if (!edgeId) {
-        showToast('Erro: nenhuma conexão selecionada', 'error');
-        return;
-    }
+    // Esta função pode ser chamada de duas formas:
+    // 1. De elementos da sidebar (sem edge) → modo 'card'
+    // 2. De botões + nas edges (com edge) → mantém modo 'edge'
     
     const config = ELEMENT_CONFIGS[elementType];
     if (!config) {
         showToast('Erro: elemento não encontrado', 'error');
         return;
+    }
+    
+    // Determinar modo baseado na presença de edge selecionada
+    const hasEdge = window.currentInsertEdgeId || activeEdgeId;
+    
+    if (!hasEdge) {
+        // Modo card: clicou em elemento da sidebar (sem edge)
+        sidebarContext.mode = 'card';
+        sidebarContext.configData = { elementType: elementType };
+    } else {
+        // Modo edge: clicou em botão + de uma edge
+        sidebarContext.mode = 'edge';
+        sidebarContext.configData = { elementType: elementType, edgeId: hasEdge };
     }
     
     // Atualizar título
@@ -6950,7 +6959,14 @@ const ELEMENT_DEFINITIONS = {
 
 // Confirmar nested sidebar e inserir elemento
 function confirmarNestedSidebar(elementType) {
-    // Verificar se estamos inserindo via botão + da edge ou via modo antigo
+    // Verificar modo de inserção
+    if (sidebarContext.mode === 'card') {
+        // Modo card: adicionar elemento via sidebar (respeitando espaçamento)
+        adicionarElementoViaSidebar(elementType, nestedSidebarState.values);
+        return;
+    }
+    
+    // Modo edge: inserção via botão + da conexão
     const edgeId = window.currentInsertEdgeId || activeEdgeId;
     
     if (!edgeId) {
@@ -7135,6 +7151,123 @@ function fecharNestedSidebar() {
     window.currentInsertEdgeId = null;  // Limpar também o novo modo
     
     // Esconder todos os botões + dos cards
+    document.querySelectorAll('.element-card-add-btn').forEach(btn => {
+        btn.style.display = 'none';
+    });
+}
+
+// Voltar para sidebar de elementos do fluxo de trabalho
+function voltarParaElementosSidebar() {
+    const nestedSidebar = document.getElementById('nested-sidebar');
+    if (nestedSidebar) {
+        nestedSidebar.style.display = 'none';
+    }
+    
+    // Resetar estado de inserção
+    edgeInsertionMode = false;
+    activeEdgeId = null;
+    window.currentInsertEdgeId = null;
+    
+    // Esconder todos os botões + dos cards
+    document.querySelectorAll('.element-card-add-btn').forEach(btn => {
+        btn.style.display = 'none';
+    });
+    
+    // A sidebar principal de elementos já está visível, apenas fechar a nested
+    showToast('Voltou para elementos do fluxo', 'info');
+}
+
+// Calcular espaçamento entre nodes START e END
+function calculateNodeSpacing() {
+    const startNode = workflowState.nodes.find(n => n.id === 'node-start');
+    const endNode = workflowState.nodes.find(n => n.id === 'node-end');
+    
+    if (!startNode || !endNode) {
+        // Retornar espaçamento padrão se não encontrar os nodes
+        return 300;
+    }
+    
+    return endNode.position.y - startNode.position.y;
+}
+
+// Adicionar elemento no canvas via sidebar (respeitando espaçamento)
+function adicionarElementoViaSidebar(elementType, triggerConfig) {
+    const startNode = workflowState.nodes.find(n => n.id === 'node-start');
+    const endNode = workflowState.nodes.find(n => n.id === 'node-end');
+    
+    if (!startNode || !endNode) {
+        showToast('Erro: nodes START/END não encontrados', 'error');
+        return;
+    }
+    
+    // Encontrar edge entre START e último node antes do END
+    const edgeToEnd = workflowState.edges.find(e => e.target.nodeId === 'node-end');
+    
+    if (!edgeToEnd) {
+        showToast('Erro: conexão não encontrada', 'error');
+        return;
+    }
+    
+    // Calcular posição do novo node (entre o último node e END)
+    const sourceNodeId = edgeToEnd.source.nodeId;
+    const sourceNode = workflowState.nodes.find(n => n.id === sourceNodeId);
+    
+    if (!sourceNode) {
+        showToast('Erro: node source não encontrado', 'error');
+        return;
+    }
+    
+    // Calcular posição no meio entre source e END
+    const newX = (sourceNode.position.x + endNode.position.x) / 2;
+    const newY = (sourceNode.position.y + endNode.position.y) / 2;
+    
+    // Criar novo node
+    const def = nodeDefinitions[elementType] || { label: elementType, icon: 'fa-circle', category: 'acao' };
+    const newNode = {
+        id: `node-${nodeIdCounter++}`,
+        type: elementType,
+        label: def.label,
+        position: { x: newX, y: newY },
+        ports: { input: true, output: true },
+        config: triggerConfig || {}
+    };
+    
+    // Adicionar ao estado
+    workflowState.nodes.push(newNode);
+    renderNode(newNode);
+    
+    // Deletar edge antiga (source -> END)
+    deleteEdge(edgeToEnd.id);
+    
+    // Criar novas edges: source -> novo -> END
+    createEdge(sourceNodeId, newNode.id);
+    createEdge(newNode.id, 'node-end');
+    
+    // Salvar workflow
+    salvarWorkflow();
+    
+    // Fechar sidebars
+    fecharTodasSidebars();
+    
+    showToast(`Elemento "${def.label}" adicionado ao fluxo!`, 'success');
+}
+
+// Fechar todas as sidebars
+function fecharTodasSidebars() {
+    // Fechar nested sidebar
+    const nestedSidebar = document.getElementById('nested-sidebar');
+    if (nestedSidebar) {
+        nestedSidebar.style.display = 'none';
+    }
+    
+    // Resetar estados
+    edgeInsertionMode = false;
+    activeEdgeId = null;
+    window.currentInsertEdgeId = null;
+    sidebarContext.mode = null;
+    sidebarContext.configData = {};
+    
+    // Esconder botões + dos cards
     document.querySelectorAll('.element-card-add-btn').forEach(btn => {
         btn.style.display = 'none';
     });
