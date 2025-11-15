@@ -218,6 +218,48 @@ class Exercicio(Base):
     criado_por = relationship("Usuario")
 
 # ============================================================
+# Modelos - Sistema de Questionários
+# ============================================================
+
+class Questionario(Base):
+    __tablename__ = "questionarios"
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    descricao = Column(Text, nullable=True)
+    status = Column(String, default="rascunho")  # rascunho, publicado, arquivado
+    unidade_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
+    criado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    data_publicacao = Column(DateTime, nullable=True)
+    configuracoes = Column(Text, nullable=True)  # JSON: {permitir_multiplas_respostas, exibir_progresso, etc}
+    unidade = relationship("Unidade")
+    criado_por = relationship("Usuario")
+    perguntas = relationship("Pergunta", back_populates="questionario", cascade="all, delete-orphan", order_by="Pergunta.ordem")
+
+class Pergunta(Base):
+    __tablename__ = "perguntas"
+    id = Column(Integer, primary_key=True, index=True)
+    questionario_id = Column(Integer, ForeignKey("questionarios.id"), nullable=False)
+    tipo = Column(String, nullable=False)  # texto_curto, texto_longo, multipla_escolha, selecao_multipla, likert, data, numero
+    titulo = Column(String, nullable=False)
+    descricao = Column(Text, nullable=True)
+    obrigatoria = Column(Boolean, default=False)
+    ordem = Column(Integer, nullable=False)
+    configuracoes = Column(Text, nullable=True)  # JSON: validações, placeholder, min/max, etc
+    questionario = relationship("Questionario", back_populates="perguntas")
+    opcoes = relationship("OpcaoPergunta", back_populates="pergunta", cascade="all, delete-orphan", order_by="OpcaoPergunta.ordem")
+
+class OpcaoPergunta(Base):
+    __tablename__ = "opcoes_perguntas"
+    id = Column(Integer, primary_key=True, index=True)
+    pergunta_id = Column(Integer, ForeignKey("perguntas.id"), nullable=False)
+    texto = Column(String, nullable=False)
+    ordem = Column(Integer, nullable=False)
+    valor = Column(String, nullable=True)  # Valor da opção para scoring
+    pergunta = relationship("Pergunta", back_populates="opcoes")
+
+# ============================================================
 # Inicializar Banco de Dados
 # ============================================================
 
@@ -1698,3 +1740,349 @@ async def upload_video_exercicio(
     # Retornar URL relativa
     relative_url = f"/static/uploads/exercicios/videos/{unique_filename}"
     return {"video_url": relative_url, "mensagem": "Vídeo enviado com sucesso"}
+
+# ============================================================
+# Endpoints de Questionários
+# ============================================================
+
+import json
+
+class OpcaoPerguntaCreate(BaseModel):
+    texto: str
+    ordem: int
+    valor: Optional[str] = None
+
+class PerguntaCreate(BaseModel):
+    tipo: str
+    titulo: str
+    descricao: Optional[str] = None
+    obrigatoria: bool = False
+    ordem: int
+    configuracoes: Optional[dict] = None
+    opcoes: Optional[List[OpcaoPerguntaCreate]] = []
+
+class QuestionarioCreate(BaseModel):
+    titulo: str
+    descricao: Optional[str] = None
+    configuracoes: Optional[dict] = None
+
+class QuestionarioUpdate(BaseModel):
+    titulo: Optional[str] = None
+    descricao: Optional[str] = None
+    status: Optional[str] = None
+    configuracoes: Optional[dict] = None
+
+@app.get("/questionarios")
+def listar_questionarios(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionarios = db.query(Questionario).filter(
+        Questionario.criado_por_id == usuario.id
+    ).order_by(Questionario.data_criacao.desc()).all()
+    
+    resultado = []
+    for q in questionarios:
+        resultado.append({
+            "id": q.id,
+            "titulo": q.titulo,
+            "descricao": q.descricao,
+            "status": q.status,
+            "data_criacao": q.data_criacao.isoformat(),
+            "data_atualizacao": q.data_atualizacao.isoformat(),
+            "data_publicacao": q.data_publicacao.isoformat() if q.data_publicacao else None,
+            "total_perguntas": len(q.perguntas)
+        })
+    
+    return resultado
+
+@app.post("/questionarios")
+def criar_questionario(
+    dados: QuestionarioCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = Questionario(
+        titulo=dados.titulo,
+        descricao=dados.descricao,
+        status="rascunho",
+        unidade_id=usuario.unidade_id,
+        criado_por_id=usuario.id,
+        configuracoes=json.dumps(dados.configuracoes) if dados.configuracoes else None
+    )
+    
+    db.add(questionario)
+    db.commit()
+    db.refresh(questionario)
+    
+    return {
+        "id": questionario.id,
+        "titulo": questionario.titulo,
+        "descricao": questionario.descricao,
+        "status": questionario.status,
+        "data_criacao": questionario.data_criacao.isoformat(),
+        "mensagem": "Questionário criado com sucesso"
+    }
+
+@app.get("/questionarios/{questionario_id}")
+def obter_questionario(
+    questionario_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    perguntas = []
+    for p in questionario.perguntas:
+        opcoes = []
+        for o in p.opcoes:
+            opcoes.append({
+                "id": o.id,
+                "texto": o.texto,
+                "ordem": o.ordem,
+                "valor": o.valor
+            })
+        
+        perguntas.append({
+            "id": p.id,
+            "tipo": p.tipo,
+            "titulo": p.titulo,
+            "descricao": p.descricao,
+            "obrigatoria": p.obrigatoria,
+            "ordem": p.ordem,
+            "configuracoes": json.loads(p.configuracoes) if p.configuracoes else {},
+            "opcoes": opcoes
+        })
+    
+    return {
+        "id": questionario.id,
+        "titulo": questionario.titulo,
+        "descricao": questionario.descricao,
+        "status": questionario.status,
+        "data_criacao": questionario.data_criacao.isoformat(),
+        "data_atualizacao": questionario.data_atualizacao.isoformat(),
+        "data_publicacao": questionario.data_publicacao.isoformat() if questionario.data_publicacao else None,
+        "configuracoes": json.loads(questionario.configuracoes) if questionario.configuracoes else {},
+        "perguntas": perguntas
+    }
+
+@app.put("/questionarios/{questionario_id}")
+def atualizar_questionario(
+    questionario_id: int,
+    dados: QuestionarioUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    if dados.titulo is not None:
+        questionario.titulo = dados.titulo
+    if dados.descricao is not None:
+        questionario.descricao = dados.descricao
+    if dados.status is not None:
+        questionario.status = dados.status
+        if dados.status == "publicado" and not questionario.data_publicacao:
+            questionario.data_publicacao = datetime.utcnow()
+    if dados.configuracoes is not None:
+        questionario.configuracoes = json.dumps(dados.configuracoes)
+    
+    questionario.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Questionário atualizado com sucesso"}
+
+@app.delete("/questionarios/{questionario_id}")
+def deletar_questionario(
+    questionario_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    db.delete(questionario)
+    db.commit()
+    
+    return {"mensagem": "Questionário excluído com sucesso"}
+
+@app.post("/questionarios/{questionario_id}/perguntas")
+def adicionar_pergunta(
+    questionario_id: int,
+    dados: PerguntaCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    pergunta = Pergunta(
+        questionario_id=questionario_id,
+        tipo=dados.tipo,
+        titulo=dados.titulo,
+        descricao=dados.descricao,
+        obrigatoria=dados.obrigatoria,
+        ordem=dados.ordem,
+        configuracoes=json.dumps(dados.configuracoes) if dados.configuracoes else None
+    )
+    
+    db.add(pergunta)
+    db.commit()
+    db.refresh(pergunta)
+    
+    if dados.opcoes:
+        for opcao_data in dados.opcoes:
+            opcao = OpcaoPergunta(
+                pergunta_id=pergunta.id,
+                texto=opcao_data.texto,
+                ordem=opcao_data.ordem,
+                valor=opcao_data.valor
+            )
+            db.add(opcao)
+        db.commit()
+    
+    questionario.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {
+        "id": pergunta.id,
+        "mensagem": "Pergunta adicionada com sucesso"
+    }
+
+@app.put("/perguntas/{pergunta_id}")
+def atualizar_pergunta(
+    pergunta_id: int,
+    dados: PerguntaCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    pergunta = db.query(Pergunta).join(Questionario).filter(
+        Pergunta.id == pergunta_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not pergunta:
+        raise HTTPException(status_code=404, detail="Pergunta não encontrada")
+    
+    pergunta.tipo = dados.tipo
+    pergunta.titulo = dados.titulo
+    pergunta.descricao = dados.descricao
+    pergunta.obrigatoria = dados.obrigatoria
+    pergunta.ordem = dados.ordem
+    pergunta.configuracoes = json.dumps(dados.configuracoes) if dados.configuracoes else None
+    
+    db.query(OpcaoPergunta).filter(OpcaoPergunta.pergunta_id == pergunta_id).delete()
+    
+    if dados.opcoes:
+        for opcao_data in dados.opcoes:
+            opcao = OpcaoPergunta(
+                pergunta_id=pergunta.id,
+                texto=opcao_data.texto,
+                ordem=opcao_data.ordem,
+                valor=opcao_data.valor
+            )
+            db.add(opcao)
+    
+    pergunta.questionario.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Pergunta atualizada com sucesso"}
+
+@app.delete("/perguntas/{pergunta_id}")
+def deletar_pergunta(
+    pergunta_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    pergunta = db.query(Pergunta).join(Questionario).filter(
+        Pergunta.id == pergunta_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not pergunta:
+        raise HTTPException(status_code=404, detail="Pergunta não encontrada")
+    
+    questionario = pergunta.questionario
+    db.delete(pergunta)
+    questionario.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Pergunta excluída com sucesso"}
+
+@app.post("/questionarios/{questionario_id}/duplicar")
+def duplicar_questionario(
+    questionario_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario_original = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario_original:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    novo_questionario = Questionario(
+        titulo=f"{questionario_original.titulo} (Cópia)",
+        descricao=questionario_original.descricao,
+        status="rascunho",
+        unidade_id=questionario_original.unidade_id,
+        criado_por_id=usuario.id,
+        configuracoes=questionario_original.configuracoes
+    )
+    
+    db.add(novo_questionario)
+    db.commit()
+    db.refresh(novo_questionario)
+    
+    for pergunta_original in questionario_original.perguntas:
+        nova_pergunta = Pergunta(
+            questionario_id=novo_questionario.id,
+            tipo=pergunta_original.tipo,
+            titulo=pergunta_original.titulo,
+            descricao=pergunta_original.descricao,
+            obrigatoria=pergunta_original.obrigatoria,
+            ordem=pergunta_original.ordem,
+            configuracoes=pergunta_original.configuracoes
+        )
+        db.add(nova_pergunta)
+        db.commit()
+        db.refresh(nova_pergunta)
+        
+        for opcao_original in pergunta_original.opcoes:
+            nova_opcao = OpcaoPergunta(
+                pergunta_id=nova_pergunta.id,
+                texto=opcao_original.texto,
+                ordem=opcao_original.ordem,
+                valor=opcao_original.valor
+            )
+            db.add(nova_opcao)
+    
+    db.commit()
+    
+    return {
+        "id": novo_questionario.id,
+        "mensagem": "Questionário duplicado com sucesso"
+    }

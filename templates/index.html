@@ -1209,13 +1209,22 @@
 
                         <!-- Página Questionários -->
                         <div id="automacao-questionarios" class="automacao-page">
-                            <div class="page-header">
+                            <div class="jornadas-header">
                                 <h1>Questionários</h1>
-                                <button class="btn-primary">
-                                    <i class="fas fa-plus"></i> NOVO QUESTIONÁRIO
+                                <button class="btn-nova-jornada" onclick="abrirNovoQuestionario()">
+                                    <i class="fas fa-plus"></i> QUESTIONÁRIO
                                 </button>
                             </div>
-                            <p>Crie questionários personalizados para coletar dados dos seus membros.</p>
+
+                            <div class="jornadas-intro">
+                                <h2>Crie questionários inteligentes</h2>
+                                <p>Colete dados, avalie satisfação e entenda melhor seus membros com questionários personalizados</p>
+                            </div>
+
+                            <!-- Grid de cards de questionários -->
+                            <div class="jornadas-grid" id="questionarios-grid">
+                                <!-- Cards de questionários serão carregados dinamicamente -->
+                            </div>
                         </div>
 
                         <!-- Página Grupos -->
@@ -1656,6 +1665,49 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Criação de Questionário -->
+                    <div id="modal-novo-questionario" class="modal-overlay" style="display: none;">
+                        <div class="modal-container modal-nova-jornada">
+                            <div class="modal-header">
+                                <h2>Criar novo questionário</h2>
+                                <button class="btn-close-modal" onclick="fecharModalNovoQuestionario()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="form-novo-questionario">
+                                    <!-- Campo Título -->
+                                    <div class="form-group">
+                                        <label>TÍTULO</label>
+                                        <input type="text" id="questionario-titulo" placeholder="Ex: Avaliação de Satisfação, Questionário de Saúde" required>
+                                    </div>
+
+                                    <!-- Campo Descrição -->
+                                    <div class="form-group">
+                                        <label>DESCRIÇÃO (opcional)</label>
+                                        <textarea id="questionario-descricao" placeholder="Descreva o objetivo deste questionário..." rows="4"></textarea>
+                                    </div>
+
+                                    <!-- Template Inicial -->
+                                    <div class="form-group">
+                                        <label>INICIAR COM TEMPLATE</label>
+                                        <select id="questionario-template">
+                                            <option value="">Questionário em branco</option>
+                                            <option value="satisfacao">Questionário de Satisfação</option>
+                                            <option value="saude">Avaliação de Saúde</option>
+                                            <option value="onboarding">Onboarding de Novos Membros</option>
+                                            <option value="nps">Net Promoter Score (NPS)</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-secundario" onclick="fecharModalNovoQuestionario()">CANCELAR</button>
+                                <button class="btn-criar-jornada" onclick="criarQuestionario()">CRIAR QUESTIONÁRIO</button>
                             </div>
                         </div>
                     </div>

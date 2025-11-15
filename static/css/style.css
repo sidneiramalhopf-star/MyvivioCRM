@@ -7079,6 +7079,69 @@ textarea.form-control {
     transform: scale(1.1);
 }
 
+/* Estilos Específicos para Questionários */
+.questionario-info {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.813rem;
+    color: #7f8c8d;
+}
+
+.questionario-info span {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.questionario-info i {
+    font-size: 0.875rem;
+    color: #62b1ca;
+}
+
+.jornada-card-footer {
+    gap: 0.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #7f8c8d;
+}
+
+.empty-state i {
+    color: #e8e8e8;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    color: #1f2746;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    font-size: 0.938rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-secundario {
+    background: transparent;
+    color: #123058;
+    border: 2px solid #123058;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secundario:hover {
+    background: #123058;
+    color: white;
+}
+
 /* Seções de Categoria de Jornadas */
 .jornadas-categoria-section {
     margin-bottom: 2.5rem;

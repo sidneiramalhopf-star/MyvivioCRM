@@ -530,9 +530,151 @@ async function loadJornadas() {
     jornadasGrid.innerHTML = html;
 }
 
-function loadQuestionarios() {
-    console.log('Carregando questionários...');
-    // Implementar carregamento de questionários
+async function loadQuestionarios() {
+    const questionariosGrid = document.getElementById('questionarios-grid');
+    
+    if (!questionariosGrid) return;
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+            questionariosGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-question fa-3x"></i>
+                    <p>Faça login para ver seus questionários</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const response = await fetch('/questionarios', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar questionários');
+        }
+        
+        const questionarios = await response.json();
+        
+        if (questionarios.length === 0) {
+            questionariosGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-question fa-3x"></i>
+                    <h3>Nenhum questionário criado</h3>
+                    <p>Crie seu primeiro questionário para começar a coletar dados</p>
+                    <button class="btn-nova-jornada" onclick="abrirNovoQuestionario()">
+                        <i class="fas fa-plus"></i> CRIAR QUESTIONÁRIO
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Agrupar por status
+        const rascunhos = questionarios.filter(q => q.status === 'rascunho');
+        const publicados = questionarios.filter(q => q.status === 'publicado');
+        const arquivados = questionarios.filter(q => q.status === 'arquivado');
+        
+        let html = '';
+        
+        // Renderizar publicados
+        if (publicados.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">PUBLICADOS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${publicados.map(q => renderQuestionarioCard(q)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Renderizar rascunhos
+        if (rascunhos.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">RASCUNHOS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${rascunhos.map(q => renderQuestionarioCard(q)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Renderizar arquivados
+        if (arquivados.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">ARQUIVADOS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${arquivados.map(q => renderQuestionarioCard(q)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        questionariosGrid.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Erro ao carregar questionários:', error);
+        questionariosGrid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <p>Erro ao carregar questionários. Tente novamente.</p>
+            </div>
+        `;
+    }
+}
+
+function renderQuestionarioCard(questionario) {
+    const statusBadge = {
+        'rascunho': '<span class="jornada-badge-rascunho">RASCUNHO</span>',
+        'publicado': '<span class="jornada-badge-ativo">PUBLICADO</span>',
+        'arquivado': '<span class="jornada-badge-rascunho">ARQUIVADO</span>'
+    }[questionario.status] || '';
+    
+    const corClasse = {
+        'rascunho': 'rascunho',
+        'publicado': 'experiências-em-destaque',
+        'arquivado': 'retenção'
+    }[questionario.status] || 'rascunho';
+    
+    const dataFormatada = new Date(questionario.data_criacao).toLocaleDateString('pt-BR');
+    
+    return `
+        <div class="jornada-card" data-id="${questionario.id}">
+            <div class="jornada-card-header ${corClasse}">
+                <span class="jornada-tipo">QUESTIONÁRIO</span>
+                ${statusBadge}
+            </div>
+            <div class="jornada-card-body">
+                <div class="jornada-icone">
+                    <i class="fas fa-clipboard-question"></i>
+                </div>
+                <h3>${questionario.titulo}</h3>
+                <p>${questionario.descricao || 'Sem descrição'}</p>
+                <div class="questionario-info">
+                    <span><i class="fas fa-question-circle"></i> ${questionario.total_perguntas} perguntas</span>
+                    <span><i class="fas fa-calendar"></i> ${dataFormatada}</span>
+                </div>
+            </div>
+            <div class="jornada-card-footer">
+                <button class="btn-card-action" onclick="abrirQuestionario(${questionario.id})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-card-action" onclick="duplicarQuestionario(${questionario.id})" title="Duplicar">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="btn-card-action" onclick="excluirQuestionario(${questionario.id})" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 function loadGrupos() {
@@ -620,6 +762,175 @@ function criarJornada() {
     
     // Recarregar jornadas
     loadJornadas();
+    
+    showToast('Jornada criada com sucesso!', 'success');
+}
+
+// ============================================================
+// Funções de Questionários
+// ============================================================
+
+function abrirNovoQuestionario() {
+    document.getElementById('modal-novo-questionario').style.display = 'flex';
+    
+    // Limpar formulário
+    document.getElementById('form-novo-questionario').reset();
+}
+
+function fecharModalNovoQuestionario() {
+    document.getElementById('modal-novo-questionario').style.display = 'none';
+}
+
+async function criarQuestionario() {
+    const titulo = document.getElementById('questionario-titulo').value.trim();
+    const descricao = document.getElementById('questionario-descricao').value.trim();
+    const template = document.getElementById('questionario-template').value;
+    
+    if (!titulo) {
+        showToast('Digite um título para o questionário', 'error');
+        return;
+    }
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para criar questionários', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/questionarios', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                descricao: descricao || null,
+                configuracoes: { template: template }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao criar questionário');
+        }
+        
+        const result = await response.json();
+        
+        fecharModalNovoQuestionario();
+        showToast('Questionário criado com sucesso!', 'success');
+        
+        // Abrir o editor do questionário
+        abrirQuestionario(result.id);
+        
+    } catch (error) {
+        console.error('Erro ao criar questionário:', error);
+        showToast('Erro ao criar questionário. Tente novamente.', 'error');
+    }
+}
+
+async function abrirQuestionario(id) {
+    // TODO: Implementar editor de questionário
+    showToast('Editor de questionário em desenvolvimento', 'info');
+    console.log('Abrindo questionário:', id);
+}
+
+async function duplicarQuestionario(id) {
+    if (!confirm('Deseja duplicar este questionário?')) return;
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para duplicar questionários', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/questionarios/${id}/duplicar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao duplicar questionário');
+        }
+        
+        showToast('Questionário duplicado com sucesso!', 'success');
+        loadQuestionarios();
+        
+    } catch (error) {
+        console.error('Erro ao duplicar questionário:', error);
+        showToast('Erro ao duplicar questionário. Tente novamente.', 'error');
+    }
+}
+
+async function excluirQuestionario(id) {
+    if (!confirm('Tem certeza que deseja excluir este questionário? Esta ação não pode ser desfeita.')) return;
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para excluir questionários', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/questionarios/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao excluir questionário');
+        }
+        
+        showToast('Questionário excluído com sucesso!', 'success');
+        loadQuestionarios();
+        
+    } catch (error) {
+        console.error('Erro ao excluir questionário:', error);
+        showToast('Erro ao excluir questionário. Tente novamente.', 'error');
+    }
+}
+
+async function alterarStatusQuestionario(id, novoStatus) {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para alterar status', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/questionarios/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                status: novoStatus
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao alterar status');
+        }
+        
+        const statusTexto = {
+            'publicado': 'publicado',
+            'rascunho': 'marcado como rascunho',
+            'arquivado': 'arquivado'
+        }[novoStatus] || 'atualizado';
+        
+        showToast(`Questionário ${statusTexto} com sucesso!`, 'success');
+        loadQuestionarios();
+        
+    } catch (error) {
+        console.error('Erro ao alterar status:', error);
+        showToast('Erro ao alterar status. Tente novamente.', 'error');
+    }
     
     // Abrir página de detalhes
     setTimeout(() => {
