@@ -1,0 +1,204 @@
+# Prompt Unificado para Desenvolvimento da Seção de Automação do CRM VIVIO
+
+## **Objetivo Geral**
+
+Criar um prompt único, completo e tecnicamente estruturado para ser utilizado no Replit. Este prompt deverá orientar a plataforma a **aproveitar toda a estrutura já existente** da área de Automação do CRM VIVIO e **completar as funcionalidades ainda não implementadas**, inspirando-se no fluxo do Mywellness, porém trazendo inovações e tendências dos próximos 5 anos.
+
+Toda a construção deverá respeitar a identidade visual da marca **VIVIO**, utilizando sempre a paleta de cores:
+
+* **#123058** (primária – azul VIVIO)
+* **#62b1ca** (secundária – azul claro)
+* **#ffffff** (branco)
+* **#000000** (preto)
+
+A linguagem deverá ser clara, técnica, objetiva e orientada ao front-end funcional.
+
+---
+
+# **PROMPT FINAL PARA O REPLIT – VIVIO AUTOMATION BUILDER**
+
+A seguir está o texto exato para você colar no Replit e executar como comando global para continuar construindo a Automação do CRM VIVIO.
+
+---
+
+## 🟦 **PROMPT COMPLETO** (cole no Replit)
+
+**Desenvolver e atualizar a seção de Automação do CRM VIVIO**, mantendo toda a estrutura já criada e **expandindo** com as funcionalidades descritas abaixo. O projeto deve seguir rigorosamente a identidade visual VIVIO (paleta: #123058; #62b1ca; #ffffff; #000000).
+
+### **1. Estrutura Geral e Correções Necessárias**
+
+* Manter o painel principal existente, centralizado na tela.
+* Corrigir qualquer desalinhamento entre:
+
+  * **Ponto de Partida** (Start Node)
+  * **Linha de Fluxo** (Connector Line)
+  * **Etapa Concluída** (Completed Node)
+  * **Botão de Ação (+)** (Action Add Node Button)
+
+### **Termos Técnicos a Utilizar:**
+
+* **Canvas de Automação** = área onde os fluxos são construídos.
+* **Node** = bloco de ação.
+* **Trigger Node** = ponto inicial.
+* **Connector** = linha que liga um node ao outro.
+* **Action Node** = ação automática.
+* **Condition Node** = decisão lógica.
+* **Flow Map** = mapa geral do fluxo.
+
+Todos esses termos devem ser usados no código e nos comentários.
+
+---
+
+### **2. Funções que JÁ existem e devem ser preservadas**
+
+* Painel lateral esquerdo com categorias básicas.
+* Criação de fluxos simples.
+* Salvamento automático.
+* Estrutura de nodes essenciais (Start → Action → End).
+
+Não reescrever estas funções; apenas **complementar**.
+
+---
+
+# **3. Funções Avançadas (NOVAS) A IMPLEMENTAR**
+
+## **A. Trigger Inteligente (Inovação VIVIO)**
+
+Criar um sistema de triggers que permita iniciar uma automação com base em:
+
+* comportamento do usuário no app VIVIO (ex: risco de desistência)
+* nível de atividade física
+* uso de aulas/sessões
+* interações com push notifications
+* métricas biométricas coletadas
+* presença/ausência em sessões
+
+**Implementar tecnologia preditiva:**
+
+* criar um campo "Trigger Inteligente" que utiliza scoring baseado em dados.
+
+---
+
+## **B. Action Nodes avançados**
+
+Criar novos nodes que ainda não existem:
+
+### **1. Node de Mensagem Multicanal**
+
+* Push
+* E‑mail
+* Notificação interna
+* WhatsApp (placeholder para futura API)
+
+### **2. Node de Tarefas Internas**
+
+* Criar tarefa para equipe
+* Marcar follow-up automático
+* Notificar profissionais do VIVIO
+
+### **3. Node de Atualização de Perfil**
+
+* Atualizar "estado" do usuário
+* Atualizar "risco de churn"
+* Atualizar "meta da semana"
+
+---
+
+## **C. Condition Nodes inteligentes**
+
+Criar decisões condicionais com lógica avançada:
+
+* IF / ELSE
+* > =, <=, =
+* Contém / Não contém
+* Data relativa (ex: "há 7 dias sem treinar")
+* Score de engajamento
+* Presença em aulas
+* Categoria de saúde
+
+---
+
+## **D. Funções que serão tendência nos próximos 5 anos (e devem ser implementadas)**
+
+### **1. Automação Predictiva com IA (Versão VIVIO)**
+
+Criar um node "IA Assistente" com capacidade de:
+
+* sugerir automações
+* prever abandono
+* criar ações automáticas baseadas em comportamento
+
+### **2. Automação Autocorretiva**
+
+Fluxo deve conseguir:
+
+* detectar que uma automação não está performando
+* sugerir ajustes
+* reequilibrar triggers
+
+### **3. Análise em Tempo Real**
+
+Criar uma área mini-dashboard integrada:
+
+* taxa de sucesso da automação
+* % de aberturas de push
+* % de tarefas concluídas
+* % de usuários recuperados
+
+### **4. Nodes de Gamificação**
+
+Criar nodes nativos:
+
+* atribuir pontos
+* liberar badges
+* emitir desafios
+
+---
+
+# **4. Padrões de Estilo (VIVIO)**
+
+Todas as interfaces devem seguir:
+
+* Azul primário (#123058) para elementos-chave
+* Azul claro (#62b1ca) para destaques
+* Fundo branco (#ffffff)
+* Texto preto (#000000)
+* Botões arredondados
+* Sombra suave
+* Tipografia clean estilo Sans Serif
+
+---
+
+# **5. Estrutura do Código a Ser Criado**
+
+O Replit deve gerar:
+
+1. **Componentes React do Automation Builder**
+2. **Nodes modulares com props reutilizáveis**
+3. **Conectores dinâmicos com drag & drop**
+4. **Painel lateral com filtros e categorias**
+5. **Área de configurações avançadas**
+6. **Mini dashboards por automação**
+7. **Validações de fluxo** (não permitir fluxo quebrado)
+8. **Auto-save otimizado**
+9. **Modo preview da automação**
+10. **Sistema de logs automáticos**
+
+---
+
+# **6. Instruções Finais ao Replit**
+
+* Não excluir nada que já esteja criado.
+* Preservar **todas** as funções existentes.
+* Adicionar apenas o que está neste prompt.
+* Usar design system da VIVIO.
+* Garantir responsividade total.
+* Preparar tudo para testes A/B.
+* Criar código limpo, comentado e modular.
+* Entregar a seção de Automação **completa**, **funcional** e **pronta para ativação**.
+
+---
+
+## **Documento concluído.**
+
+Este é o prompt final para colar no Replit e continuar o desenvolvimento da Automação VIVIO.
