@@ -1379,6 +1379,24 @@
                                 <!-- Painel Lateral Direito (30%) -->
                                 <div class="workflow-sidebar">
                                     <h3 class="sidebar-title">ELEMENTOS DO FLUXO DE TRABALHO</h3>
+                                    
+                                    <!-- Mini Dashboard de Métricas -->
+                                    <div class="workflow-mini-dashboard" style="background: linear-gradient(135deg, #123058 0%, #62b1ca 100%); padding: 1rem; margin-bottom: 1rem; border-radius: 8px; color: white;">
+                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center;">
+                                            <div>
+                                                <div style="font-size: 1.25rem; font-weight: bold;">87%</div>
+                                                <div style="font-size: 0.7rem; opacity: 0.9;">Taxa de Sucesso</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 1.25rem; font-weight: bold;">1.2k</div>
+                                                <div style="font-size: 0.7rem; opacity: 0.9;">Execuções</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 1.25rem; font-weight: bold;">453</div>
+                                                <div style="font-size: 0.7rem; opacity: 0.9;">Usuários</div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <!-- Categoria: REGRAS -->
                                     <div class="sidebar-category">
@@ -1489,6 +1507,63 @@
                                                 <p class="element-description">Altere o tipo de contato.</p>
                                             </div>
                                             <button class="element-card-add-btn" style="display: none;" onclick="event.stopPropagation(); abrirNestedSidebarCard('tipo-contato')">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="atualizar-perfil" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-user-edit"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Atualizar Perfil</h5>
+                                                <p class="element-description">Atualizar dados do perfil do usuário.</p>
+                                            </div>
+                                            <button class="element-card-add-btn" style="display: none;" onclick="event.stopPropagation(); abrirNestedSidebarCard('atualizar-perfil')">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="gamificacao" data-category="acao">
+                                            <div class="element-icon element-icon-acao">
+                                                <i class="fas fa-trophy"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Gamificação</h5>
+                                                <p class="element-description">Atribuir pontos, badges ou desafios.</p>
+                                            </div>
+                                            <button class="element-card-add-btn" style="display: none;" onclick="event.stopPropagation(); abrirNestedSidebarCard('gamificacao')">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Categoria: INOVAÇÕES VIVIO -->
+                                    <div class="sidebar-category">
+                                        <h4 class="category-title" style="color: #62b1ca;">🚀 INOVAÇÕES VIVIO</h4>
+                                        
+                                        <div class="element-card" draggable="true" data-type="delay" data-category="regra" style="border-left: 4px solid #1f2746;">
+                                            <div class="element-icon element-icon-regra">
+                                                <i class="fas fa-hourglass-half"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">Aguardar Tempo</h5>
+                                                <p class="element-description">Aguardar um período antes de continuar.</p>
+                                            </div>
+                                            <button class="element-card-add-btn" style="display: none;" onclick="event.stopPropagation(); abrirNestedSidebarCard('delay')">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+
+                                        <div class="element-card" draggable="true" data-type="ia-assistente" data-category="ia" style="border-left: 4px solid #62b1ca;">
+                                            <div class="element-icon" style="background: linear-gradient(135deg, #62b1ca 0%, #123058 100%); color: white;">
+                                                <i class="fas fa-robot"></i>
+                                            </div>
+                                            <div class="element-info">
+                                                <h5 class="element-name">🤖 IA Assistente</h5>
+                                                <p class="element-description">Ações preditivas e inteligentes.</p>
+                                            </div>
+                                            <button class="element-card-add-btn" style="display: none;" onclick="event.stopPropagation(); abrirNestedSidebarCard('ia-assistente')">
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                         </div>
