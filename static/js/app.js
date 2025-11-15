@@ -5559,28 +5559,56 @@ function deleteNodeById(nodeId) {
     // Confirmar
     if (!confirm('Deseja deletar este elemento?')) return;
     
-    // Remover node
+    // Encontrar edges conectadas ao node
+    const incomingEdge = workflowState.edges.find(e => e.target.nodeId === nodeId);
+    const outgoingEdge = workflowState.edges.find(e => e.source.nodeId === nodeId);
+    
+    // Reconexão magnética: se há edge de entrada E saída, conectar source->target diretamente
+    if (incomingEdge && outgoingEdge) {
+        const sourceNodeId = incomingEdge.source.nodeId;
+        const targetNodeId = outgoingEdge.target.nodeId;
+        
+        // Remover edges antigas
+        deleteEdge(incomingEdge.id);
+        deleteEdge(outgoingEdge.id);
+        
+        // Criar nova edge conectando source -> target diretamente
+        createEdge(sourceNodeId, targetNodeId);
+        
+        showToast('Elemento removido e conexões reconectadas automaticamente', 'success');
+    } else {
+        // Se não há ambas as edges, apenas remover as existentes
+        workflowState.edges = workflowState.edges.filter(edge => {
+            if (edge.source.nodeId === nodeId || edge.target.nodeId === nodeId) {
+                const pathEl = document.getElementById(edge.id);
+                if (pathEl) pathEl.remove();
+                
+                // Remover botão da edge também
+                const btnEl = document.getElementById(`btn-${edge.id}`);
+                if (btnEl) btnEl.remove();
+                
+                return false;
+            }
+            return true;
+        });
+        
+        showToast('Elemento deletado', 'success');
+    }
+    
+    // Remover node do estado
     const nodeIndex = workflowState.nodes.findIndex(n => n.id === nodeId);
     if (nodeIndex > -1) {
         workflowState.nodes.splice(nodeIndex, 1);
     }
-    
-    // Remover edges conectadas
-    workflowState.edges = workflowState.edges.filter(edge => {
-        if (edge.source.nodeId === nodeId || edge.target.nodeId === nodeId) {
-            const pathEl = document.getElementById(edge.id);
-            if (pathEl) pathEl.remove();
-            return false;
-        }
-        return true;
-    });
     
     // Remover do DOM
     const nodeEl = document.getElementById(nodeId);
     if (nodeEl) nodeEl.remove();
     
     selectedNode = null;
-    showToast('Elemento deletado', 'success');
+    
+    // Salvar workflow
+    salvarWorkflow();
 }
 
 // Iniciar drag de node existente
@@ -5898,6 +5926,148 @@ function renderEdge(edge) {
     updateEdgePath(edge, path, sourceNode, targetNode);
     
     svg.appendChild(path);
+    
+    // Criar botão + no centro da edge
+    renderEdgeButton(edge);
+}
+
+// Renderizar botão + no centro da edge
+function renderEdgeButton(edge) {
+    const stage = document.getElementById('canvas-stage');
+    const existingBtn = document.getElementById(`btn-${edge.id}`);
+    
+    // Remover botão existente se houver
+    if (existingBtn) {
+        existingBtn.remove();
+    }
+    
+    // Criar botão
+    const btn = document.createElement('div');
+    btn.id = `btn-${edge.id}`;
+    btn.className = 'edge-add-button';
+    btn.dataset.edgeId = edge.id;
+    btn.innerHTML = '<i class="fas fa-plus"></i>';
+    
+    // Evento de clique
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEdgeInsertMenu(edge.id);
+    });
+    
+    // Posicionar botão
+    updateEdgeButtonPosition(edge, btn);
+    
+    stage.appendChild(btn);
+}
+
+// Atualizar posição do botão na edge
+function updateEdgeButtonPosition(edge, btn) {
+    const sourceNode = document.getElementById(edge.source.nodeId);
+    const targetNode = document.getElementById(edge.target.nodeId);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    const sourcePort = sourceNode.querySelector('.node-port-output');
+    const targetPort = targetNode.querySelector('.node-port-input');
+    
+    const sourceRect = sourcePort.getBoundingClientRect();
+    const targetRect = targetPort.getBoundingClientRect();
+    const canvas = document.getElementById('workflow-canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    // Calcular ponto médio
+    const x1 = (sourceRect.left + sourceRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+    const y1 = (sourceRect.top + sourceRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+    const x2 = (targetRect.left + targetRect.width / 2 - canvasRect.left) / workflowState.viewport.zoom;
+    const y2 = (targetRect.top + targetRect.height / 2 - canvasRect.top) / workflowState.viewport.zoom;
+    
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    
+    // Posicionar botão (centralizado, ajustar para tamanho do botão: 32px)
+    btn.style.left = `${midX - 16}px`;
+    btn.style.top = `${midY - 16}px`;
+}
+
+// Atualizar todos os botões das edges
+function updateEdgeButtons() {
+    workflowState.edges.forEach(edge => {
+        const btn = document.getElementById(`btn-${edge.id}`);
+        if (btn) {
+            updateEdgeButtonPosition(edge, btn);
+        }
+    });
+}
+
+// Abrir menu para inserir elemento entre edge
+function openEdgeInsertMenu(edgeId) {
+    const edge = workflowState.edges.find(e => e.id === edgeId);
+    if (!edge) return;
+    
+    // Armazenar edgeId no estado global para uso posterior
+    window.currentInsertEdgeId = edgeId;
+    
+    // Abrir nested sidebar no modo de seleção de elemento
+    const nestedSidebar = document.getElementById('nested-sidebar');
+    const mainSidebar = document.querySelector('.workflow-sidebar');
+    
+    if (nestedSidebar && mainSidebar) {
+        // Atualizar título
+        const titleEl = document.getElementById('nested-element-name');
+        if (titleEl) {
+            titleEl.textContent = 'Selecionar Elemento';
+        }
+        
+        // Mostrar nested sidebar
+        nestedSidebar.style.display = 'flex';
+        mainSidebar.style.transform = 'translateX(-100%)';
+        
+        showToast('Selecione um elemento para inserir', 'info');
+    }
+}
+
+// Inserir node entre dois nodes conectados
+function insertNodeBetween(edgeId, elementType) {
+    const edge = workflowState.edges.find(e => e.id === edgeId);
+    if (!edge) {
+        showToast('Conexão não encontrada', 'error');
+        return;
+    }
+    
+    const sourceNode = document.getElementById(edge.source.nodeId);
+    const targetNode = document.getElementById(edge.target.nodeId);
+    
+    if (!sourceNode || !targetNode) {
+        showToast('Nodes não encontrados', 'error');
+        return;
+    }
+    
+    // Calcular posição do novo node (centro entre source e target)
+    const sourceX = parseInt(sourceNode.style.left) || 0;
+    const sourceY = parseInt(sourceNode.style.top) || 0;
+    const targetX = parseInt(targetNode.style.left) || 0;
+    const targetY = parseInt(targetNode.style.top) || 0;
+    
+    const newX = (sourceX + targetX) / 2;
+    const newY = (sourceY + targetY) / 2;
+    
+    // Criar novo node
+    const newNode = createNode(elementType, newX, newY);
+    
+    // Deletar edge original
+    deleteEdge(edgeId);
+    
+    // Criar novas edges: source -> novo -> target
+    createEdge(edge.source.nodeId, newNode.id);
+    createEdge(newNode.id, edge.target.nodeId);
+    
+    // Salvar estado
+    salvarWorkflow();
+    
+    showToast(`Elemento "${ELEMENT_DEFINITIONS[elementType]?.label || elementType}" inserido!`, 'success');
+    
+    // Limpar estado global
+    window.currentInsertEdgeId = null;
 }
 
 // Deletar edge
@@ -5912,6 +6082,12 @@ function deleteEdge(edgeId) {
     const pathEl = document.getElementById(edgeId);
     if (pathEl) {
         pathEl.remove();
+    }
+    
+    // Remover botão da edge
+    const btnEl = document.getElementById(`btn-${edgeId}`);
+    if (btnEl) {
+        btnEl.remove();
     }
     
     showToast('Conexão deletada', 'success');
@@ -5950,6 +6126,9 @@ function updateConnections() {
             updateEdgePath(edge, path, sourceNode, targetNode);
         }
     });
+    
+    // Atualizar posição dos botões
+    updateEdgeButtons();
 }
 
 // Inicializar pan do canvas
@@ -6817,13 +6996,21 @@ const ELEMENT_DEFINITIONS = {
 
 // Confirmar nested sidebar e inserir elemento
 function confirmarNestedSidebar(elementType) {
-    if (!activeEdgeId) {
+    // Verificar se estamos inserindo via botão + da edge ou via modo antigo
+    const edgeId = window.currentInsertEdgeId || activeEdgeId;
+    
+    if (!edgeId) {
         showToast('Erro: nenhuma conexão selecionada', 'error');
         return;
     }
     
-    // Inserir elemento no workflow
-    inserirElementoComConfig(elementType, nestedSidebarState.values);
+    // Se for inserção via botão +, usar método direto
+    if (window.currentInsertEdgeId) {
+        insertNodeBetween(window.currentInsertEdgeId, elementType);
+    } else {
+        // Método antigo via activeEdgeId
+        inserirElementoComConfig(elementType, nestedSidebarState.values);
+    }
     
     // Fechar sidebar e resetar estado
     fecharNestedSidebar();
