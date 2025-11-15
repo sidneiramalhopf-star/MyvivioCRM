@@ -1,0 +1,221 @@
+# Prompt Unificado para Desenvolvimento da Seção **Questionários** do CRM VIVIO
+
+## **Objetivo Geral**
+
+Criar um prompt completo para uso no Replit, adaptado ao CRM VIVIO, considerando que **parte da seção de Questionários já está construída**. O objetivo é expandir e elevar esta funcionalidade para um nível superior ao que o Mywellness oferece atualmente, incorporando recursos avançados em UX, lógica, automação e inteligência artificial.
+
+Este documento deverá instruir o Replit a **preservar tudo o que já existe**, complementar o que falta e implementar novas funcionalidades que posicionem o CRM VIVIO como a solução mais moderna de criação de questionários dentro do mercado fitness, wellness e corporativo.
+
+---
+
+# 🟩 **PROMPT COMPLETO PARA O REPLIT – NOVA SEÇÃO: QUESTIONÁRIOS VIVIO**
+
+Desenvolver, atualizar e concluir a seção **Questionários** do CRM VIVIO, mantendo TODA a estrutura atual e adicionando os elementos descritos a seguir. Todo o código deve ser modular, limpo, escalável e preparado para integração com automações e IA.
+
+---
+
+# **1. Funções já existentes (manter e não reescrever):**
+
+* Estrutura base da página.
+* Listagem de questionários já criados.
+* Sistema básico de criação de perguntas.
+* Salvamento automático.
+* Interface inicial do editor.
+
+**O Replit deve preservar integralmente estas partes e continuar o desenvolvimento ampliado.**
+
+---
+
+# **2. Novo Editor de Questionários (Expansão Avançada)**
+
+A partir do que já existe, criar um editor mais poderoso com os seguintes elementos:
+
+### **A. Tipos de perguntas avançados (NOVOS)**
+
+Adicionar novos tipos além dos existentes:
+
+* Escala visual (emoji, carinhas, humor, dor, satisfação)
+* Matriz de múltipla escolha
+* Perguntas com lógica condicional
+* Pergunta "arrastar para ordenar"
+* Pergunta com upload de ficheiro (foto, PDF)
+* Pergunta com vídeo curto incorporado
+* Blocos de informação (texto explicativo)
+* Slider contínuo (0–10, 1–100)
+* Pergunta de assinatura digital
+* Pergunta com gravação de áudio
+
+---
+
+### **B. Lógica Condicional Inteligente (Branching Logic)**
+
+Criar um painel lateral de lógica que permita:
+
+* Condições do tipo **IF/THEN/ELSE**
+* Caminhos diferentes dentro do questionário
+* Saltos de pergunta
+* Finalizações alternativas
+* Integração direta com automações VIVIO
+
+  * Ex: se usuário responde "alta dor" → enviar para automação "alerta saúde"
+
+---
+
+### **C. IA Assistente no Editor (Inovação VIVIO)**
+
+Criar um botão **"Gerar Perguntas com IA"** com as funções:
+
+* Criar um questionário completo com base num objetivo informado (ex: onboarding, risco de burnout, avaliação física, NPS interno)
+* Sugerir perguntas adicionais
+* Melhorar perguntas existentes
+* Verificar clareza, coerência e nível de dificuldade
+* Validar se o questionário está demasiado longo
+
+---
+
+### **D. Biblioteca de Modelos (Templates VIVIO)**
+
+Criar uma biblioteca com modelos prontos:
+
+* Saúde e bem-estar
+* Engajamento
+* Avaliação física
+* Risco de desistência
+* Questionário pós-aula
+* Avaliação de programa
+* VIVIO Holístico (mente, corpo, energia)
+
+Usuário pode:
+
+* clonar
+* alterar
+* misturar modelos
+
+---
+
+# **3. Área de Construção (Builder) – Experiência Moderna**
+
+Transformar o editor existente num ambiente mais avançado:
+
+### **Componentes a criar:**
+
+* Drag & Drop real para ordenar perguntas
+* Visualização tipo "blocos" (cards)
+* Modo Preview em tempo real
+* Histórico de versões (versioning)
+* Modo de Teste (testar como usuário final)
+* Auto-sugestões de melhorias
+* Alertas de erros ou perguntas mal estruturadas
+* Indicação da taxa estimada de abandono
+
+---
+
+# **4. Recursos que diferenciam o VIVIO do Mywellness**
+
+### **A. Questionário Adaptativo (Adaptive Flow)**
+
+O questionário deve se adaptar à pessoa durante o preenchimento, de forma inteligente:
+
+* Reduzir perguntas se perceber que o usuário está cansado
+* Alterar perguntas para melhor adequação
+* Ajustar a linguagem conforme perfil
+* Ramificações inteligentes baseadas em respostas anteriores
+
+### **B. Pontuação Inteligente (Scoring IA)**
+
+Criar sistema automático que:
+
+* pontua respostas
+* gera um score final
+* classifica o tipo de usuário
+* envia para automação correspondente
+
+Ou seja: **o questionário vira um mecanismo inteligente de diagnóstico.**
+
+### **C. Relatórios em Tempo Real (Analytics)**
+
+Criar:
+
+* Painel com % de respostas
+* Gráficos de tipos de respostas
+* Mapas de calor (heatmap) de abandono por pergunta
+* Ranking das perguntas mais difíceis
+
+### **D. Exportação Inteligente**
+
+Permitir exportar para:
+
+* PDF
+* CSV
+* Relatórios VIVIO
+* Envio direto para Automação
+
+---
+
+# **5. Recursos de Futuro (tendências dos próximos 5 anos)**
+
+Integrar o que há de mais moderno:
+
+### **1. Questionários Conversacionais**
+
+Criar modo alternativo onde o usuário responde estilo chat.
+
+### **2. Voz → Resposta**
+
+Perguntas podem ser respondidas por áudio.
+
+### **3. IA de Sentimento**
+
+Interpretar emoção em respostas abertas.
+
+### **4. Smart Skip**
+
+Automação que remove perguntas irrelevantes.
+
+### **5. Questionários com missões gamificadas**
+
+* badges
+* micro recompensas
+* streaks
+
+---
+
+# **6. Estrutura de Código Esperada**
+
+O Replit deve produzir:
+
+1. Componentes React modularizados:
+
+   * `QuestionEditor`
+   * `QuestionTypes`
+   * `LogicPanel`
+   * `PreviewPanel`
+   * `AIHelper`
+   * `AnalyticsDashboard`
+
+2. API interna simulada para testes (mock).
+
+3. Armazenamento temporário em localStorage ou state centralizado.
+
+4. Drag & Drop funcional.
+
+5. Versionamento local.
+
+6. Integração com automações (placeholder).
+
+7. Suporte total a responsividade.
+
+---
+
+# **7. Instruções finais ao Replit**
+
+* Não sobrescrever nada que já existe.
+* Completar apenas o que está faltando.
+* Usar a arquitetura existente como base.
+* Melhorar e otimizar quando possível.
+* Código limpo, comentado e performático.
+* Preparar tudo para integração futura com backend real.
+
+---
+
+## **Documento concluído – pronto para usar no Replit.**
