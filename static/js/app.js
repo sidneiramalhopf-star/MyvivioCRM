@@ -829,10 +829,350 @@ async function criarQuestionario() {
     }
 }
 
+// Estado global do editor de questionários
+let currentQuestionarioId = null;
+let currentPerguntas = [];
+let selectedPerguntaId = null;
+
 async function abrirQuestionario(id) {
-    // TODO: Implementar editor de questionário
-    showToast('Editor de questionário em desenvolvimento', 'info');
-    console.log('Abrindo questionário:', id);
+    console.log('[Editor] Abrindo questionário:', id);
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        console.log('[Editor] Token presente:', !!token);
+        
+        if (!token) {
+            showToast('Faça login para editar questionários', 'error');
+            return;
+        }
+        
+        console.log('[Editor] Carregando dados do questionário...');
+        
+        // Carregar dados do questionário
+        const response = await fetch(`/questionarios/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        console.log('[Editor] Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar questionário');
+        }
+        
+        const questionario = await response.json();
+        console.log('[Editor] Questionário carregado:', questionario);
+        
+        // Atualizar estado global
+        currentQuestionarioId = id;
+        currentPerguntas = questionario.perguntas || [];
+        
+        console.log('[Editor] Navegando para o editor...');
+        // Navegar para o editor
+        switchAutomacaoView('questionario-editor');
+        
+        console.log('[Editor] Preenchendo formulário...');
+        // Aguardar DOM ser renderizado
+        setTimeout(() => {
+            const tituloInput = document.getElementById('questionario-titulo-editor');
+            const descricaoInput = document.getElementById('questionario-descricao-editor');
+            const statusSelect = document.getElementById('questionario-status-editor');
+            const breadcrumb = document.getElementById('questionario-editor-titulo-breadcrumb');
+            
+            console.log('[Editor] Elementos encontrados:', {
+                titulo: !!tituloInput,
+                descricao: !!descricaoInput,
+                status: !!statusSelect,
+                breadcrumb: !!breadcrumb
+            });
+            
+            if (tituloInput) tituloInput.value = questionario.titulo || '';
+            if (descricaoInput) descricaoInput.value = questionario.descricao || '';
+            if (statusSelect) statusSelect.value = questionario.status || 'rascunho';
+            if (breadcrumb) breadcrumb.textContent = questionario.titulo || 'Novo Questionário';
+            
+            // Renderizar perguntas
+            console.log('[Editor] Renderizando perguntas...');
+            renderPerguntas();
+            
+            // Configurar drag and drop
+            console.log('[Editor] Configurando drag and drop...');
+            setupDragAndDrop();
+            
+            console.log('[Editor] Editor carregado com sucesso!');
+        }, 100);
+        
+    } catch (error) {
+        console.error('[Editor] Erro ao abrir questionário:', error);
+        showToast('Erro ao carregar questionário. Tente novamente.', 'error');
+    }
+}
+
+function voltarParaQuestionarios() {
+    switchAutomacaoView('questionarios');
+    currentQuestionarioId = null;
+    currentPerguntas = [];
+    selectedPerguntaId = null;
+}
+
+function renderPerguntas() {
+    const lista = document.getElementById('perguntas-lista');
+    
+    if (currentPerguntas.length === 0) {
+        lista.innerHTML = `
+            <div class="perguntas-empty-state">
+                <i class="fas fa-arrow-left"></i>
+                <p>Arraste um tipo de pergunta da esquerda ou clique em "Gerar com IA"</p>
+            </div>
+        `;
+        return;
+    }
+    
+    lista.innerHTML = currentPerguntas.map((pergunta, index) => renderPerguntaCard(pergunta, index)).join('');
+}
+
+function renderPerguntaCard(pergunta, index) {
+    const tiposIcons = {
+        'texto_curto': 'fa-font',
+        'texto_longo': 'fa-align-left',
+        'multipla_escolha': 'fa-list-ul',
+        'selecao_multipla': 'fa-check-double',
+        'escala_likert': 'fa-star-half-alt',
+        'data': 'fa-calendar-alt',
+        'numero': 'fa-hashtag'
+    };
+    
+    const tiposNomes = {
+        'texto_curto': 'Texto Curto',
+        'texto_longo': 'Texto Longo',
+        'multipla_escolha': 'Múltipla Escolha',
+        'selecao_multipla': 'Seleção Múltipla',
+        'escala_likert': 'Escala Likert',
+        'data': 'Data',
+        'numero': 'Número'
+    };
+    
+    const icon = tiposIcons[pergunta.tipo] || 'fa-question';
+    const tipoNome = tiposNomes[pergunta.tipo] || pergunta.tipo;
+    
+    let opcoesHtml = '';
+    if (pergunta.opcoes && pergunta.opcoes.length > 0) {
+        opcoesHtml = `
+            <div class="pergunta-opcoes">
+                ${pergunta.opcoes.map(op => `
+                    <div class="pergunta-opcao">
+                        <i class="fas fa-circle" style="font-size: 0.4rem;"></i>
+                        <span>${op.texto}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="pergunta-card ${selectedPerguntaId === pergunta.id ? 'selected' : ''}" 
+             data-pergunta-id="${pergunta.id}"
+             onclick="selecionarPergunta('${pergunta.id}')">
+            <div class="pergunta-card-header">
+                <div class="pergunta-numero">
+                    <i class="fas fa-grip-vertical pergunta-drag-handle"></i>
+                    <span>PERGUNTA ${index + 1}</span>
+                    <span class="pergunta-tipo-badge">${tipoNome}</span>
+                </div>
+                <div class="pergunta-actions">
+                    <button class="btn-pergunta-action" onclick="event.stopPropagation(); duplicarPergunta('${pergunta.id}')" title="Duplicar">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn-pergunta-action" onclick="event.stopPropagation(); excluirPergunta('${pergunta.id}')" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="pergunta-texto">${pergunta.texto}</div>
+            ${opcoesHtml}
+        </div>
+    `;
+}
+
+function adicionarPergunta(tipo) {
+    const novaPergunta = {
+        id: `pergunta_${Date.now()}`,
+        tipo: tipo,
+        texto: 'Nova pergunta',
+        obrigatoria: false,
+        ordem: currentPerguntas.length,
+        opcoes: (tipo === 'multipla_escolha' || tipo === 'selecao_multipla') ? [
+            { texto: 'Opção 1', ordem: 0 },
+            { texto: 'Opção 2', ordem: 1 }
+        ] : []
+    };
+    
+    currentPerguntas.push(novaPergunta);
+    renderPerguntas();
+    selecionarPergunta(novaPergunta.id);
+    
+    showToast('Pergunta adicionada!', 'success');
+}
+
+function selecionarPergunta(id) {
+    selectedPerguntaId = id;
+    renderPerguntas();
+    renderPropriedadesPergunta(id);
+}
+
+function renderPropriedadesPergunta(id) {
+    const pergunta = currentPerguntas.find(p => p.id === id);
+    if (!pergunta) return;
+    
+    const container = document.getElementById('propriedades-container');
+    
+    let opcoesEditor = '';
+    if (pergunta.tipo === 'multipla_escolha' || pergunta.tipo === 'selecao_multipla') {
+        opcoesEditor = `
+            <div class="propriedade-group">
+                <h4>Opções de Resposta</h4>
+                <div class="opcoes-editor">
+                    ${(pergunta.opcoes || []).map((opcao, index) => `
+                        <div class="opcao-input-row">
+                            <input type="text" value="${opcao.texto}" 
+                                   onchange="atualizarOpcao('${id}', ${index}, this.value)"
+                                   placeholder="Opção ${index + 1}">
+                            <button class="btn-pergunta-action" onclick="removerOpcao('${id}', ${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                    <button class="btn-add-opcao" onclick="adicionarOpcao('${id}')">
+                        <i class="fas fa-plus"></i> Adicionar Opção
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = `
+        <div class="propriedades-form">
+            <div class="propriedade-group">
+                <h4>Texto da Pergunta</h4>
+                <input type="text" class="propriedade-input" value="${pergunta.texto}"
+                       onchange="atualizarTextoPergunta('${id}', this.value)"
+                       placeholder="Digite a pergunta">
+            </div>
+            
+            ${opcoesEditor}
+            
+            <div class="propriedade-group">
+                <h4>Configurações</h4>
+                <label class="propriedade-checkbox">
+                    <input type="checkbox" ${pergunta.obrigatoria ? 'checked' : ''}
+                           onchange="toggleObrigatoria('${id}', this.checked)">
+                    Resposta obrigatória
+                </label>
+            </div>
+        </div>
+    `;
+}
+
+function atualizarTextoPergunta(id, texto) {
+    const pergunta = currentPerguntas.find(p => p.id === id);
+    if (pergunta) {
+        pergunta.texto = texto;
+        renderPerguntas();
+    }
+}
+
+function toggleObrigatoria(id, obrigatoria) {
+    const pergunta = currentPerguntas.find(p => p.id === id);
+    if (pergunta) {
+        pergunta.obrigatoria = obrigatoria;
+    }
+}
+
+function atualizarOpcao(perguntaId, index, texto) {
+    const pergunta = currentPerguntas.find(p => p.id === perguntaId);
+    if (pergunta && pergunta.opcoes[index]) {
+        pergunta.opcoes[index].texto = texto;
+        renderPerguntas();
+    }
+}
+
+function adicionarOpcao(perguntaId) {
+    const pergunta = currentPerguntas.find(p => p.id === perguntaId);
+    if (pergunta) {
+        const novaOpcao = {
+            texto: `Opção ${pergunta.opcoes.length + 1}`,
+            ordem: pergunta.opcoes.length
+        };
+        pergunta.opcoes.push(novaOpcao);
+        renderPropriedadesPergunta(perguntaId);
+        renderPerguntas();
+    }
+}
+
+function removerOpcao(perguntaId, index) {
+    const pergunta = currentPerguntas.find(p => p.id === perguntaId);
+    if (pergunta && pergunta.opcoes.length > 2) {
+        pergunta.opcoes.splice(index, 1);
+        renderPropriedadesPergunta(perguntaId);
+        renderPerguntas();
+    } else {
+        showToast('É necessário pelo menos 2 opções', 'error');
+    }
+}
+
+function duplicarPergunta(id) {
+    const pergunta = currentPerguntas.find(p => p.id === id);
+    if (pergunta) {
+        const duplicada = {
+            ...pergunta,
+            id: `pergunta_${Date.now()}`,
+            ordem: currentPerguntas.length
+        };
+        currentPerguntas.push(duplicada);
+        renderPerguntas();
+        showToast('Pergunta duplicada!', 'success');
+    }
+}
+
+function excluirPergunta(id) {
+    if (confirm('Deseja excluir esta pergunta?')) {
+        currentPerguntas = currentPerguntas.filter(p => p.id !== id);
+        if (selectedPerguntaId === id) {
+            selectedPerguntaId = null;
+            document.getElementById('propriedades-container').innerHTML = `
+                <div class="propriedades-empty">
+                    <i class="fas fa-hand-pointer"></i>
+                    <p>Selecione uma pergunta para editar suas propriedades</p>
+                </div>
+            `;
+        }
+        renderPerguntas();
+        showToast('Pergunta excluída!', 'success');
+    }
+}
+
+function setupDragAndDrop() {
+    // Drag from sidebar
+    document.querySelectorAll('.tipo-pergunta-card').forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('tipo', card.dataset.tipo);
+        });
+    });
+    
+    // Drop zone
+    const lista = document.getElementById('perguntas-lista');
+    lista.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    
+    lista.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const tipo = e.dataTransfer.getData('tipo');
+        if (tipo) {
+            adicionarPergunta(tipo);
+        }
+    });
 }
 
 async function duplicarQuestionario(id) {
@@ -7760,3 +8100,242 @@ async function salvarWorkflow() {
         showToast('Erro ao salvar fluxo de trabalho', 'error');
     }
 }
+
+// Funções de salvar e publicar questionários
+async function salvarQuestionario() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showToast('Faça login para salvar', 'error');
+            return;
+        }
+        
+        if (!currentQuestionarioId) {
+            showToast('Erro: questionário não identificado', 'error');
+            return;
+        }
+        
+        const titulo = document.getElementById('questionario-titulo-editor').value.trim();
+        const descricao = document.getElementById('questionario-descricao-editor').value.trim();
+        const status = document.getElementById('questionario-status-editor').value;
+        
+        if (!titulo) {
+            showToast('Digite um título para o questionário', 'error');
+            return;
+        }
+        
+        // Atualizar questionário
+        const response = await fetch(`/questionarios/${currentQuestionarioId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                descricao: descricao || null,
+                status: status
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao salvar questionário');
+        }
+        
+        // Salvar perguntas
+        await salvarPerguntas();
+        
+        showToast('Questionário salvo com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao salvar questionário:', error);
+        showToast('Erro ao salvar questionário. Tente novamente.', 'error');
+    }
+}
+
+async function salvarPerguntas() {
+    const token = localStorage.getItem('authToken');
+    
+    // Excluir todas as perguntas antigas e criar novas
+    for (let i = 0; i < currentPerguntas.length; i++) {
+        const pergunta = currentPerguntas[i];
+        
+        try {
+            const response = await fetch('/perguntas', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    questionario_id: currentQuestionarioId,
+                    texto: pergunta.texto,
+                    tipo: pergunta.tipo,
+                    obrigatoria: pergunta.obrigatoria || false,
+                    ordem: i,
+                    opcoes: pergunta.opcoes || []
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Erro ao salvar pergunta:', pergunta);
+            }
+        } catch (error) {
+            console.error('Erro ao salvar pergunta:', error);
+        }
+    }
+}
+
+async function publicarQuestionario() {
+    const titulo = document.getElementById('questionario-titulo-editor').value.trim();
+    
+    if (!titulo) {
+        showToast('Digite um título antes de publicar', 'error');
+        return;
+    }
+    
+    if (currentPerguntas.length === 0) {
+        showToast('Adicione pelo menos uma pergunta antes de publicar', 'error');
+        return;
+    }
+    
+    if (confirm('Deseja publicar este questionário? Ele ficará disponível para os membros.')) {
+        document.getElementById('questionario-status-editor').value = 'publicado';
+        await salvarQuestionario();
+        showToast('Questionário publicado!', 'success');
+    }
+}
+
+function previewQuestionario() {
+    if (currentPerguntas.length === 0) {
+        showToast('Adicione perguntas para visualizar o preview', 'info');
+        return;
+    }
+    
+    showToast('Preview em desenvolvimento', 'info');
+}
+
+// Funções de IA
+async function sugerirPerguntasIA() {
+    const titulo = document.getElementById('questionario-titulo-editor').value.trim();
+    const descricao = document.getElementById('questionario-descricao-editor').value.trim();
+    
+    if (!titulo) {
+        showToast('Digite um título para o questionário antes de gerar sugestões', 'error');
+        return;
+    }
+    
+    const container = document.getElementById('ia-sugestoes-container');
+    container.innerHTML = '<p style="text-align:center; color:#7f8c8d; font-size:0.8rem;">Gerando sugestões com IA...</p>';
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        
+        // Chamar endpoint de IA
+        const response = await fetch('/api/ia/sugerir-perguntas', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                descricao: descricao,
+                contexto: 'questionario_gym_wellness'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao gerar sugestões');
+        }
+        
+        const sugestoes = await response.json();
+        
+        if (sugestoes && sugestoes.length > 0) {
+            container.innerHTML = sugestoes.map((sugestao, index) => `
+                <div class="tipo-pergunta-card" style="cursor:pointer;" onclick="adicionarPerguntaSugerida(${index})">
+                    <i class="fas fa-sparkles"></i>
+                    <div>
+                        <strong>${sugestao.texto}</strong>
+                        <span>${sugestao.tipo}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Guardar sugestões temporariamente
+            window.currentSugestoes = sugestoes;
+            
+            showToast('Sugestões geradas!', 'success');
+        } else {
+            container.innerHTML = '<p style="text-align:center; color:#95a5a6; font-size:0.8rem;">Nenhuma sugestão disponível</p>';
+        }
+        
+    } catch (error) {
+        console.error('Erro ao gerar sugestões:', error);
+        container.innerHTML = '<p style="text-align:center; color:#e74c3c; font-size:0.8rem;">Erro ao gerar sugestões. Tente novamente.</p>';
+        showToast('Erro ao gerar sugestões de IA', 'error');
+    }
+}
+
+function adicionarPerguntaSugerida(index) {
+    if (window.currentSugestoes && window.currentSugestoes[index]) {
+        const sugestao = window.currentSugestoes[index];
+        
+        const novaPergunta = {
+            id: `pergunta_${Date.now()}`,
+            tipo: sugestao.tipo || 'texto_curto',
+            texto: sugestao.texto,
+            obrigatoria: sugestao.obrigatoria || false,
+            ordem: currentPerguntas.length,
+            opcoes: sugestao.opcoes || []
+        };
+        
+        currentPerguntas.push(novaPergunta);
+        renderPerguntas();
+        
+        showToast('Pergunta adicionada!', 'success');
+    }
+}
+
+async function melhorarComIA() {
+    if (currentPerguntas.length === 0) {
+        showToast('Adicione perguntas antes de melhorar com IA', 'error');
+        return;
+    }
+    
+    showToast('Melhorando questionário com IA...', 'info');
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        const titulo = document.getElementById('questionario-titulo-editor').value.trim();
+        
+        const response = await fetch('/api/ia/melhorar-questionario', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                perguntas: currentPerguntas
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao melhorar questionário');
+        }
+        
+        const resultado = await response.json();
+        
+        if (resultado.perguntas) {
+            currentPerguntas = resultado.perguntas;
+            renderPerguntas();
+            showToast('Questionário melhorado com IA!', 'success');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao melhorar com IA:', error);
+        showToast('Funcionalidade de IA em desenvolvimento', 'info');
+    }
+}
+

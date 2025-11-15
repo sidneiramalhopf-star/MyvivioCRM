@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251115v6">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251115v7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -1224,6 +1224,139 @@
                             <!-- Grid de cards de questionários -->
                             <div class="jornadas-grid" id="questionarios-grid">
                                 <!-- Cards de questionários serão carregados dinamicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Página Editor de Questionário -->
+                        <div id="automacao-questionario-editor" class="automacao-page">
+                            <!-- Breadcrumb e ações -->
+                            <div class="questionario-editor-header">
+                                <div class="questionario-editor-breadcrumb">
+                                    <button class="btn-back-circle" onclick="voltarParaQuestionarios()">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                    <span class="breadcrumb-text">Questionários</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                    <span class="breadcrumb-text" id="questionario-editor-titulo-breadcrumb">Novo Questionário</span>
+                                </div>
+                                <div class="questionario-editor-actions">
+                                    <button class="btn-secondary" onclick="previewQuestionario()">
+                                        <i class="fas fa-eye"></i> PREVIEW
+                                    </button>
+                                    <button class="btn-secondary" onclick="melhorarComIA()">
+                                        <i class="fas fa-wand-magic-sparkles"></i> MELHORAR COM IA
+                                    </button>
+                                    <button class="btn-primary" onclick="salvarQuestionario()">
+                                        <i class="fas fa-save"></i> SALVAR
+                                    </button>
+                                    <button class="btn-nova-jornada" onclick="publicarQuestionario()">
+                                        <i class="fas fa-paper-plane"></i> PUBLICAR
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Layout de 3 colunas -->
+                            <div class="questionario-editor-layout">
+                                <!-- Sidebar Esquerda: Tipos de Perguntas -->
+                                <div class="questionario-sidebar-esquerda">
+                                    <h3><i class="fas fa-plus-circle"></i> Adicionar Pergunta</h3>
+                                    <div class="tipos-perguntas-list">
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="texto_curto">
+                                            <i class="fas fa-font"></i>
+                                            <div>
+                                                <strong>Texto Curto</strong>
+                                                <span>Resposta em uma linha</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="texto_longo">
+                                            <i class="fas fa-align-left"></i>
+                                            <div>
+                                                <strong>Texto Longo</strong>
+                                                <span>Resposta em várias linhas</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="multipla_escolha">
+                                            <i class="fas fa-list-ul"></i>
+                                            <div>
+                                                <strong>Múltipla Escolha</strong>
+                                                <span>Uma resposta de várias opções</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="selecao_multipla">
+                                            <i class="fas fa-check-double"></i>
+                                            <div>
+                                                <strong>Seleção Múltipla</strong>
+                                                <span>Várias respostas possíveis</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="escala_likert">
+                                            <i class="fas fa-star-half-alt"></i>
+                                            <div>
+                                                <strong>Escala Likert</strong>
+                                                <span>Avaliação de 1 a 5</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="data">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <div>
+                                                <strong>Data</strong>
+                                                <span>Selecionar data</span>
+                                            </div>
+                                        </div>
+                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="numero">
+                                            <i class="fas fa-hashtag"></i>
+                                            <div>
+                                                <strong>Número</strong>
+                                                <span>Valor numérico</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ia-sugestoes-section">
+                                        <h3><i class="fas fa-sparkles"></i> Sugestões de IA</h3>
+                                        <button class="btn-ia-sugerir" onclick="sugerirPerguntasIA()">
+                                            <i class="fas fa-robot"></i> GERAR PERGUNTAS COM IA
+                                        </button>
+                                        <div id="ia-sugestoes-container" class="ia-sugestoes-list">
+                                            <!-- Sugestões aparecerão aqui -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Área Central: Canvas de Perguntas -->
+                                <div class="questionario-canvas">
+                                    <div class="questionario-info-card">
+                                        <input type="text" id="questionario-titulo-editor" class="questionario-titulo-input" 
+                                               placeholder="Título do Questionário" value="">
+                                        <textarea id="questionario-descricao-editor" class="questionario-descricao-input" 
+                                                  placeholder="Descrição (opcional)" rows="2"></textarea>
+                                        <div class="questionario-meta-info">
+                                            <select id="questionario-status-editor" class="questionario-status-select">
+                                                <option value="rascunho">Rascunho</option>
+                                                <option value="publicado">Publicado</option>
+                                                <option value="arquivado">Arquivado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div id="perguntas-lista" class="perguntas-lista">
+                                        <!-- Perguntas aparecerão aqui -->
+                                        <div class="perguntas-empty-state">
+                                            <i class="fas fa-arrow-left"></i>
+                                            <p>Arraste um tipo de pergunta da esquerda ou clique em "Gerar com IA"</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sidebar Direita: Propriedades da Pergunta -->
+                                <div class="questionario-sidebar-direita">
+                                    <div id="propriedades-container">
+                                        <div class="propriedades-empty">
+                                            <i class="fas fa-hand-pointer"></i>
+                                            <p>Selecione uma pergunta para editar suas propriedades</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -2595,7 +2728,7 @@
         <i class="fas fa-calendar-days"></i>
     </button>
 
-    <script src="/static/js/mockData.js?v=20251115v6"></script>
-    <script src="/static/js/app.js?v=20251115v6"></script>
+    <script src="/static/js/mockData.js?v=20251115v8"></script>
+    <script src="/static/js/app.js?v=20251115v8"></script>
 </body>
 </html>
