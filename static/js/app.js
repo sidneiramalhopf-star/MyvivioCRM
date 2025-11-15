@@ -6193,9 +6193,31 @@ const ELEMENT_CONFIGS = {
         title: 'Enviar mensagem',
         sections: [
             {
+                label: 'Selecionar canais',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'checkbox',
+                        name: 'message-channels',
+                        options: [
+                            { value: 'push', label: 'Push Notification', icon: 'bell', default: true },
+                            { value: 'email', label: 'E-mail', icon: 'envelope' },
+                            { value: 'interno', label: 'Notificação Interna', icon: 'inbox' },
+                            { value: 'whatsapp', label: 'WhatsApp (em breve)', icon: 'whatsapp' }
+                        ]
+                    }
+                ]
+            },
+            {
                 label: 'Configurar mensagem',
                 collapsible: true,
                 components: [
+                    {
+                        type: 'text',
+                        name: 'message-title',
+                        placeholder: 'Título da mensagem',
+                        required: true
+                    },
                     {
                         type: 'textarea',
                         name: 'message-content',
@@ -6267,6 +6289,124 @@ const ELEMENT_CONFIGS = {
                             { value: 'cliente', label: 'Cliente' },
                             { value: 'prospect', label: 'Prospect' }
                         ]
+                    }
+                ]
+            }
+        ]
+    },
+    'delay': {
+        title: 'Aguardar Tempo',
+        sections: [
+            {
+                label: 'Configurar tempo de espera',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'number',
+                        name: 'delay-amount',
+                        placeholder: 'Quantidade',
+                        required: true,
+                        min: 1
+                    },
+                    {
+                        type: 'radio',
+                        name: 'delay-unit',
+                        required: true,
+                        options: [
+                            { value: 'minutes', label: 'Minutos' },
+                            { value: 'hours', label: 'Horas', default: true },
+                            { value: 'days', label: 'Dias' },
+                            { value: 'weeks', label: 'Semanas' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    'atualizar-perfil': {
+        title: 'Atualizar Perfil',
+        sections: [
+            {
+                label: 'Selecionar campo a atualizar',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'select',
+                        name: 'profile-field',
+                        placeholder: 'Campo do perfil',
+                        required: true,
+                        options: [
+                            { value: 'estado', label: 'Estado do usuário' },
+                            { value: 'risco-churn', label: 'Risco de churn' },
+                            { value: 'meta-semana', label: 'Meta da semana' },
+                            { value: 'nivel-engajamento', label: 'Nível de engajamento' },
+                            { value: 'categoria-saude', label: 'Categoria de saúde' }
+                        ]
+                    },
+                    {
+                        type: 'text',
+                        name: 'profile-value',
+                        placeholder: 'Novo valor',
+                        required: true
+                    }
+                ]
+            }
+        ]
+    },
+    'ia-assistente': {
+        title: 'IA Assistente',
+        sections: [
+            {
+                label: 'Configurar ação preditiva',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'select',
+                        name: 'ia-action',
+                        placeholder: 'Tipo de análise',
+                        required: true,
+                        options: [
+                            { value: 'prever-abandono', label: 'Prever risco de abandono' },
+                            { value: 'sugerir-acao', label: 'Sugerir próxima ação' },
+                            { value: 'otimizar-horario', label: 'Otimizar horário de contato' },
+                            { value: 'personalizar-meta', label: 'Personalizar meta' }
+                        ]
+                    },
+                    {
+                        type: 'info',
+                        message: '🤖 Recurso em desenvolvimento. A IA analisará padrões de comportamento para ações automáticas.'
+                    }
+                ]
+            }
+        ]
+    },
+    'gamificacao': {
+        title: 'Gamificação',
+        sections: [
+            {
+                label: 'Configurar recompensa',
+                collapsible: true,
+                components: [
+                    {
+                        type: 'radio',
+                        name: 'gamification-type',
+                        required: true,
+                        options: [
+                            { value: 'points', label: 'Atribuir pontos', default: true },
+                            { value: 'badge', label: 'Liberar badge' },
+                            { value: 'challenge', label: 'Emitir desafio' }
+                        ]
+                    },
+                    {
+                        type: 'number',
+                        name: 'points-amount',
+                        placeholder: 'Quantidade de pontos',
+                        min: 1
+                    },
+                    {
+                        type: 'text',
+                        name: 'reward-name',
+                        placeholder: 'Nome da recompensa'
                     }
                 ]
             }
@@ -6421,6 +6561,14 @@ function renderComponent(component, elementType) {
             return renderTextInput(component);
         case 'textarea':
             return renderTextarea(component);
+        case 'number':
+            return renderNumberInput(component);
+        case 'select':
+            return renderSelect(component);
+        case 'checkbox':
+            return renderCheckboxGroup(component);
+        case 'info':
+            return renderInfoBox(component);
         default:
             return null;
     }
@@ -6525,6 +6673,113 @@ function renderTextarea(component) {
     return div;
 }
 
+// Renderizar number input
+function renderNumberInput(component) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.style.padding = '0.5rem';
+    
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.name = component.name;
+    input.placeholder = component.placeholder || '';
+    input.required = component.required || false;
+    input.min = component.min || 0;
+    input.max = component.max || 9999;
+    input.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid #e8e8e8; border-radius: 4px;';
+    input.oninput = () => {
+        nestedSidebarState.values[component.name] = parseInt(input.value) || 0;
+    };
+    
+    div.appendChild(input);
+    return div;
+}
+
+// Renderizar select dropdown
+function renderSelect(component) {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.style.padding = '0.5rem';
+    
+    const select = document.createElement('select');
+    select.name = component.name;
+    select.required = component.required || false;
+    select.style.cssText = 'width: 100%; padding: 0.5rem; border: 1px solid #e8e8e8; border-radius: 4px; background: white;';
+    
+    // Placeholder option
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = component.placeholder || 'Selecione...';
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    select.appendChild(placeholderOption);
+    
+    // Options
+    component.options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.label;
+        select.appendChild(option);
+    });
+    
+    select.onchange = () => {
+        nestedSidebarState.values[component.name] = select.value;
+    };
+    
+    div.appendChild(select);
+    return div;
+}
+
+// Renderizar checkbox group
+function renderCheckboxGroup(component) {
+    const div = document.createElement('div');
+    div.className = 'nested-checkbox-group';
+    div.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem;';
+    
+    if (!nestedSidebarState.values[component.name]) {
+        nestedSidebarState.values[component.name] = [];
+    }
+    
+    component.options.forEach(option => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; cursor: pointer;';
+        
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = option.value;
+        if (option.default) input.checked = true;
+        input.onchange = () => {
+            if (input.checked) {
+                if (!nestedSidebarState.values[component.name].includes(option.value)) {
+                    nestedSidebarState.values[component.name].push(option.value);
+                }
+            } else {
+                nestedSidebarState.values[component.name] = nestedSidebarState.values[component.name].filter(v => v !== option.value);
+            }
+        };
+        
+        const icon = document.createElement('i');
+        icon.className = `fas fa-${option.icon || 'check'}`;
+        icon.style.marginLeft = '0.25rem';
+        
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(option.label));
+        if (option.icon) label.appendChild(icon);
+        div.appendChild(label);
+    });
+    
+    return div;
+}
+
+// Renderizar info box
+function renderInfoBox(component) {
+    const div = document.createElement('div');
+    div.className = 'info-box';
+    div.style.cssText = 'background: #e8f4f8; border-left: 4px solid #62b1ca; padding: 0.75rem; margin: 0.5rem; border-radius: 4px; color: #123058;';
+    div.textContent = component.message;
+    return div;
+}
+
 // Filtrar lista nested
 function filtrarNestedList(input) {
     const searchText = input.value.toLowerCase();
@@ -6553,7 +6808,11 @@ const ELEMENT_DEFINITIONS = {
     'mensagem': { label: 'Mensagem', icon: 'comment', color: '#123058' },
     'email': { label: 'E-mail', icon: 'envelope', color: '#123058' },
     'questionario': { label: 'Questionário', icon: 'clipboard-question', color: '#123058' },
-    'tipo-contato': { label: 'Tipo de Contato', icon: 'user-tag', color: '#123058' }
+    'tipo-contato': { label: 'Tipo de Contato', icon: 'user-tag', color: '#123058' },
+    'delay': { label: 'Aguardar Tempo', icon: 'hourglass-half', color: '#1f2746' },
+    'atualizar-perfil': { label: 'Atualizar Perfil', icon: 'user-edit', color: '#123058' },
+    'ia-assistente': { label: 'IA Assistente', icon: 'robot', color: '#62b1ca' },
+    'gamificacao': { label: 'Gamificação', icon: 'trophy', color: '#123058' }
 };
 
 // Confirmar nested sidebar e inserir elemento
