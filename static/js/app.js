@@ -5150,6 +5150,13 @@ let edgeIdCounter = 1;
 let isPanning = false;
 let panStart = { x: 0, y: 0 };
 
+// Contexto da sidebar de configuração
+let sidebarContext = {
+    mode: null,        // 'card' ou 'edge'
+    configData: {},    // Dados de configuração do elemento
+    nodeId: null       // ID do node sendo editado
+};
+
 // Definições de tipos de nodes
 const nodeDefinitions = {
     aguardar: {
@@ -5263,9 +5270,6 @@ function abrirWorkflowBuilder() {
             // Renderizar edges salvos
             workflowState.edges.forEach(edge => renderEdge(edge));
             
-            // Renderizar botões + entre elementos
-            renderEdgeAddButtons();
-            
             // Aplicar viewport salvo
             applyViewportTransform();
             
@@ -5337,9 +5341,6 @@ function initEmptyWorkflow(journeyId, name) {
     renderNode(startNode);
     renderNode(endNode);
     renderEdge(edge);
-    
-    // Renderizar botões + entre elementos
-    renderEdgeAddButtons();
     
     // Inicializar counter após nodes especiais
     nodeIdCounter = 1;
@@ -6593,57 +6594,7 @@ const ELEMENT_CONFIGS = {
     }
 };
 
-// Renderizar botões + entre elementos
-function renderEdgeAddButtons() {
-    // Garantir que todos os botões antigos sejam removidos
-    const stage = document.getElementById('canvas-stage');
-    if (!stage) return;
-    
-    // Remover todos os botões + existentes do stage
-    const oldButtons = stage.querySelectorAll('.edge-add-button');
-    oldButtons.forEach(btn => btn.remove());
-    
-    // Adicionar botão + para cada edge existente
-    workflowState.edges.forEach(edge => {
-        const sourceNode = workflowState.nodes.find(n => n.id === edge.source.nodeId);
-        const targetNode = workflowState.nodes.find(n => n.id === edge.target.nodeId);
-        
-        if (!sourceNode || !targetNode) return;
-        
-        // Constantes de dimensões
-        const NODE_WIDTH = 200;
-        const NODE_HEIGHT = 100;
-        const BUTTON_SIZE = 32;
-        
-        // Calcular midpoint perfeito entre os nodes
-        const midX = (sourceNode.position.x + targetNode.position.x) / 2;
-        const midY = (sourceNode.position.y + targetNode.position.y) / 2;
-        
-        // Criar botão + centralizado
-        const button = document.createElement('div');
-        button.className = 'edge-add-button';
-        button.style.left = `${midX + (NODE_WIDTH / 2) - (BUTTON_SIZE / 2)}px`;
-        button.style.top = `${midY + (NODE_HEIGHT / 2) - (BUTTON_SIZE / 2)}px`;
-        button.dataset.edgeId = edge.id;
-        button.innerHTML = '<i class="fas fa-plus"></i>';
-        button.onclick = () => ativarModoInsercao(edge.id);
-        
-        stage.appendChild(button);
-    });
-}
-
-// Ativar modo de inserção ao clicar no + entre nodes
-function ativarModoInsercao(edgeId) {
-    edgeInsertionMode = true;
-    activeEdgeId = edgeId;
-    
-    // Mostrar todos os botões + dos cards
-    document.querySelectorAll('.element-card-add-btn').forEach(btn => {
-        btn.style.display = 'flex';
-    });
-    
-    showToast('Selecione um elemento para inserir', 'info');
-}
+// REMOVIDO: renderEdgeAddButtons() e ativarModoInsercao() - substituídos por renderEdgeButton() e openEdgeInsertMenu()
 
 // Abrir nested sidebar a partir do card
 function abrirNestedSidebarCard(elementType) {
@@ -7079,9 +7030,6 @@ function inserirElementoComConfig(elementType, configValues) {
     renderEdge(edge1);
     renderEdge(edge2);
     
-    // Atualizar botões +
-    renderEdgeAddButtons();
-    
     // Salvar workflow no localStorage
     if (workflowState.journeyId) {
         const workflowData = JSON.stringify(workflowState);
@@ -7165,9 +7113,6 @@ function inserirElementoDireto(edgeId) {
     renderEdge(edge1);
     renderEdge(edge2);
     
-    // Atualizar botões +
-    renderEdgeAddButtons();
-    
     // Atualizar último tipo inserido
     lastInsertedType = elementType;
     
@@ -7195,24 +7140,14 @@ function fecharNestedSidebar() {
     });
 }
 
-// Selecionar trigger e inserir node no meio (LEGACY - mantido para compatibilidade)
+// Selecionar trigger e inserir node no meio (não é mais usado - preservado para compatibilidade)
 function selecionarTrigger(triggerId) {
-    // Modo card: configurar elemento via sidebar
-    if (sidebarContext.mode === 'card') {
-        // Adicionar trigger à configuração
-        sidebarContext.configData.trigger = triggerId;
-        
-        // TODO: Implementar inserção via card quando tiver edge selecionada
-        showToast('Configuração salva! (Implementação em progresso)', 'info');
-        fecharNestedSidebar();
-        return;
-    }
-    
-    // Modo legacy (não deve ocorrer mais)
-    showToast('Erro: modo de inserção inválido', 'error');
+    // Esta função foi substituída pelo sistema de nested sidebar
+    // Apenas mostra mensagem informativa
+    showToast('Use os botões "+" nas conexões para inserir elementos', 'info');
     return;
     
-    const edge = null; // Removido: workflowState.edges.find(e => e.id === currentEdgeForInsertion);
+    const edge = null;
     if (!edge) {
         showToast('Erro: conexão não encontrada. Tente novamente.', 'error');
         fecharNestedSidebar();
@@ -7289,9 +7224,6 @@ function selecionarTrigger(triggerId) {
     workflowState.edges.push(edge1, edge2);
     renderEdge(edge1);
     renderEdge(edge2);
-    
-    // Atualizar botões +
-    renderEdgeAddButtons();
     
     // Fechar sidebar
     fecharNestedSidebar();
