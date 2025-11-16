@@ -1804,7 +1804,7 @@
 
                     <!-- Modal de Criação de Questionário -->
                     <div id="modal-novo-questionario" class="modal-overlay" style="display: none;">
-                        <div class="modal-container modal-nova-jornada">
+                        <div class="modal-container modal-criar-questionario">
                             <div class="modal-header">
                                 <h2>Criar novo questionário</h2>
                                 <button class="btn-close-modal" onclick="fecharModalNovoQuestionario()">
@@ -1813,34 +1813,79 @@
                             </div>
                             <div class="modal-body">
                                 <form id="form-novo-questionario">
-                                    <!-- Campo Título -->
+                                    <!-- Preview de Thumbnail Grande -->
+                                    <div class="thumbnail-preview-container">
+                                        <div class="thumbnail-preview-area" id="thumbnail-preview-area">
+                                            <img id="thumbnail-preview-img" src="" alt="" style="display: none;">
+                                            <span class="thumbnail-placeholder-text" id="thumbnail-placeholder-text">Preview da imagem</span>
+                                        </div>
+                                        <button type="button" class="thumbnail-upload-btn" onclick="document.getElementById('questionario-thumbnail-input').click()">
+                                            <i class="fas fa-camera"></i>
+                                        </button>
+                                        <input type="file" id="questionario-thumbnail-input" accept="image/*" style="display: none;" onchange="previewQuestionarioThumbnail(event)">
+                                    </div>
+
+                                    <!-- Campo Nome (obrigatório) -->
                                     <div class="form-group">
-                                        <label>TÍTULO</label>
-                                        <input type="text" id="questionario-titulo" placeholder="Ex: Avaliação de Satisfação, Questionário de Saúde" required>
+                                        <label id="questionario-nome-label">Nome</label>
+                                        <input type="text" id="questionario-nome" placeholder="Campo obrigatório" class="input-obrigatorio">
                                     </div>
 
                                     <!-- Campo Descrição -->
                                     <div class="form-group">
-                                        <label>DESCRIÇÃO (opcional)</label>
-                                        <textarea id="questionario-descricao" placeholder="Descreva o objetivo deste questionário..." rows="4"></textarea>
+                                        <label>Descrição</label>
+                                        <textarea id="questionario-descricao" placeholder="Descrição do questionário..." rows="4"></textarea>
                                     </div>
 
-                                    <!-- Template Inicial -->
+                                    <!-- Opções de Função -->
                                     <div class="form-group">
-                                        <label>INICIAR COM TEMPLATE</label>
-                                        <select id="questionario-template">
-                                            <option value="">Questionário em branco</option>
-                                            <option value="satisfacao">Questionário de Satisfação</option>
-                                            <option value="saude">Avaliação de Saúde</option>
-                                            <option value="onboarding">Onboarding de Novos Membros</option>
-                                            <option value="nps">Net Promoter Score (NPS)</option>
-                                        </select>
+                                        <label>Opções de função</label>
+                                        <div class="funcoes-checkboxes">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="funcao-todas" onchange="toggleFuncoesCheckboxes()">
+                                                <span>Todas as funções</span>
+                                            </label>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="funcao-selecionadas">
+                                                <span>Funções selecionadas</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Grid de Categorias (2x3) -->
+                                    <div class="form-group">
+                                        <label>Categoria</label>
+                                        <div class="categoria-grid">
+                                            <div class="categoria-card" data-categoria="saude" onclick="selecionarCategoria('saude')">
+                                                <i class="fas fa-heartbeat" style="color: #3b82f6;"></i>
+                                                <span>Avaliação de saúde</span>
+                                            </div>
+                                            <div class="categoria-card" data-categoria="progresso" onclick="selecionarCategoria('progresso')">
+                                                <i class="fas fa-chart-line" style="color: #10b981;"></i>
+                                                <span>Verificação de progresso</span>
+                                            </div>
+                                            <div class="categoria-card" data-categoria="perfil" onclick="selecionarCategoria('perfil')">
+                                                <i class="fas fa-user" style="color: #f97316;"></i>
+                                                <span>Perfil</span>
+                                            </div>
+                                            <div class="categoria-card" data-categoria="anamnese" onclick="selecionarCategoria('anamnese')">
+                                                <i class="fas fa-clipboard-list" style="color: #ef4444;"></i>
+                                                <span>Anamnese</span>
+                                            </div>
+                                            <div class="categoria-card" data-categoria="feedback" onclick="selecionarCategoria('feedback')">
+                                                <i class="fas fa-comment-dots" style="color: #f59e0b;"></i>
+                                                <span>Feedback</span>
+                                            </div>
+                                            <div class="categoria-card" data-categoria="genetico" onclick="selecionarCategoria('genetico')">
+                                                <i class="fas fa-dna" style="color: #8b5cf6;"></i>
+                                                <span>Genético</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
-                            <div class="modal-footer">
-                                <button class="btn-secundario" onclick="fecharModalNovoQuestionario()">CANCELAR</button>
-                                <button class="btn-criar-jornada" onclick="criarQuestionario()">CRIAR QUESTIONÁRIO</button>
+                            <div class="modal-footer modal-footer-right">
+                                <button class="btn-criar-questionario" onclick="criarQuestionarioComCategoria()">CRIAR</button>
                             </div>
                         </div>
                     </div>

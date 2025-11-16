@@ -762,26 +762,102 @@ function criarJornada() {
 // Funções de Questionários
 // ============================================================
 
+let selectedCategoria = null;
+let selectedThumbnailFile = null;
+
 function abrirNovoQuestionario() {
     document.getElementById('modal-novo-questionario').style.display = 'flex';
     
     // Limpar formulário
     document.getElementById('form-novo-questionario').reset();
+    
+    // Resetar preview de thumbnail
+    const previewImg = document.getElementById('thumbnail-preview-img');
+    const placeholderText = document.getElementById('thumbnail-placeholder-text');
+    previewImg.style.display = 'none';
+    previewImg.src = '';
+    placeholderText.style.display = 'block';
+    selectedThumbnailFile = null;
+    
+    // Resetar categoria selecionada
+    selectedCategoria = null;
+    document.querySelectorAll('.categoria-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Resetar validação
+    const nomeInput = document.getElementById('questionario-nome');
+    const nomeLabel = document.getElementById('questionario-nome-label');
+    nomeInput.classList.remove('error');
+    nomeLabel.classList.remove('error');
+    
+    // Resetar checkboxes
+    document.getElementById('funcao-todas').checked = false;
+    document.getElementById('funcao-selecionadas').checked = false;
 }
 
 function fecharModalNovoQuestionario() {
     document.getElementById('modal-novo-questionario').style.display = 'none';
 }
 
-async function criarQuestionario() {
-    const titulo = document.getElementById('questionario-titulo').value.trim();
-    const descricao = document.getElementById('questionario-descricao').value.trim();
-    const template = document.getElementById('questionario-template').value;
+function previewQuestionarioThumbnail(event) {
+    const file = event.target.files[0];
+    if (!file) return;
     
-    if (!titulo) {
-        showToast('Digite um título para o questionário', 'error');
+    selectedThumbnailFile = file;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImg = document.getElementById('thumbnail-preview-img');
+        const placeholderText = document.getElementById('thumbnail-placeholder-text');
+        
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+        placeholderText.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function selecionarCategoria(categoria) {
+    // Remover seleção anterior
+    document.querySelectorAll('.categoria-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Adicionar seleção na nova categoria
+    const card = document.querySelector(`.categoria-card[data-categoria="${categoria}"]`);
+    if (card) {
+        card.classList.add('selected');
+        selectedCategoria = categoria;
+    }
+}
+
+function toggleFuncoesCheckboxes() {
+    const todasCheckbox = document.getElementById('funcao-todas');
+    const selecionadasCheckbox = document.getElementById('funcao-selecionadas');
+    
+    if (todasCheckbox.checked) {
+        selecionadasCheckbox.checked = false;
+    }
+}
+
+async function criarQuestionarioComCategoria() {
+    const nome = document.getElementById('questionario-nome').value.trim();
+    const descricao = document.getElementById('questionario-descricao').value.trim();
+    const nomeInput = document.getElementById('questionario-nome');
+    const nomeLabel = document.getElementById('questionario-nome-label');
+    
+    // Validação de nome obrigatório
+    if (!nome) {
+        nomeInput.classList.add('error');
+        nomeLabel.classList.add('error');
+        showToast('O campo Nome é obrigatório', 'error');
         return;
     }
+    
+    // Remover classes de erro se preenchido
+    nomeInput.classList.remove('error');
+    nomeLabel.classList.remove('error');
     
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -790,6 +866,33 @@ async function criarQuestionario() {
     }
     
     try {
+        let thumbnailUrl = null;
+        
+        // Upload de thumbnail se selecionado
+        if (selectedThumbnailFile) {
+            const formData = new FormData();
+            formData.append('file', selectedThumbnailFile);
+            
+            const uploadResponse = await fetch('/upload/thumbnail', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            if (uploadResponse.ok) {
+                const uploadResult = await uploadResponse.json();
+                thumbnailUrl = uploadResult.url || uploadResult.filename;
+            }
+        }
+        
+        // Se não houver thumbnail personalizado, usar o padrão da categoria
+        if (!thumbnailUrl && selectedCategoria) {
+            thumbnailUrl = `/static/uploads/thumbnails/default_${selectedCategoria}.jpg`;
+        }
+        
+        // Criar questionário
         const response = await fetch('/questionarios', {
             method: 'POST',
             headers: {
@@ -797,9 +900,14 @@ async function criarQuestionario() {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                titulo: titulo,
+                titulo: nome,
                 descricao: descricao || null,
-                configuracoes: { template: template }
+                categoria: selectedCategoria || 'generico',
+                thumbnail_url: thumbnailUrl,
+                configuracoes: {
+                    todas_funcoes: document.getElementById('funcao-todas').checked,
+                    funcoes_selecionadas: document.getElementById('funcao-selecionadas').checked
+                }
             })
         });
         
@@ -819,6 +927,10 @@ async function criarQuestionario() {
         console.error('Erro ao criar questionário:', error);
         showToast('Erro ao criar questionário. Tente novamente.', 'error');
     }
+}
+
+async function criarQuestionario() {
+    await criarQuestionarioComCategoria();
 }
 
 // Estado global do editor de questionários
