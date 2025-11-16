@@ -1056,9 +1056,29 @@ function renderSecao(secao, secaoIndex) {
                 <div class="secao-numero">
                     <i class="fas fa-ellipsis-v"></i>
                     <span>Seção ${secaoIndex + 1} de ${totalSecoes}</span>
-                    <button class="btn-secao-menu" onclick="event.stopPropagation(); toggleSecaoMenu('${secao.id}')">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
+                    <div class="secao-menu-container">
+                        <button class="btn-secao-menu" onclick="event.stopPropagation(); toggleSecaoMenu('${secao.id}')">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="secao-menu-dropdown" id="secao-menu-${secao.id}" style="display: none;">
+                            <button class="menu-item" onclick="event.stopPropagation(); adicionarNovaSecao()">
+                                <i class="fas fa-plus"></i>
+                                <span>Nova seção</span>
+                            </button>
+                            <button class="menu-item" onclick="event.stopPropagation(); moverSecoes('${secao.id}')">
+                                <i class="fas fa-arrows-alt-v"></i>
+                                <span>Mover seções</span>
+                            </button>
+                            <button class="menu-item" onclick="event.stopPropagation(); clonarSecao('${secao.id}')">
+                                <i class="fas fa-clone"></i>
+                                <span>Clone</span>
+                            </button>
+                            <button class="menu-item menu-item-danger" onclick="event.stopPropagation(); excluirSecao('${secao.id}')">
+                                <i class="fas fa-trash"></i>
+                                <span>Excluir</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <input 
                     type="text" 
@@ -1568,6 +1588,85 @@ function atualizarTituloSecao(secaoId, novoTitulo) {
     const secao = currentSecoes.find(s => s.id === secaoId);
     if (secao) {
         secao.titulo = novoTitulo;
+    }
+}
+
+function toggleSecaoMenu(secaoId) {
+    const menu = document.getElementById(`secao-menu-${secaoId}`);
+    if (!menu) return;
+    
+    // Fechar todos os outros menus
+    document.querySelectorAll('.secao-menu-dropdown').forEach(m => {
+        if (m.id !== `secao-menu-${secaoId}`) {
+            m.style.display = 'none';
+        }
+    });
+    
+    // Toggle do menu atual
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    
+    // Fechar ao clicar fora
+    setTimeout(() => {
+        const closeHandler = (e) => {
+            if (!e.target.closest('.secao-menu-container')) {
+                menu.style.display = 'none';
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 10);
+}
+
+function adicionarNovaSecao() {
+    criarNovaSecao();
+    renderPerguntas();
+    showToast('Nova seção adicionada!', 'success');
+}
+
+function moverSecoes(secaoId) {
+    // TODO: Implementar interface para mover seções (drag and drop ou setas)
+    showToast('Funcionalidade em desenvolvimento', 'info');
+}
+
+function clonarSecao(secaoId) {
+    const secao = currentSecoes.find(s => s.id === secaoId);
+    if (!secao) return;
+    
+    const newSecaoId = `secao_${Date.now()}`;
+    
+    const secaoClonada = {
+        id: newSecaoId,
+        titulo: `${secao.titulo} (Cópia)`,
+        descricao: secao.descricao,
+        ordem: currentSecoes.length,
+        perguntas: secao.perguntas.map((p, index) => ({
+            ...p,
+            id: `pergunta_${Date.now()}_${index}_${Math.random()}`,
+            secao_id: newSecaoId
+        }))
+    };
+    
+    currentSecoes.push(secaoClonada);
+    renderPerguntas();
+    showToast('Seção clonada com sucesso!', 'success');
+}
+
+function excluirSecao(secaoId) {
+    const secao = currentSecoes.find(s => s.id === secaoId);
+    if (!secao) return;
+    
+    const numPerguntas = secao.perguntas.length;
+    const mensagem = numPerguntas > 0 
+        ? `Deseja realmente excluir esta seção? Isso removerá ${numPerguntas} pergunta(s).`
+        : 'Deseja realmente excluir esta seção?';
+    
+    if (confirm(mensagem)) {
+        const index = currentSecoes.findIndex(s => s.id === secaoId);
+        if (index > -1) {
+            currentSecoes.splice(index, 1);
+            renderPerguntas();
+            showToast('Seção excluída!', 'success');
+        }
     }
 }
 
@@ -8958,6 +9057,53 @@ function previewQuestionario() {
     }
     
     showToast('Preview em desenvolvimento', 'info');
+}
+
+// Menu Principal do Questionário
+function toggleMenuPrincipalQuestionario(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('menu-principal-questionario');
+    if (!menu) return;
+    
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    
+    // Fechar ao clicar fora
+    if (menu.style.display === 'block') {
+        setTimeout(() => {
+            const closeHandler = (e) => {
+                if (!e.target.closest('.questionario-menu-principal')) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            document.addEventListener('click', closeHandler);
+        }, 10);
+    }
+}
+
+function mostrarPrevia() {
+    previewQuestionario();
+    document.getElementById('menu-principal-questionario').style.display = 'none';
+}
+
+function abrirRelatorio() {
+    showToast('Relatório em desenvolvimento', 'info');
+    document.getElementById('menu-principal-questionario').style.display = 'none';
+}
+
+function compartilharQuestionario() {
+    showToast('Compartilhamento em desenvolvimento', 'info');
+    document.getElementById('menu-principal-questionario').style.display = 'none';
+}
+
+function configurarQuestionario() {
+    showToast('Configurações em desenvolvimento', 'info');
+    document.getElementById('menu-principal-questionario').style.display = 'none';
+}
+
+function ocultarQuestionario() {
+    showToast('Ocultar em desenvolvimento', 'info');
+    document.getElementById('menu-principal-questionario').style.display = 'none';
 }
 
 // Funções de IA
