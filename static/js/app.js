@@ -996,6 +996,10 @@ async function abrirQuestionario(id) {
             if (statusSelect) statusSelect.value = questionario.status || 'rascunho';
             if (breadcrumb) breadcrumb.textContent = questionario.titulo || 'Novo Questionário';
             
+            // Renderizar elementos da sidebar
+            console.log('[Editor] Renderizando elementos da sidebar...');
+            renderElements();
+            
             // Renderizar perguntas
             console.log('[Editor] Renderizando perguntas...');
             renderPerguntas();
@@ -1026,8 +1030,8 @@ function renderPerguntas() {
     if (currentPerguntas.length === 0) {
         lista.innerHTML = `
             <div class="perguntas-empty-state">
-                <i class="fas fa-arrow-left"></i>
-                <p>Arraste um tipo de pergunta da esquerda ou clique em "Gerar com IA"</p>
+                <i class="fas fa-arrow-right"></i>
+                <p>Arraste ou clique em um elemento da direita para adicionar ao questionário</p>
             </div>
         `;
         return;
@@ -1123,6 +1127,12 @@ function selecionarPergunta(id) {
     selectedPerguntaId = id;
     renderPerguntas();
     renderPropriedadesPergunta(id);
+    
+    // Mostrar divisor de propriedades
+    const divider = document.getElementById('questionario-properties-divider');
+    if (divider) {
+        divider.style.display = 'block';
+    }
 }
 
 function renderPropriedadesPergunta(id) {
@@ -1250,33 +1260,113 @@ function excluirPergunta(id) {
                     <p>Selecione uma pergunta para editar suas propriedades</p>
                 </div>
             `;
+            // Esconder divisor de propriedades
+            const divider = document.getElementById('questionario-properties-divider');
+            if (divider) {
+                divider.style.display = 'none';
+            }
         }
         renderPerguntas();
         showToast('Pergunta excluída!', 'success');
     }
 }
 
-function setupDragAndDrop() {
+// Elementos do editor de questionários
+const ELEMENTOS_PADRAO = [
+    { tipo: 'escolha_unica', label: 'Escolha única', icone: 'fa-circle-dot' },
+    { tipo: 'escolha_multipla', label: 'Escolha múltipla', icone: 'fa-square-check' },
+    { tipo: 'resposta_textual', label: 'Resposta textual', icone: 'fa-align-left' },
+    { tipo: 'resposta_numerica', label: 'Resposta numérica', icone: 'fa-hashtag' },
+    { tipo: 'classificacao', label: 'Classificação', icone: 'fa-star' },
+    { tipo: 'escala_linear', label: 'Escala linear', icone: 'fa-sliders' },
+    { tipo: 'texto', label: 'Texto', icone: 'fa-font' },
+    { tipo: 'imagem', label: 'Imagem', icone: 'fa-image' },
+    { tipo: 'assinatura', label: 'Assinatura', icone: 'fa-signature' }
+];
+
+const ELEMENTOS_ATIVIDADE_FISICA = [
+    { tipo: 'problemas_musculares', label: 'Problemas musculares', icone: 'fa-dumbbell' },
+    { tipo: 'problemas_osseos', label: 'Problemas ósseos e articulares', icone: 'fa-bone' },
+    { tipo: 'problemas_cardio', label: 'Problemas cardiorrespiratórios', icone: 'fa-heart-pulse' },
+    { tipo: 'medicacao', label: 'Medicação', icone: 'fa-pills' },
+    { tipo: 'aprovacao_medica', label: 'Aprovação para prática de atividade física', icone: 'fa-hand-holding-medical' },
+    { tipo: 'medidas_corporais', label: 'Medidas corporais', icone: 'fa-weight-scale' },
+    { tipo: 'objetivo_treinamento', label: 'Objetivo de treinamento', icone: 'fa-bullseye' }
+];
+
+let currentElementTab = 'padrao';
+
+function switchElementTab(tab) {
+    currentElementTab = tab;
+    
+    // Atualizar botões de tabs
+    document.querySelectorAll('.element-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    
+    // Renderizar elementos da tab selecionada
+    renderElements();
+}
+
+function renderElements() {
+    console.log('[Editor] Renderizando elementos da tab:', currentElementTab);
+    const container = document.getElementById('questionario-elements-container');
+    if (!container) {
+        console.log('[Editor] Container de elementos não encontrado!');
+        return;
+    }
+    
+    const elementos = currentElementTab === 'padrao' ? ELEMENTOS_PADRAO : ELEMENTOS_ATIVIDADE_FISICA;
+    console.log('[Editor] Elementos a renderizar:', elementos.length);
+    
+    container.innerHTML = elementos.map(elemento => `
+        <div class="element-card-new" 
+             draggable="true" 
+             data-tipo="${elemento.tipo}"
+             onclick="adicionarPerguntaPorClick('${elemento.tipo}')">
+            <i class="fas ${elemento.icone}"></i>
+            <span>${elemento.label}</span>
+        </div>
+    `).join('');
+    
+    // Setup drag and drop para novos elementos
+    setupElementDragHandlers();
+}
+
+function adicionarPerguntaPorClick(tipo) {
+    adicionarPergunta(tipo);
+}
+
+function setupElementDragHandlers() {
     // Drag from sidebar
-    document.querySelectorAll('.tipo-pergunta-card').forEach(card => {
+    document.querySelectorAll('.element-card-new').forEach(card => {
         card.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('tipo', card.dataset.tipo);
+            e.stopPropagation();
         });
     });
-    
-    // Drop zone
+}
+
+function setupDragAndDrop() {
+    // Setup drop zone
     const lista = document.getElementById('perguntas-lista');
-    lista.addEventListener('dragover', (e) => {
-        e.preventDefault();
-    });
+    if (lista) {
+        lista.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        lista.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const tipo = e.dataTransfer.getData('tipo');
+            if (tipo) {
+                adicionarPergunta(tipo);
+            }
+        });
+    }
     
-    lista.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const tipo = e.dataTransfer.getData('tipo');
-        if (tipo) {
-            adicionarPergunta(tipo);
-        }
-    });
+    // Setup element drag handlers
+    setupElementDragHandlers();
 }
 
 async function duplicarQuestionario(id) {

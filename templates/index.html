@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251115v7">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251116v1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -1255,75 +1255,9 @@
                                 </div>
                             </div>
 
-                            <!-- Layout de 3 colunas -->
+                            <!-- Layout de 2 colunas: Canvas à esquerda + Sidebar à direita -->
                             <div class="questionario-editor-layout">
-                                <!-- Sidebar Esquerda: Tipos de Perguntas -->
-                                <div class="questionario-sidebar-esquerda">
-                                    <h3><i class="fas fa-plus-circle"></i> Adicionar Pergunta</h3>
-                                    <div class="tipos-perguntas-list">
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="texto_curto">
-                                            <i class="fas fa-font"></i>
-                                            <div>
-                                                <strong>Texto Curto</strong>
-                                                <span>Resposta em uma linha</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="texto_longo">
-                                            <i class="fas fa-align-left"></i>
-                                            <div>
-                                                <strong>Texto Longo</strong>
-                                                <span>Resposta em várias linhas</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="multipla_escolha">
-                                            <i class="fas fa-list-ul"></i>
-                                            <div>
-                                                <strong>Múltipla Escolha</strong>
-                                                <span>Uma resposta de várias opções</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="selecao_multipla">
-                                            <i class="fas fa-check-double"></i>
-                                            <div>
-                                                <strong>Seleção Múltipla</strong>
-                                                <span>Várias respostas possíveis</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="escala_likert">
-                                            <i class="fas fa-star-half-alt"></i>
-                                            <div>
-                                                <strong>Escala Likert</strong>
-                                                <span>Avaliação de 1 a 5</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="data">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            <div>
-                                                <strong>Data</strong>
-                                                <span>Selecionar data</span>
-                                            </div>
-                                        </div>
-                                        <div class="tipo-pergunta-card" draggable="true" data-tipo="numero">
-                                            <i class="fas fa-hashtag"></i>
-                                            <div>
-                                                <strong>Número</strong>
-                                                <span>Valor numérico</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ia-sugestoes-section">
-                                        <h3><i class="fas fa-sparkles"></i> Sugestões de IA</h3>
-                                        <button class="btn-ia-sugerir" onclick="sugerirPerguntasIA()">
-                                            <i class="fas fa-robot"></i> GERAR PERGUNTAS COM IA
-                                        </button>
-                                        <div id="ia-sugestoes-container" class="ia-sugestoes-list">
-                                            <!-- Sugestões aparecerão aqui -->
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Área Central: Canvas de Perguntas -->
+                                <!-- Área Central: Canvas de Perguntas (expandido) -->
                                 <div class="questionario-canvas">
                                     <div class="questionario-info-card">
                                         <input type="text" id="questionario-titulo-editor" class="questionario-titulo-input" 
@@ -1342,15 +1276,35 @@
                                     <div id="perguntas-lista" class="perguntas-lista">
                                         <!-- Perguntas aparecerão aqui -->
                                         <div class="perguntas-empty-state">
-                                            <i class="fas fa-arrow-left"></i>
-                                            <p>Arraste um tipo de pergunta da esquerda ou clique em "Gerar com IA"</p>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <p>Arraste ou clique em um elemento da direita para adicionar ao questionário</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Sidebar Direita: Propriedades da Pergunta -->
+                                <!-- Sidebar Direita: Elementos + Propriedades -->
                                 <div class="questionario-sidebar-direita">
-                                    <div id="propriedades-container">
+                                    <!-- Tabs de categorias -->
+                                    <div class="questionario-element-tabs">
+                                        <button class="element-tab active" onclick="switchElementTab('padrao')">PADRÃO</button>
+                                        <button class="element-tab" onclick="switchElementTab('atividade_fisica')">ATIVIDADE FÍSICA</button>
+                                    </div>
+
+                                    <!-- Texto instrucional -->
+                                    <div class="questionario-element-instruction">
+                                        Arraste ou clique em um elemento para adicionar ao questionário
+                                    </div>
+
+                                    <!-- Container de elementos (tabs content) -->
+                                    <div id="questionario-elements-container" class="questionario-elements-container">
+                                        <!-- Elementos serão renderizados aqui dinamicamente -->
+                                    </div>
+
+                                    <!-- Divisor -->
+                                    <div id="questionario-properties-divider" class="questionario-properties-divider" style="display: none;"></div>
+
+                                    <!-- Container de Propriedades (aparece quando pergunta selecionada) -->
+                                    <div id="propriedades-container" class="propriedades-container">
                                         <div class="propriedades-empty">
                                             <i class="fas fa-hand-pointer"></i>
                                             <p>Selecione uma pergunta para editar suas propriedades</p>
@@ -2774,6 +2728,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251115v8"></script>
-    <script src="/static/js/app.js?v=20251115v8"></script>
+    <script src="/static/js/app.js?v=20251116v1"></script>
 </body>
 </html>
