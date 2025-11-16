@@ -974,6 +974,92 @@ async function abrirQuestionario(id) {
         currentQuestionarioId = id;
         currentPerguntas = questionario.perguntas || [];
         
+        // Tentar carregar seções do backend
+        try {
+            const secoesResponse = await fetch(`/questionarios/${id}/secoes`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (secoesResponse.ok) {
+                const secoesData = await secoesResponse.json();
+                console.log('[Editor] Seções carregadas do backend:', secoesData);
+                
+                if (secoesData && secoesData.length > 0) {
+                    // Usar seções do backend
+                    currentSecoes = secoesData.map(s => ({
+                        id: s.id,
+                        titulo: s.titulo,
+                        descricao: s.descricao,
+                        ordem: s.ordem,
+                        perguntas: s.perguntas || []
+                    }));
+                } else {
+                    // Sem seções no backend - criar estrutura padrão
+                    currentSecoes = [];
+                    if (currentPerguntas.length === 0) {
+                        // Questionário completamente vazio - criar seção demo
+                        const secaoPadrao = criarNovaSecao('AVALIAÇÃO INICIAL - BALANCE CENTER');
+                        secaoPadrao.perguntas.push({
+                            id: `pergunta_${Date.now()}`,
+                            tipo: 'numero',
+                            titulo: 'Número Mecanográfico',
+                            texto: 'Número Mecanográfico',
+                            obrigatoria: true,
+                            ordem: 0,
+                            secao_id: secaoPadrao.id,
+                            config: { min: 1, max: 99999 }
+                        });
+                    } else {
+                        // Tem perguntas mas sem seções - agrupar em seção padrão
+                        const secao = criarNovaSecao('Seção 1');
+                        secao.perguntas = currentPerguntas;
+                    }
+                }
+            } else {
+                // Endpoint não existe ou erro - fallback para estrutura local
+                currentSecoes = [];
+                if (currentPerguntas.length > 0) {
+                    const secao = criarNovaSecao('Seção 1');
+                    secao.perguntas = currentPerguntas;
+                } else {
+                    // Criar seção demo
+                    const secaoPadrao = criarNovaSecao('AVALIAÇÃO INICIAL - BALANCE CENTER');
+                    secaoPadrao.perguntas.push({
+                        id: `pergunta_${Date.now()}`,
+                        tipo: 'numero',
+                        titulo: 'Número Mecanográfico',
+                        texto: 'Número Mecanográfico',
+                        obrigatoria: true,
+                        ordem: 0,
+                        secao_id: secaoPadrao.id,
+                        config: { min: 1, max: 99999 }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('[Editor] Erro ao carregar seções:', error);
+            // Fallback - criar seção padrão
+            currentSecoes = [];
+            if (currentPerguntas.length > 0) {
+                const secao = criarNovaSecao('Seção 1');
+                secao.perguntas = currentPerguntas;
+            } else {
+                const secaoPadrao = criarNovaSecao('AVALIAÇÃO INICIAL - BALANCE CENTER');
+                secaoPadrao.perguntas.push({
+                    id: `pergunta_${Date.now()}`,
+                    tipo: 'numero',
+                    titulo: 'Número Mecanográfico',
+                    texto: 'Número Mecanográfico',
+                    obrigatoria: true,
+                    ordem: 0,
+                    secao_id: secaoPadrao.id,
+                    config: { min: 1, max: 99999 }
+                });
+            }
+        }
+        
         console.log('[Editor] Navegando para o editor...');
         // Navegar para o editor
         switchAutomacaoView('questionario-editor');
