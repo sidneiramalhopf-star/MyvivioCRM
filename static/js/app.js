@@ -669,9 +669,343 @@ function renderQuestionarioCard(questionario) {
     `;
 }
 
-function loadGrupos() {
-    console.log('Carregando grupos...');
-    // Implementar carregamento de grupos
+// ============================================
+// GRUPOS - Funções de Carregamento e CRUD
+// ============================================
+
+async function loadGrupos() {
+    console.log('[Grupos] Carregando grupos...');
+    const gruposGrid = document.getElementById('grupos-grid');
+    
+    if (!gruposGrid) return;
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+            gruposGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x"></i>
+                    <p>Faça login para ver seus grupos</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const response = await fetch('/grupos', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar grupos');
+        }
+        
+        const grupos = await response.json();
+        
+        if (grupos.length === 0) {
+            gruposGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x"></i>
+                    <h3>Nenhum grupo criado</h3>
+                    <p>Crie seu primeiro grupo para começar a segmentar usuários</p>
+                    <button class="btn-nova-jornada" onclick="abrirNovoGrupo()">
+                        <i class="fas fa-plus"></i> CRIAR GRUPO
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Agrupar por status
+        const ativos = grupos.filter(g => g.status === 'ativo');
+        const inativos = grupos.filter(g => g.status === 'inativo');
+        
+        let html = '';
+        
+        // Renderizar ativos
+        if (ativos.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">ATIVOS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${ativos.map(g => renderGrupoCard(g)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Renderizar inativos
+        if (inativos.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">INATIVOS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${inativos.map(g => renderGrupoCard(g)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        gruposGrid.innerHTML = html;
+        
+    } catch (error) {
+        console.error('[Grupos] Erro ao carregar:', error);
+        gruposGrid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <p>Erro ao carregar grupos. Tente novamente.</p>
+            </div>
+        `;
+    }
+}
+
+function renderGrupoCard(grupo) {
+    const statusBadgeConfig = {
+        'ativo': { text: 'ATIVO', class: 'badge-publicado' },
+        'inativo': { text: 'INATIVO', class: 'badge-rascunho' }
+    };
+    
+    const statusConfig = statusBadgeConfig[grupo.status] || statusBadgeConfig['ativo'];
+    
+    const tipoIcon = grupo.tipo_grupo === 'ia_sugestao' ? 'fa-wand-magic-sparkles' : 'fa-users';
+    const automacaoBadge = grupo.automacao_ativa ? '<span class="grupo-badge-automacao"><i class="fas fa-robot"></i> Automação</span>' : '';
+    const crescimento = grupo.crescimento_semanal || 0;
+    const crescimentoIcon = crescimento > 0 ? 'fa-arrow-up' : crescimento < 0 ? 'fa-arrow-down' : 'fa-minus';
+    const crescimentoCor = crescimento > 0 ? '#27ae60' : crescimento < 0 ? '#e74c3c' : '#95a5a6';
+    
+    return `
+        <div class="grupo-card" style="border-left: 4px solid ${grupo.cor || '#62b1ca'}">
+            <div class="grupo-card-header">
+                <div class="grupo-card-badges">
+                    <span class="questionario-badge ${statusConfig.class}">${statusConfig.text}</span>
+                    ${automacaoBadge}
+                </div>
+                <div class="grupo-card-actions">
+                    <button class="btn-card-action-small" onclick="editarGrupo(${grupo.id})" title="Editar">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <button class="btn-card-action-small" onclick="duplicarGrupo(${grupo.id})" title="Duplicar">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn-card-action-small" onclick="excluirGrupo(${grupo.id})" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="grupo-card-body">
+                <div class="grupo-icone">
+                    <i class="fas ${tipoIcon}" style="color: ${grupo.cor || '#62b1ca'}"></i>
+                </div>
+                <h3>${grupo.nome}</h3>
+                <p>${grupo.descricao || 'Sem descrição'}</p>
+                <div class="grupo-stats">
+                    <div class="grupo-stat">
+                        <i class="fas fa-users"></i>
+                        <span>${grupo.tamanho_atual || 0} membros</span>
+                    </div>
+                    <div class="grupo-stat" style="color: ${crescimentoCor}">
+                        <i class="fas ${crescimentoIcon}"></i>
+                        <span>${Math.abs(crescimento).toFixed(1)}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function abrirNovoGrupo() {
+    console.log('[Grupos] Abrindo modal de criação...');
+    showToast('Modal de criação de grupo em desenvolvimento', 'info');
+    // TODO: Implementar modal completo na próxima etapa
+}
+
+async function editarGrupo(id) {
+    console.log('[Grupos] Editando grupo:', id);
+    showToast('Edição de grupo em desenvolvimento', 'info');
+    // TODO: Implementar edição na próxima etapa
+}
+
+async function duplicarGrupo(id) {
+    if (!confirm('Deseja duplicar este grupo?')) return;
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para duplicar grupos', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/grupos/${id}/duplicar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao duplicar grupo');
+        }
+        
+        showToast('Grupo duplicado com sucesso!', 'success');
+        loadGrupos();
+        
+    } catch (error) {
+        console.error('[Grupos] Erro ao duplicar:', error);
+        showToast('Erro ao duplicar grupo. Tente novamente.', 'error');
+    }
+}
+
+async function excluirGrupo(id) {
+    if (!confirm('Tem certeza que deseja excluir este grupo? Esta ação não pode ser desfeita.')) return;
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para excluir grupos', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/grupos/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao excluir grupo');
+        }
+        
+        showToast('Grupo excluído com sucesso!', 'success');
+        loadGrupos();
+        
+    } catch (error) {
+        console.error('[Grupos] Erro ao excluir:', error);
+        showToast('Erro ao excluir grupo. Tente novamente.', 'error');
+    }
+}
+
+async function abrirSugestoesIA() {
+    console.log('[Grupos] Carregando sugestões de IA...');
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para ver sugestões de IA', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/grupos/sugestoes-ia', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar sugestões');
+        }
+        
+        const sugestoes = await response.json();
+        
+        // Mostrar modal com sugestões
+        mostrarModalSugestoesIA(sugestoes);
+        
+    } catch (error) {
+        console.error('[Grupos] Erro ao carregar sugestões:', error);
+        showToast('Erro ao carregar sugestões de IA. Tente novamente.', 'error');
+    }
+}
+
+function mostrarModalSugestoesIA(sugestoes) {
+    // Criar modal dinamicamente
+    const modalHTML = `
+        <div class="modal-overlay" id="modal-sugestoes-ia" onclick="fecharModalSugestoesIA(event)">
+            <div class="modal-content modal-sugestoes-ia" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2><i class="fas fa-lightbulb"></i> Sugestões Inteligentes de Grupos</h2>
+                    <button class="modal-close" onclick="fecharModalSugestoesIA()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="sugestoes-intro">A IA analisou seus dados e sugere os seguintes grupos baseados em padrões de comportamento:</p>
+                    <div class="sugestoes-grid">
+                        ${sugestoes.map(s => `
+                            <div class="sugestao-card" style="border-left: 4px solid ${s.cor}">
+                                <div class="sugestao-header">
+                                    <h3>${s.nome}</h3>
+                                    <span class="sugestao-badge impacto-${s.impacto_previsto}">
+                                        ${s.impacto_previsto.toUpperCase()}
+                                    </span>
+                                </div>
+                                <p class="sugestao-descricao">${s.descricao}</p>
+                                <div class="sugestao-stats">
+                                    <div class="sugestao-stat">
+                                        <i class="fas fa-users"></i>
+                                        <span>${s.estimativa_membros} membros estimados</span>
+                                    </div>
+                                </div>
+                                <button class="btn-criar-sugestao" onclick="criarGrupoDeSugestao(${JSON.stringify(s).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-plus"></i> CRIAR ESTE GRUPO
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Adicionar ao body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function fecharModalSugestoesIA(event) {
+    if (event && event.target.classList.contains('modal-overlay')) {
+        document.getElementById('modal-sugestoes-ia').remove();
+    } else if (!event) {
+        document.getElementById('modal-sugestoes-ia')?.remove();
+    }
+}
+
+async function criarGrupoDeSugestao(sugestao) {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        showToast('Faça login para criar grupos', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/grupos', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nome: sugestao.nome,
+                descricao: sugestao.descricao,
+                cor: sugestao.cor,
+                criterios: sugestao.criterios,
+                tipo_grupo: 'ia_sugestao',
+                status: 'ativo'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao criar grupo');
+        }
+        
+        showToast('Grupo criado com sucesso!', 'success');
+        fecharModalSugestoesIA();
+        loadGrupos();
+        
+    } catch (error) {
+        console.error('[Grupos] Erro ao criar:', error);
+        showToast('Erro ao criar grupo. Tente novamente.', 'error');
+    }
 }
 
 function loadAtividades() {
