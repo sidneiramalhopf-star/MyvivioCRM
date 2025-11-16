@@ -631,47 +631,39 @@ async function loadQuestionarios() {
 }
 
 function renderQuestionarioCard(questionario) {
-    const statusBadge = {
-        'rascunho': '<span class="jornada-badge-rascunho">RASCUNHO</span>',
-        'publicado': '<span class="jornada-badge-ativo">PUBLICADO</span>',
-        'arquivado': '<span class="jornada-badge-rascunho">ARQUIVADO</span>'
-    }[questionario.status] || '';
+    const statusBadgeConfig = {
+        'rascunho': { text: 'RASCUNHO', class: 'badge-rascunho' },
+        'publicado': { text: 'PUBLICADO', class: 'badge-publicado' },
+        'arquivado': { text: 'ARQUIVADO', class: 'badge-arquivado' }
+    };
     
-    const corClasse = {
-        'rascunho': 'rascunho',
-        'publicado': 'experiências-em-destaque',
-        'arquivado': 'retenção'
-    }[questionario.status] || 'rascunho';
+    const statusConfig = statusBadgeConfig[questionario.status] || statusBadgeConfig['rascunho'];
     
-    const dataFormatada = new Date(questionario.data_criacao).toLocaleDateString('pt-BR');
+    const categoryThumbnails = {
+        'avaliacao_saude': '/static/uploads/thumbnails/default_saude.jpg',
+        'verificacao_progresso': '/static/uploads/thumbnails/default_progresso.jpg',
+        'perfil': '/static/uploads/thumbnails/default_perfil.jpg',
+        'anamnese': '/static/uploads/thumbnails/default_anamnese.jpg',
+        'feedback': '/static/uploads/thumbnails/default_feedback.jpg'
+    };
+    
+    const thumbnailUrl = questionario.thumbnail_url || 
+                         categoryThumbnails[questionario.categoria] || 
+                         '/static/uploads/thumbnails/default_generico.jpg';
     
     return `
-        <div class="jornada-card" data-id="${questionario.id}">
-            <div class="jornada-card-header ${corClasse}">
-                <span class="jornada-tipo">QUESTIONÁRIO</span>
-                ${statusBadge}
-            </div>
-            <div class="jornada-card-body">
-                <div class="jornada-icone">
+        <div class="questionario-card" data-id="${questionario.id}" style="background-image: url('${thumbnailUrl}')" onclick="abrirQuestionario(${questionario.id})">
+            <div class="questionario-card-overlay">
+                <div class="questionario-card-header">
+                    <span class="questionario-badge ${statusConfig.class}">${statusConfig.text}</span>
+                </div>
+                <div class="questionario-card-content">
+                    <h3 class="questionario-titulo">${questionario.titulo}</h3>
+                    <p class="questionario-descricao">${questionario.descricao || 'Sem descrição'}</p>
+                </div>
+                <div class="questionario-card-icon">
                     <i class="fas fa-clipboard-question"></i>
                 </div>
-                <h3>${questionario.titulo}</h3>
-                <p>${questionario.descricao || 'Sem descrição'}</p>
-                <div class="questionario-info">
-                    <span><i class="fas fa-question-circle"></i> ${questionario.total_perguntas} perguntas</span>
-                    <span><i class="fas fa-calendar"></i> ${dataFormatada}</span>
-                </div>
-            </div>
-            <div class="jornada-card-footer">
-                <button class="btn-card-action" onclick="abrirQuestionario(${questionario.id})" title="Editar">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-card-action" onclick="duplicarQuestionario(${questionario.id})" title="Duplicar">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button class="btn-card-action" onclick="excluirQuestionario(${questionario.id})" title="Excluir">
-                    <i class="fas fa-trash"></i>
-                </button>
             </div>
         </div>
     `;

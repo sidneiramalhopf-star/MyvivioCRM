@@ -7103,6 +7103,115 @@ textarea.form-control {
     gap: 0.5rem;
 }
 
+.questionario-card {
+    height: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.questionario-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.questionario-card:hover .questionario-card-overlay {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.questionario-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    transition: background 0.3s ease;
+}
+
+.questionario-card-header {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: auto;
+}
+
+.questionario-badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.questionario-badge.badge-rascunho {
+    background: #fbbf24;
+    color: #78350f;
+}
+
+.questionario-badge.badge-publicado {
+    background: #10b981;
+    color: white;
+}
+
+.questionario-badge.badge-arquivado {
+    background: #ef4444;
+    color: white;
+}
+
+.questionario-card-content {
+    margin-bottom: 1rem;
+}
+
+.questionario-titulo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.questionario-descricao {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    line-height: 1.5;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.questionario-card-icon {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.questionario-card:hover .questionario-card-icon {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.questionario-card-icon i {
+    font-size: 1.25rem;
+    color: white;
+}
+
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
