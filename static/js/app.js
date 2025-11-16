@@ -8357,24 +8357,26 @@ async function salvarPerguntas() {
         const pergunta = currentPerguntas[i];
         
         try {
-            const response = await fetch('/perguntas', {
+            const response = await fetch(`/questionarios/${currentQuestionarioId}/perguntas`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    questionario_id: currentQuestionarioId,
-                    texto: pergunta.texto,
+                    titulo: pergunta.texto || pergunta.titulo || 'Nova pergunta',
                     tipo: pergunta.tipo,
+                    descricao: pergunta.descricao || null,
                     obrigatoria: pergunta.obrigatoria || false,
                     ordem: i,
+                    configuracoes: pergunta.configuracoes || {},
                     opcoes: pergunta.opcoes || []
                 })
             });
             
             if (!response.ok) {
-                console.error('Erro ao salvar pergunta:', pergunta);
+                const errorData = await response.json();
+                console.error('Erro ao salvar pergunta:', errorData);
             }
         } catch (error) {
             console.error('Erro ao salvar pergunta:', error);
