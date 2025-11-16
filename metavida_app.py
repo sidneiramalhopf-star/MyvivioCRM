@@ -275,6 +275,31 @@ class OpcaoPergunta(Base):
     pergunta = relationship("Pergunta", back_populates="opcoes")
 
 # ============================================================
+# Modelo de Grupos - Sistema de Segmentação Inteligente
+# ============================================================
+
+class Grupo(Base):
+    __tablename__ = "grupos"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    descricao = Column(Text, nullable=True)
+    status = Column(String, default="ativo")  # ativo, inativo
+    criterios = Column(Text, nullable=True)  # JSON: regras de segmentação
+    cor = Column(String, default="#62b1ca")  # Cor do grupo para visualização
+    tamanho_atual = Column(Integer, default=0)  # Cache do número de membros
+    crescimento_semanal = Column(Float, default=0.0)  # Variação percentual
+    jornada_id = Column(Integer, nullable=True)  # ID da jornada vinculada (se houver)
+    automacao_ativa = Column(Boolean, default=False)  # Se está conectado a automação
+    tipo_grupo = Column(String, default="manual")  # manual, ia_sugestao, dinamico
+    unidade_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
+    criado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    unidade = relationship("Unidade")
+    criado_por = relationship("Usuario")
+
+# ============================================================
 # Inicializar Banco de Dados
 # ============================================================
 
@@ -1802,6 +1827,31 @@ class QuestionarioUpdate(BaseModel):
     thumbnail_url: Optional[str] = None
     configuracoes: Optional[dict] = None
 
+# ============================================================
+# Schemas Pydantic - Grupos
+# ============================================================
+
+class GrupoCreate(BaseModel):
+    nome: str
+    descricao: Optional[str] = None
+    status: str = "ativo"
+    criterios: Optional[dict] = None
+    cor: str = "#62b1ca"
+    jornada_id: Optional[int] = None
+    automacao_ativa: bool = False
+    tipo_grupo: str = "manual"
+
+class GrupoUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+    status: Optional[str] = None
+    criterios: Optional[dict] = None
+    cor: Optional[str] = None
+    jornada_id: Optional[int] = None
+    automacao_ativa: Optional[bool] = None
+    tamanho_atual: Optional[int] = None
+    crescimento_semanal: Optional[float] = None
+
 @app.get("/questionarios")
 def listar_questionarios(
     usuario: Usuario = Depends(get_current_user),
@@ -2260,3 +2310,318 @@ def duplicar_questionario(
         "id": novo_questionario.id,
         "mensagem": "Questionário duplicado com sucesso"
     }
+
+# ============================================================
+# Endpoints de Grupos - Sistema de Segmentação Inteligente
+# ============================================================
+
+@app.get("/grupos")
+def listar_grupos(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Lista todos os grupos do usuário"""
+    grupos = db.query(Grupo).filter(
+        Grupo.criado_por_id == usuario.id
+    ).order_by(Grupo.data_criacao.desc()).all()
+    
+    resultado = []
+    for g in grupos:
+        resultado.append({
+            "id": g.id,
+            "nome": g.nome,
+            "descricao": g.descricao,
+            "status": g.status,
+            "criterios": json.loads(g.criterios) if g.criterios else {},
+            "cor": g.cor,
+            "tamanho_atual": g.tamanho_atual,
+            "crescimento_semanal": g.crescimento_semanal,
+            "jornada_id": g.jornada_id,
+            "automacao_ativa": g.automacao_ativa,
+            "tipo_grupo": g.tipo_grupo,
+            "data_criacao": g.data_criacao.isoformat(),
+            "data_atualizacao": g.data_atualizacao.isoformat()
+        })
+    
+    return resultado
+
+@app.post("/grupos")
+def criar_grupo(
+    dados: GrupoCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Cria um novo grupo"""
+    grupo = Grupo(
+        nome=dados.nome,
+        descricao=dados.descricao,
+        status=dados.status,
+        criterios=json.dumps(dados.criterios) if dados.criterios else None,
+        cor=dados.cor,
+        jornada_id=dados.jornada_id,
+        automacao_ativa=dados.automacao_ativa,
+        tipo_grupo=dados.tipo_grupo,
+        unidade_id=usuario.unidade_id,
+        criado_por_id=usuario.id
+    )
+    
+    db.add(grupo)
+    db.commit()
+    db.refresh(grupo)
+    
+    return {
+        "id": grupo.id,
+        "mensagem": "Grupo criado com sucesso"
+    }
+
+@app.get("/grupos/{grupo_id}")
+def obter_grupo(
+    grupo_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtém detalhes de um grupo específico"""
+    grupo = db.query(Grupo).filter(
+        Grupo.id == grupo_id,
+        Grupo.criado_por_id == usuario.id
+    ).first()
+    
+    if not grupo:
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
+    
+    return {
+        "id": grupo.id,
+        "nome": grupo.nome,
+        "descricao": grupo.descricao,
+        "status": grupo.status,
+        "criterios": json.loads(grupo.criterios) if grupo.criterios else {},
+        "cor": grupo.cor,
+        "tamanho_atual": grupo.tamanho_atual,
+        "crescimento_semanal": grupo.crescimento_semanal,
+        "jornada_id": grupo.jornada_id,
+        "automacao_ativa": grupo.automacao_ativa,
+        "tipo_grupo": grupo.tipo_grupo,
+        "data_criacao": grupo.data_criacao.isoformat(),
+        "data_atualizacao": grupo.data_atualizacao.isoformat()
+    }
+
+@app.put("/grupos/{grupo_id}")
+def atualizar_grupo(
+    grupo_id: int,
+    dados: GrupoUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Atualiza um grupo existente"""
+    grupo = db.query(Grupo).filter(
+        Grupo.id == grupo_id,
+        Grupo.criado_por_id == usuario.id
+    ).first()
+    
+    if not grupo:
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
+    
+    if dados.nome is not None:
+        grupo.nome = dados.nome
+    if dados.descricao is not None:
+        grupo.descricao = dados.descricao
+    if dados.status is not None:
+        grupo.status = dados.status
+    if dados.criterios is not None:
+        grupo.criterios = json.dumps(dados.criterios)
+    if dados.cor is not None:
+        grupo.cor = dados.cor
+    if dados.jornada_id is not None:
+        grupo.jornada_id = dados.jornada_id
+    if dados.automacao_ativa is not None:
+        grupo.automacao_ativa = dados.automacao_ativa
+    if dados.tamanho_atual is not None:
+        grupo.tamanho_atual = dados.tamanho_atual
+    if dados.crescimento_semanal is not None:
+        grupo.crescimento_semanal = dados.crescimento_semanal
+    
+    grupo.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Grupo atualizado com sucesso"}
+
+@app.delete("/grupos/{grupo_id}")
+def deletar_grupo(
+    grupo_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Deleta um grupo"""
+    grupo = db.query(Grupo).filter(
+        Grupo.id == grupo_id,
+        Grupo.criado_por_id == usuario.id
+    ).first()
+    
+    if not grupo:
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
+    
+    db.delete(grupo)
+    db.commit()
+    
+    return {"mensagem": "Grupo excluído com sucesso"}
+
+@app.post("/grupos/{grupo_id}/duplicar")
+def duplicar_grupo(
+    grupo_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Duplica um grupo existente"""
+    grupo_original = db.query(Grupo).filter(
+        Grupo.id == grupo_id,
+        Grupo.criado_por_id == usuario.id
+    ).first()
+    
+    if not grupo_original:
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
+    
+    novo_grupo = Grupo(
+        nome=f"{grupo_original.nome} (Cópia)",
+        descricao=grupo_original.descricao,
+        status="inativo",  # Inicia inativo para configuração
+        criterios=grupo_original.criterios,
+        cor=grupo_original.cor,
+        tipo_grupo=grupo_original.tipo_grupo,
+        unidade_id=grupo_original.unidade_id,
+        criado_por_id=usuario.id
+    )
+    
+    db.add(novo_grupo)
+    db.commit()
+    db.refresh(novo_grupo)
+    
+    return {
+        "id": novo_grupo.id,
+        "mensagem": "Grupo duplicado com sucesso"
+    }
+
+@app.get("/grupos/{grupo_id}/membros")
+def obter_membros_grupo(
+    grupo_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtém lista de membros de um grupo baseado nos critérios"""
+    grupo = db.query(Grupo).filter(
+        Grupo.id == grupo_id,
+        Grupo.criado_por_id == usuario.id
+    ).first()
+    
+    if not grupo:
+        raise HTTPException(status_code=404, detail="Grupo não encontrado")
+    
+    # Filtro básico: usuários da mesma unidade
+    membros_query = db.query(Usuario).filter(
+        Usuario.unidade_id == grupo.unidade_id,
+        Usuario.ativo == True
+    )
+    
+    # TODO: Aplicar critérios dinâmicos do grupo quando implementado
+    # Por enquanto, retorna todos os usuários ativos da unidade
+    
+    membros = membros_query.all()
+    
+    resultado = []
+    for membro in membros:
+        resultado.append({
+            "id": membro.id,
+            "nome": membro.nome,
+            "email": membro.email,
+            "tipo": membro.tipo,
+            "data_cadastro": membro.data_cadastro.isoformat()
+        })
+    
+    return {
+        "total": len(resultado),
+        "membros": resultado
+    }
+
+@app.get("/grupos/sugestoes-ia")
+def obter_sugestoes_ia(
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retorna sugestões de grupos inteligentes criados pela IA (mock)"""
+    
+    # Mock de sugestões inteligentes baseadas em padrões
+    sugestoes = [
+        {
+            "nome": "Alto Risco de Abandono",
+            "descricao": "Usuários com baixa frequência nas últimas 3 semanas e sem abertura do app",
+            "tipo_grupo": "ia_sugestao",
+            "cor": "#e74c3c",
+            "criterios": {
+                "comportamento": {
+                    "frequencia_semanal": {"operador": "<", "valor": 2},
+                    "dias_sem_treino": {"operador": ">", "valor": 14},
+                    "abertura_app": {"operador": "=", "valor": 0}
+                }
+            },
+            "estimativa_membros": 23,
+            "impacto_previsto": "alto"
+        },
+        {
+            "nome": "Alta Performance",
+            "descricao": "Usuários com mais de 4 treinos semanais e engajamento consistente",
+            "tipo_grupo": "ia_sugestao",
+            "cor": "#27ae60",
+            "criterios": {
+                "comportamento": {
+                    "frequencia_semanal": {"operador": ">=", "valor": 4},
+                    "conclusao_treino": {"operador": ">", "valor": 90}
+                }
+            },
+            "estimativa_membros": 47,
+            "impacto_previsto": "médio"
+        },
+        {
+            "nome": "Baixa Frequência - Recuperável",
+            "descricao": "Usuários com treino irregular mas que ainda abrem o app regularmente",
+            "tipo_grupo": "ia_sugestao",
+            "cor": "#f39c12",
+            "criterios": {
+                "comportamento": {
+                    "frequencia_semanal": {"operador": "<", "valor": 2},
+                    "abertura_app": {"operador": ">", "valor": 3},
+                    "leitura_mensagens": {"operador": ">", "valor": 50}
+                }
+            },
+            "estimativa_membros": 34,
+            "impacto_previsto": "alto"
+        },
+        {
+            "nome": "Iniciantes Promissores",
+            "descricao": "Novos usuários com menos de 30 dias e frequência crescente",
+            "tipo_grupo": "ia_sugestao",
+            "cor": "#3498db",
+            "criterios": {
+                "perfil": {
+                    "dias_cadastrado": {"operador": "<=", "valor": 30},
+                    "tendencia_frequencia": {"operador": "=", "valor": "crescente"}
+                }
+            },
+            "estimativa_membros": 18,
+            "impacto_previsto": "médio"
+        },
+        {
+            "nome": "Stress Elevado",
+            "descricao": "Usuários que reportaram baixo humor e alta carga de trabalho nos questionários",
+            "tipo_grupo": "ia_sugestao",
+            "cor": "#9b59b6",
+            "criterios": {
+                "questionarios": {
+                    "humor": {"operador": "<=", "valor": 3},
+                    "stress": {"operador": ">=", "valor": 7}
+                }
+            },
+            "estimativa_membros": 29,
+            "impacto_previsto": "alto"
+        }
+    ]
+    
+    return sugestoes
