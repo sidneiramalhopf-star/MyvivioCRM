@@ -9726,6 +9726,11 @@ textarea.form-control {
     min-width: 180px;
     z-index: 1000;
     margin-top: 4px;
+    display: none;
+}
+
+.secao-menu-dropdown.open {
+    display: block;
 }
 
 .menu-item {
@@ -9807,5 +9812,10 @@ textarea.form-control {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     min-width: 200px;
     z-index: 1000;
+    display: none;
+}
+
+.menu-principal-dropdown.open {
+    display: block;
 }
 

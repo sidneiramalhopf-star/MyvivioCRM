@@ -1146,7 +1146,7 @@ function renderSecao(secao, secaoIndex) {
                         <button class="btn-secao-menu" onclick="event.stopPropagation(); toggleSecaoMenu('${secao.id}')">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
-                        <div class="secao-menu-dropdown" id="secao-menu-${secao.id}" style="display: none;">
+                        <div class="secao-menu-dropdown" id="secao-menu-${secao.id}">
                             <button class="menu-item" onclick="event.stopPropagation(); adicionarNovaSecao()">
                                 <i class="fas fa-plus"></i>
                                 <span>Nova seção</span>
@@ -1684,18 +1684,18 @@ function toggleSecaoMenu(secaoId) {
     // Fechar todos os outros menus
     document.querySelectorAll('.secao-menu-dropdown').forEach(m => {
         if (m.id !== `secao-menu-${secaoId}`) {
-            m.style.display = 'none';
+            m.classList.remove('open');
         }
     });
     
     // Toggle do menu atual
-    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    menu.classList.toggle('open');
     
     // Fechar ao clicar fora
     setTimeout(() => {
         const closeHandler = (e) => {
             if (!e.target.closest('.secao-menu-container')) {
-                menu.style.display = 'none';
+                menu.classList.remove('open');
                 document.removeEventListener('click', closeHandler);
             }
         };
@@ -1859,10 +1859,6 @@ function dropNaSecao(event, secaoId) {
     }
 }
 
-function toggleSecaoMenu(secaoId) {
-    // Implementar menu de opções da seção (a ser implementado)
-    showToast('Menu da seção em desenvolvimento', 'info');
-}
 
 function abrirSidebarConfiguracao(perguntaId) {
     // Implementar sidebar de configurações avançadas (Tarefa 5)
@@ -9151,14 +9147,14 @@ function toggleMenuPrincipalQuestionario(event) {
     const menu = document.getElementById('menu-principal-questionario');
     if (!menu) return;
     
-    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    menu.classList.toggle('open');
     
     // Fechar ao clicar fora
-    if (menu.style.display === 'block') {
+    if (menu.classList.contains('open')) {
         setTimeout(() => {
             const closeHandler = (e) => {
                 if (!e.target.closest('.questionario-menu-principal')) {
-                    menu.style.display = 'none';
+                    menu.classList.remove('open');
                     document.removeEventListener('click', closeHandler);
                 }
             };
@@ -9169,27 +9165,27 @@ function toggleMenuPrincipalQuestionario(event) {
 
 function mostrarPrevia() {
     previewQuestionario();
-    document.getElementById('menu-principal-questionario').style.display = 'none';
+    document.getElementById('menu-principal-questionario').classList.remove('open');
 }
 
 function abrirRelatorio() {
     showToast('Relatório em desenvolvimento', 'info');
-    document.getElementById('menu-principal-questionario').style.display = 'none';
+    document.getElementById('menu-principal-questionario').classList.remove('open');
 }
 
 function compartilharQuestionario() {
     showToast('Compartilhamento em desenvolvimento', 'info');
-    document.getElementById('menu-principal-questionario').style.display = 'none';
+    document.getElementById('menu-principal-questionario').classList.remove('open');
 }
 
 function configurarQuestionario() {
     showToast('Configurações em desenvolvimento', 'info');
-    document.getElementById('menu-principal-questionario').style.display = 'none';
+    document.getElementById('menu-principal-questionario').classList.remove('open');
 }
 
 function ocultarQuestionario() {
     showToast('Ocultar em desenvolvimento', 'info');
-    document.getElementById('menu-principal-questionario').style.display = 'none';
+    document.getElementById('menu-principal-questionario').classList.remove('open');
 }
 
 // Funções de IA
