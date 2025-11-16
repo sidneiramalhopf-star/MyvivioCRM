@@ -227,6 +227,8 @@ class Questionario(Base):
     titulo = Column(String, nullable=False)
     descricao = Column(Text, nullable=True)
     status = Column(String, default="rascunho")  # rascunho, publicado, arquivado
+    categoria = Column(String, nullable=True)  # avaliacao_saude, verificacao_progresso, perfil, anamnese, feedback, generico
+    thumbnail_url = Column(String, nullable=True)  # URL da imagem de thumbnail
     unidade_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
     criado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
     data_criacao = Column(DateTime, default=datetime.utcnow)
@@ -1764,12 +1766,16 @@ class PerguntaCreate(BaseModel):
 class QuestionarioCreate(BaseModel):
     titulo: str
     descricao: Optional[str] = None
+    categoria: Optional[str] = None
+    thumbnail_url: Optional[str] = None
     configuracoes: Optional[dict] = None
 
 class QuestionarioUpdate(BaseModel):
     titulo: Optional[str] = None
     descricao: Optional[str] = None
     status: Optional[str] = None
+    categoria: Optional[str] = None
+    thumbnail_url: Optional[str] = None
     configuracoes: Optional[dict] = None
 
 @app.get("/questionarios")
@@ -1788,6 +1794,8 @@ def listar_questionarios(
             "titulo": q.titulo,
             "descricao": q.descricao,
             "status": q.status,
+            "categoria": q.categoria,
+            "thumbnail_url": q.thumbnail_url,
             "data_criacao": q.data_criacao.isoformat(),
             "data_atualizacao": q.data_atualizacao.isoformat(),
             "data_publicacao": q.data_publicacao.isoformat() if q.data_publicacao else None,
@@ -1805,6 +1813,8 @@ def criar_questionario(
     questionario = Questionario(
         titulo=dados.titulo,
         descricao=dados.descricao,
+        categoria=dados.categoria,
+        thumbnail_url=dados.thumbnail_url,
         status="rascunho",
         unidade_id=usuario.unidade_id,
         criado_por_id=usuario.id,
@@ -1865,6 +1875,8 @@ def obter_questionario(
         "titulo": questionario.titulo,
         "descricao": questionario.descricao,
         "status": questionario.status,
+        "categoria": questionario.categoria,
+        "thumbnail_url": questionario.thumbnail_url,
         "data_criacao": questionario.data_criacao.isoformat(),
         "data_atualizacao": questionario.data_atualizacao.isoformat(),
         "data_publicacao": questionario.data_publicacao.isoformat() if questionario.data_publicacao else None,
@@ -1891,6 +1903,10 @@ def atualizar_questionario(
         questionario.titulo = dados.titulo
     if dados.descricao is not None:
         questionario.descricao = dados.descricao
+    if dados.categoria is not None:
+        questionario.categoria = dados.categoria
+    if dados.thumbnail_url is not None:
+        questionario.thumbnail_url = dados.thumbnail_url
     if dados.status is not None:
         questionario.status = dados.status
         if dados.status == "publicado" and not questionario.data_publicacao:
