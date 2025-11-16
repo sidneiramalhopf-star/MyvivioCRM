@@ -1034,10 +1034,12 @@ function renderPerguntas() {
                 <p>Arraste ou clique em um elemento da direita para adicionar ao questionário</p>
             </div>
         `;
+        atualizarContadoresEditor();
         return;
     }
     
     lista.innerHTML = currentPerguntas.map((pergunta, index) => renderPerguntaCard(pergunta, index)).join('');
+    atualizarContadoresEditor();
 }
 
 function renderPerguntaCard(pergunta, index) {
@@ -8530,6 +8532,50 @@ async function melhorarComIA() {
     } catch (error) {
         console.error('Erro ao melhorar com IA:', error);
         showToast('Funcionalidade de IA em desenvolvimento', 'info');
+    }
+}
+
+
+// Atualizar contadores do editor
+function atualizarContadoresEditor() {
+    const totalPerguntas = currentPerguntas.length;
+    
+    // Estimar tempo baseado no tipo de pergunta
+    // Texto curto/número: 30s, Texto longo: 1min, Escolha: 20s, Outros: 30s
+    let tempoEstimado = 0;
+    currentPerguntas.forEach(p => {
+        switch(p.tipo) {
+            case 'texto_longo':
+            case 'resposta_textual':
+                tempoEstimado += 60; // 1 minuto
+                break;
+            case 'escolha_unica':
+            case 'escolha_multipla':
+            case 'classificacao':
+                tempoEstimado += 20; // 20 segundos
+                break;
+            case 'problemas_musculares':
+            case 'problemas_osseos':
+            case 'problemas_cardio':
+                tempoEstimado += 45; // 45 segundos (mais detalhado)
+                break;
+            default:
+                tempoEstimado += 30; // 30 segundos
+        }
+    });
+    
+    const minutos = Math.ceil(tempoEstimado / 60);
+    
+    // Atualizar UI
+    const contadorPerguntas = document.getElementById('contador-perguntas');
+    const contadorTempo = document.getElementById('contador-tempo');
+    
+    if (contadorPerguntas) {
+        contadorPerguntas.textContent = `${totalPerguntas} ${totalPerguntas === 1 ? 'pergunta' : 'perguntas'}`;
+    }
+    
+    if (contadorTempo) {
+        contadorTempo.textContent = `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`;
     }
 }
 

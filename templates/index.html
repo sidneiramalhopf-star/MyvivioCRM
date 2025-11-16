@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251116v1">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251116v2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -1238,6 +1238,18 @@
                                     <span class="breadcrumb-text">Questionários</span>
                                     <i class="fas fa-chevron-right"></i>
                                     <span class="breadcrumb-text" id="questionario-editor-titulo-breadcrumb">Novo Questionário</span>
+                                    
+                                    <!-- Contadores -->
+                                    <div class="questionario-contadores">
+                                        <div class="contador-item">
+                                            <i class="fas fa-list-ol"></i>
+                                            <span id="contador-perguntas">0 perguntas</span>
+                                        </div>
+                                        <div class="contador-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span id="contador-tempo">0 minutos</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="questionario-editor-actions">
                                     <button class="btn-secondary" onclick="previewQuestionario()">
@@ -2728,6 +2740,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251115v8"></script>
-    <script src="/static/js/app.js?v=20251116v1"></script>
+    <script src="/static/js/app.js?v=20251116v2"></script>
 </body>
 </html>

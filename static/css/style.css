@@ -9183,3 +9183,30 @@ textarea.form-control {
     border-color: #62b1ca;
 }
 
+
+/* Contadores do Editor de Questionário */
+.questionario-contadores {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: auto;
+    margin-right: 1.5rem;
+}
+
+.contador-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f5f7fa;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2746;
+}
+
+.contador-item i {
+    font-size: 0.875rem;
+    color: #62b1ca;
+}
+
