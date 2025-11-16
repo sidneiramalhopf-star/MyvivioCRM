@@ -935,8 +935,10 @@ async function criarQuestionario() {
 
 // Estado global do editor de questionários
 let currentQuestionarioId = null;
+let currentSecoes = [];
 let currentPerguntas = [];
 let selectedPerguntaId = null;
+let sidebarConfigAberta = false;
 
 async function abrirQuestionario(id) {
     console.log('[Editor] Abrindo questionário:', id);
@@ -1027,7 +1029,7 @@ function voltarParaQuestionarios() {
 function renderPerguntas() {
     const lista = document.getElementById('perguntas-lista');
     
-    if (currentPerguntas.length === 0) {
+    if (currentSecoes.length === 0) {
         lista.innerHTML = `
             <div class="perguntas-empty-state">
                 <i class="fas fa-arrow-right"></i>
@@ -1038,8 +1040,392 @@ function renderPerguntas() {
         return;
     }
     
-    lista.innerHTML = currentPerguntas.map((pergunta, index) => renderPerguntaCard(pergunta, index)).join('');
+    // Renderizar todas as seções
+    lista.innerHTML = currentSecoes.map((secao, secaoIndex) => renderSecao(secao, secaoIndex)).join('');
     atualizarContadoresEditor();
+    configurarDragAndDropSecoes();
+}
+
+function renderSecao(secao, secaoIndex) {
+    const totalSecoes = currentSecoes.length;
+    const perguntasSecao = secao.perguntas || [];
+    
+    return `
+        <div class="questionario-secao" data-secao-id="${secao.id}">
+            <div class="secao-header">
+                <div class="secao-numero">
+                    <i class="fas fa-ellipsis-v"></i>
+                    <span>Seção ${secaoIndex + 1} de ${totalSecoes}</span>
+                    <button class="btn-secao-menu" onclick="event.stopPropagation(); toggleSecaoMenu('${secao.id}')">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <input 
+                    type="text" 
+                    class="secao-titulo-input" 
+                    value="${secao.titulo || ''}" 
+                    placeholder="Digite um título para a seção (opcional)"
+                    onchange="atualizarTituloSecao('${secao.id}', this.value)"
+                    onclick="event.stopPropagation()"
+                />
+            </div>
+            
+            <div class="secao-perguntas-container">
+                ${perguntasSecao.length === 0 ? `
+                    <div class="secao-empty-state">
+                        <i class="fas fa-arrow-down"></i>
+                        <p>Arraste um elemento aqui</p>
+                    </div>
+                ` : perguntasSecao.map((pergunta, index) => renderPerguntaCardComEdicao(pergunta, index, secao.id)).join('')}
+            </div>
+            
+            <div class="secao-drop-zone" 
+                 data-secao-id="${secao.id}"
+                 ondragover="event.preventDefault(); event.currentTarget.classList.add('drag-over')"
+                 ondragleave="event.currentTarget.classList.remove('drag-over')"
+                 ondrop="dropNaSecao(event, '${secao.id}')">
+                <i class="fas fa-plus"></i>
+                <span>Arrastar elemento aqui para adicionar nesta seção</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderPerguntaCardComEdicao(pergunta, index, secaoId) {
+    const isSelected = selectedPerguntaId === pergunta.id;
+    
+    // Renderizar configurações IN-CARD baseado no tipo
+    const configHtml = isSelected ? renderConfiguracaoInCard(pergunta) : '';
+    
+    return `
+        <div class="pergunta-card-nova ${isSelected ? 'selected' : ''}" 
+             data-pergunta-id="${pergunta.id}"
+             data-secao-id="${secaoId}"
+             onclick="selecionarPerguntaCard('${pergunta.id}')">
+            
+            <div class="pergunta-card-header-nova">
+                <div class="pergunta-numero-nova">
+                    <i class="fas fa-grip-vertical"></i>
+                    <span class="numero-label">${index + 1}</span>
+                    <i class="fas ${getTipoIcon(pergunta.tipo)}" style="margin-left: 8px; color: #62b1ca;"></i>
+                    <input 
+                        type="text" 
+                        class="pergunta-titulo-input" 
+                        value="${pergunta.titulo || pergunta.texto || ''}"
+                        placeholder="Digite a pergunta"
+                        onchange="atualizarTituloPergunta('${pergunta.id}', this.value)"
+                        onclick="event.stopPropagation()"
+                    />
+                    ${pergunta.obrigatoria ? '<span class="badge-requerido">REQUERIDO</span>' : ''}
+                </div>
+                <div class="pergunta-actions-nova">
+                    <button class="btn-pergunta-icon" onclick="event.stopPropagation(); duplicarPergunta('${pergunta.id}')" title="Duplicar">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn-pergunta-icon" onclick="event.stopPropagation(); excluirPergunta('${pergunta.id}')" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            ${configHtml}
+        </div>
+    `;
+}
+
+function getTipoIcon(tipo) {
+    const icons = {
+        'escolha_unica': 'fa-check-circle',
+        'escolha_multipla': 'fa-check-square',
+        'resposta_textual': 'fa-font',
+        'resposta_numerica': 'fa-hashtag',
+        'classificacao': 'fa-star',
+        'escala_linear': 'fa-sliders-h',
+        'texto': 'fa-align-left',
+        'imagem': 'fa-image',
+        'assinatura': 'fa-signature',
+        'problemas_musculares': 'fa-dumbbell',
+        'problemas_osseos': 'fa-bone',
+        'problemas_cardio': 'fa-heartbeat',
+        'medicacao': 'fa-pills',
+        'aprovacao_atividade': 'fa-clipboard-check',
+        'medidas_corporais': 'fa-weight',
+        'objetivo_treinamento': 'fa-bullseye'
+    };
+    return icons[tipo] || 'fa-question-circle';
+}
+
+function renderConfiguracaoInCard(pergunta) {
+    const tipo = pergunta.tipo;
+    const config = pergunta.configuracoes || {};
+    
+    // Configurações básicas para escolha única/múltipla
+    if (tipo === 'escolha_unica' || tipo === 'escolha_multipla') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="opcoes-lista-incard">
+                        ${(pergunta.opcoes || []).map((op, i) => `
+                            <div class="opcao-item-incard">
+                                <i class="fas ${tipo === 'escolha_unica' ? 'fa-circle' : 'fa-square'}" style="font-size: 0.7rem; color: #999;"></i>
+                                <input 
+                                    type="text" 
+                                    class="opcao-input-incard" 
+                                    value="${op.texto}" 
+                                    placeholder="Opção ${i + 1}"
+                                    onchange="atualizarOpcaoPergunta('${pergunta.id}', ${i}, this.value)"
+                                    onclick="event.stopPropagation()"
+                                />
+                                <button class="btn-remover-opcao" onclick="event.stopPropagation(); removerOpcao('${pergunta.id}', ${i})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                        <button class="btn-adicionar-opcao" onclick="event.stopPropagation(); adicionarOpcao('${pergunta.id}')">
+                            <i class="fas fa-plus"></i>
+                            Adicionar opção
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Configurações para escala linear
+    if (tipo === 'escala_linear') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="escala-visual">
+                        ${[1,2,3,4,5,6,7,8,9,10].map(num => `
+                            <div class="escala-numero">${num}</div>
+                        `).join('')}
+                    </div>
+                    <div class="escala-labels">
+                        <input type="text" class="escala-label-input" placeholder="Label mínimo" value="${config.labelMin || ''}" onchange="atualizarConfigEscala('${pergunta.id}', 'labelMin', this.value)" onclick="event.stopPropagation()"/>
+                        <input type="text" class="escala-label-input" placeholder="Label máximo" value="${config.labelMax || ''}" onchange="atualizarConfigEscala('${pergunta.id}', 'labelMax', this.value)" onclick="event.stopPropagation()"/>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Configurações para número
+    if (tipo === 'resposta_numerica') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <input type="number" class="numero-exemplo-input" placeholder="Coloque o seu número" disabled />
+                    <div class="numero-range" style="margin-top: 12px; display: flex; gap: 12px;">
+                        <input type="number" class="numero-min-input" placeholder="Mínimo" value="${config.min || ''}" onchange="atualizarConfigNumero('${pergunta.id}', 'min', this.value)" onclick="event.stopPropagation()"/>
+                        <input type="number" class="numero-max-input" placeholder="Máximo" value="${config.max || ''}" onchange="atualizarConfigNumero('${pergunta.id}', 'max', this.value)" onclick="event.stopPropagation()"/>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Configurações para problemas musculares (ATIVIDADE FÍSICA)
+    if (tipo === 'problemas_musculares') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="sim-nao-buttons">
+                        <button class="btn-sim-nao active"><i class="fas fa-circle"></i> Sim</button>
+                        <button class="btn-sim-nao"><i class="far fa-circle"></i> Não</button>
+                    </div>
+                    <div class="musculos-diagram" style="margin-top: 16px;">
+                        <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Selecione os músculos afetados</p>
+                        <div style="background: #f5f5f5; padding: 40px; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-male" style="font-size: 80px; color: #ccc;"></i>
+                            <p style="font-size: 12px; color: #999; margin-top: 12px;">Diagrama muscular interativo</p>
+                        </div>
+                        <div class="notas-section" style="margin-top: 16px;">
+                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 6px;">Notas</label>
+                            <textarea class="notas-textarea" placeholder="Adicione observações..." rows="2" onclick="event.stopPropagation()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Problemas ósseos e articulares
+    if (tipo === 'problemas_osseos') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="sim-nao-buttons">
+                        <button class="btn-sim-nao active"><i class="fas fa-circle"></i> Sim</button>
+                        <button class="btn-sim-nao"><i class="far fa-circle"></i> Não</button>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Selecione as articulações afetadas</p>
+                        <div style="background: #f5f5f5; padding: 30px; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-bone" style="font-size: 60px; color: #ccc;"></i>
+                            <p style="font-size: 12px; color: #999; margin-top: 12px;">Diagrama esquelético interativo</p>
+                        </div>
+                        <div class="notas-section" style="margin-top: 16px;">
+                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 6px;">Notas</label>
+                            <textarea class="notas-textarea" placeholder="Adicione observações..." rows="2" onclick="event.stopPropagation()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Problemas cardiorrespiratórios
+    if (tipo === 'problemas_cardio') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="sim-nao-buttons">
+                        <button class="btn-sim-nao active"><i class="fas fa-circle"></i> Sim</button>
+                        <button class="btn-sim-nao"><i class="far fa-circle"></i> Não</button>
+                    </div>
+                    <div style="margin-top: 16px; padding: 16px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ff9800;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #ff9800;"></i>
+                            <div>
+                                <p style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 4px 0;">Atenção</p>
+                                <p style="font-size: 12px; color: #666; margin: 0; line-height: 1.5;">Problemas cardiorrespiratórios requerem acompanhamento médico especializado antes de iniciar atividades físicas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notas-section" style="margin-top: 16px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 6px;">Especifique o problema</label>
+                        <textarea class="notas-textarea" placeholder="Descreva o problema cardiorrespiratório..." rows="3" onclick="event.stopPropagation()"></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Medicação
+    if (tipo === 'medicacao') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="sim-nao-buttons">
+                        <button class="btn-sim-nao active"><i class="fas fa-circle"></i> Sim</button>
+                        <button class="btn-sim-nao"><i class="far fa-circle"></i> Não</button>
+                    </div>
+                    <div class="notas-section" style="margin-top: 16px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 6px;">Qual(is) medicação(ões)?</label>
+                        <textarea class="notas-textarea" placeholder="Liste os medicamentos e dosagens..." rows="3" onclick="event.stopPropagation()"></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Aprovação para atividade física
+    if (tipo === 'aprovacao_atividade') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div class="sim-nao-buttons">
+                        <button class="btn-sim-nao active"><i class="fas fa-circle"></i> Sim</button>
+                        <button class="btn-sim-nao"><i class="far fa-circle"></i> Não</button>
+                    </div>
+                    <div style="margin-top: 16px; padding: 16px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <i class="fas fa-clipboard-check" style="font-size: 20px; color: #4caf50;"></i>
+                            <div>
+                                <p style="font-size: 13px; font-weight: 600; color: #333; margin: 0 0 4px 0;">Aprovação Médica</p>
+                                <p style="font-size: 12px; color: #666; margin: 0; line-height: 1.5;">É importante ter aprovação médica antes de iniciar qualquer programa de atividade física.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notas-section" style="margin-top: 16px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 6px;">Observações médicas</label>
+                        <textarea class="notas-textarea" placeholder="Restrições ou recomendações..." rows="2" onclick="event.stopPropagation()"></textarea>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Medidas corporais
+    if (tipo === 'medidas_corporais') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="font-size: 11px; color: #999; display: block; margin-bottom: 4px;">Peso (kg)</label>
+                            <input type="number" class="numero-exemplo-input" placeholder="70" disabled />
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #999; display: block; margin-bottom: 4px;">Altura (cm)</label>
+                            <input type="number" class="numero-exemplo-input" placeholder="170" disabled />
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #999; display: block; margin-bottom: 4px;">Cintura (cm)</label>
+                            <input type="number" class="numero-exemplo-input" placeholder="80" disabled />
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #999; display: block; margin-bottom: 4px;">Quadril (cm)</label>
+                            <input type="number" class="numero-exemplo-input" placeholder="95" disabled />
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; background: #f0f9fc; border-radius: 6px; text-align: center;">
+                        <p style="font-size: 11px; color: #666; margin: 0;">IMC calculado automaticamente</p>
+                        <p style="font-size: 20px; font-weight: 600; color: #62b1ca; margin: 4px 0 0 0;">24.2</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Objetivo de treinamento
+    if (tipo === 'objetivo_treinamento') {
+        return `
+            <div class="config-incard">
+                <div class="config-section">
+                    <label class="config-label">VISUALIZAÇÃO</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="objetivo-card">
+                            <i class="fas fa-fire" style="font-size: 24px; color: #ff6b6b; margin-bottom: 8px;"></i>
+                            <p style="font-size: 13px; font-weight: 600; margin: 0;">Perder peso</p>
+                        </div>
+                        <div class="objetivo-card">
+                            <i class="fas fa-dumbbell" style="font-size: 24px; color: #62b1ca; margin-bottom: 8px;"></i>
+                            <p style="font-size: 13px; font-weight: 600; margin: 0;">Ganhar massa</p>
+                        </div>
+                        <div class="objetivo-card">
+                            <i class="fas fa-heartbeat" style="font-size: 24px; color: #4caf50; margin-bottom: 8px;"></i>
+                            <p style="font-size: 13px; font-weight: 600; margin: 0;">Saúde</p>
+                        </div>
+                        <div class="objetivo-card">
+                            <i class="fas fa-running" style="font-size: 24px; color: #ff9800; margin-bottom: 8px;"></i>
+                            <p style="font-size: 13px; font-weight: 600; margin: 0;">Performance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Padrão para outros tipos
+    return `
+        <div class="config-incard">
+            <div class="config-section">
+                <label class="config-label">VISUALIZAÇÃO</label>
+                <input type="text" class="input-exemplo" placeholder="Resposta do usuário aparecerá aqui" disabled />
+            </div>
+        </div>
+    `;
 }
 
 function renderPerguntaCard(pergunta, index) {
@@ -1106,35 +1492,196 @@ function renderPerguntaCard(pergunta, index) {
 }
 
 function adicionarPergunta(tipo) {
+    // Criar primeira seção se não existir nenhuma
+    if (currentSecoes.length === 0) {
+        criarNovaSecao('Seção 1');
+    }
+    
+    // Adicionar à primeira seção
+    const primeiraSecao = currentSecoes[0];
     const novaPergunta = {
         id: `pergunta_${Date.now()}`,
         tipo: tipo,
-        texto: 'Nova pergunta',
+        titulo: getTituloDefaultPorTipo(tipo),
+        texto: getTituloDefaultPorTipo(tipo),
         obrigatoria: false,
-        ordem: currentPerguntas.length,
-        opcoes: (tipo === 'multipla_escolha' || tipo === 'selecao_multipla') ? [
+        ordem: primeiraSecao.perguntas.length,
+        configuracoes: {},
+        opcoes: (tipo === 'escolha_unica' || tipo === 'escolha_multipla') ? [
             { texto: 'Opção 1', ordem: 0 },
             { texto: 'Opção 2', ordem: 1 }
         ] : []
     };
     
-    currentPerguntas.push(novaPergunta);
+    primeiraSecao.perguntas.push(novaPergunta);
     renderPerguntas();
-    selecionarPergunta(novaPergunta.id);
+    selecionarPerguntaCard(novaPergunta.id);
     
-    showToast('Pergunta adicionada!', 'success');
+    showToast('Elemento adicionado!', 'success');
+}
+
+function getTituloDefaultPorTipo(tipo) {
+    const titulos = {
+        'escolha_unica': 'Nova pergunta de escolha única',
+        'escolha_multipla': 'Nova pergunta de escolha múltipla',
+        'resposta_textual': 'Nova pergunta de texto',
+        'resposta_numerica': 'Nova pergunta numérica',
+        'classificacao': 'Avalie de 1 a 5',
+        'escala_linear': 'Avalie de 1 a 10',
+        'texto': 'Texto informativo',
+        'imagem': 'Inserir imagem',
+        'assinatura': 'Assinatura digital',
+        'problemas_musculares': 'Você tem ou já teve problemas musculares?',
+        'problemas_osseos': 'Problemas ósseos e articulares?',
+        'problemas_cardio': 'Problemas cardiorrespiratórios?',
+        'medicacao': 'Você toma alguma medicação?',
+        'aprovacao_atividade': 'Você tem aprovação médica para fazer atividade física?',
+        'medidas_corporais': 'Medidas corporais',
+        'objetivo_treinamento': 'Objetivo de treinamento'
+    };
+    return titulos[tipo] || 'Nova pergunta';
+}
+
+function criarNovaSecao(titulo = null) {
+    const novaSecao = {
+        id: `secao_${Date.now()}`,
+        titulo: titulo || `Seção ${currentSecoes.length + 1}`,
+        descricao: null,
+        ordem: currentSecoes.length,
+        perguntas: []
+    };
+    currentSecoes.push(novaSecao);
+    return novaSecao;
+}
+
+function selecionarPerguntaCard(id) {
+    selectedPerguntaId = id;
+    renderPerguntas();
+    abrirSidebarConfiguracao(id);
 }
 
 function selecionarPergunta(id) {
-    selectedPerguntaId = id;
-    renderPerguntas();
-    renderPropriedadesPergunta(id);
-    
-    // Mostrar divisor de propriedades
-    const divider = document.getElementById('questionario-properties-divider');
-    if (divider) {
-        divider.style.display = 'block';
+    selecionarPerguntaCard(id);
+}
+
+function atualizarTituloSecao(secaoId, novoTitulo) {
+    const secao = currentSecoes.find(s => s.id === secaoId);
+    if (secao) {
+        secao.titulo = novoTitulo;
     }
+}
+
+function atualizarTituloPergunta(perguntaId, novoTitulo) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta) {
+            pergunta.titulo = novoTitulo;
+            pergunta.texto = novoTitulo;
+            break;
+        }
+    }
+}
+
+function atualizarOpcaoPergunta(perguntaId, index, novoTexto) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta && pergunta.opcoes && pergunta.opcoes[index]) {
+            pergunta.opcoes[index].texto = novoTexto;
+            break;
+        }
+    }
+}
+
+function adicionarOpcao(perguntaId) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta) {
+            if (!pergunta.opcoes) pergunta.opcoes = [];
+            pergunta.opcoes.push({
+                texto: `Opção ${pergunta.opcoes.length + 1}`,
+                ordem: pergunta.opcoes.length
+            });
+            renderPerguntas();
+            break;
+        }
+    }
+}
+
+function removerOpcao(perguntaId, index) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta && pergunta.opcoes) {
+            pergunta.opcoes.splice(index, 1);
+            renderPerguntas();
+            break;
+        }
+    }
+}
+
+function atualizarConfigEscala(perguntaId, campo, valor) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta) {
+            if (!pergunta.configuracoes) pergunta.configuracoes = {};
+            pergunta.configuracoes[campo] = valor;
+            break;
+        }
+    }
+}
+
+function atualizarConfigNumero(perguntaId, campo, valor) {
+    for (let secao of currentSecoes) {
+        const pergunta = secao.perguntas.find(p => p.id === perguntaId);
+        if (pergunta) {
+            if (!pergunta.configuracoes) pergunta.configuracoes = {};
+            pergunta.configuracoes[campo] = valor;
+            break;
+        }
+    }
+}
+
+function configurarDragAndDropSecoes() {
+    // Implementar drag-and-drop entre seções (a ser implementado)
+}
+
+function dropNaSecao(event, secaoId) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    
+    const tipo = event.dataTransfer.getData('tipo');
+    if (tipo) {
+        const secao = currentSecoes.find(s => s.id === secaoId);
+        if (secao) {
+            const novaPergunta = {
+                id: `pergunta_${Date.now()}`,
+                tipo: tipo,
+                titulo: getTituloDefaultPorTipo(tipo),
+                texto: getTituloDefaultPorTipo(tipo),
+                obrigatoria: false,
+                ordem: secao.perguntas.length,
+                configuracoes: {},
+                opcoes: (tipo === 'escolha_unica' || tipo === 'escolha_multipla') ? [
+                    { texto: 'Opção 1', ordem: 0 },
+                    { texto: 'Opção 2', ordem: 1 }
+                ] : []
+            };
+            
+            secao.perguntas.push(novaPergunta);
+            renderPerguntas();
+            selecionarPerguntaCard(novaPergunta.id);
+            showToast('Elemento adicionado à seção!', 'success');
+        }
+    }
+}
+
+function toggleSecaoMenu(secaoId) {
+    // Implementar menu de opções da seção (a ser implementado)
+    showToast('Menu da seção em desenvolvimento', 'info');
+}
+
+function abrirSidebarConfiguracao(perguntaId) {
+    // Implementar sidebar de configurações avançadas (Tarefa 5)
+    console.log('Abrir configurações para:', perguntaId);
 }
 
 function renderPropriedadesPergunta(id) {

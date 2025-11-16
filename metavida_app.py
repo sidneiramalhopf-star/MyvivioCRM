@@ -237,12 +237,24 @@ class Questionario(Base):
     configuracoes = Column(Text, nullable=True)  # JSON: {permitir_multiplas_respostas, exibir_progresso, etc}
     unidade = relationship("Unidade")
     criado_por = relationship("Usuario")
+    secoes = relationship("Secao", back_populates="questionario", cascade="all, delete-orphan", order_by="Secao.ordem")
     perguntas = relationship("Pergunta", back_populates="questionario", cascade="all, delete-orphan", order_by="Pergunta.ordem")
+
+class Secao(Base):
+    __tablename__ = "secoes"
+    id = Column(Integer, primary_key=True, index=True)
+    questionario_id = Column(Integer, ForeignKey("questionarios.id"), nullable=False)
+    titulo = Column(String, nullable=True)  # Ex: "AVALIAÇÃO INICIAL - BALANCE CENTER"
+    descricao = Column(Text, nullable=True)
+    ordem = Column(Integer, nullable=False)
+    questionario = relationship("Questionario", back_populates="secoes")
+    perguntas = relationship("Pergunta", back_populates="secao", cascade="all, delete-orphan", order_by="Pergunta.ordem")
 
 class Pergunta(Base):
     __tablename__ = "perguntas"
     id = Column(Integer, primary_key=True, index=True)
     questionario_id = Column(Integer, ForeignKey("questionarios.id"), nullable=False)
+    secao_id = Column(Integer, ForeignKey("secoes.id"), nullable=True)
     tipo = Column(String, nullable=False)  # texto_curto, texto_longo, multipla_escolha, selecao_multipla, likert, data, numero
     titulo = Column(String, nullable=False)
     descricao = Column(Text, nullable=True)
@@ -250,6 +262,7 @@ class Pergunta(Base):
     ordem = Column(Integer, nullable=False)
     configuracoes = Column(Text, nullable=True)  # JSON: validações, placeholder, min/max, etc
     questionario = relationship("Questionario", back_populates="perguntas")
+    secao = relationship("Secao", back_populates="perguntas")
     opcoes = relationship("OpcaoPergunta", back_populates="pergunta", cascade="all, delete-orphan", order_by="OpcaoPergunta.ordem")
 
 class OpcaoPergunta(Base):
@@ -1749,6 +1762,16 @@ async def upload_video_exercicio(
 
 import json
 
+class SecaoCreate(BaseModel):
+    titulo: Optional[str] = None
+    descricao: Optional[str] = None
+    ordem: int
+
+class SecaoUpdate(BaseModel):
+    titulo: Optional[str] = None
+    descricao: Optional[str] = None
+    ordem: Optional[int] = None
+
 class OpcaoPerguntaCreate(BaseModel):
     texto: str
     ordem: int
@@ -1760,6 +1783,7 @@ class PerguntaCreate(BaseModel):
     descricao: Optional[str] = None
     obrigatoria: bool = False
     ordem: int
+    secao_id: Optional[int] = None
     configuracoes: Optional[dict] = None
     opcoes: Optional[List[OpcaoPerguntaCreate]] = []
 
@@ -1938,6 +1962,139 @@ def deletar_questionario(
     
     return {"mensagem": "Questionário excluído com sucesso"}
 
+# ============================================================
+# Endpoints de Seções
+# ============================================================
+
+@app.get("/questionarios/{questionario_id}/secoes")
+def listar_secoes(
+    questionario_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    secoes = db.query(Secao).filter(
+        Secao.questionario_id == questionario_id
+    ).order_by(Secao.ordem).all()
+    
+    resultado = []
+    for secao in secoes:
+        perguntas = []
+        for p in secao.perguntas:
+            perguntas.append({
+                "id": p.id,
+                "tipo": p.tipo,
+                "titulo": p.titulo,
+                "descricao": p.descricao,
+                "obrigatoria": p.obrigatoria,
+                "ordem": p.ordem,
+                "configuracoes": json.loads(p.configuracoes) if p.configuracoes else {}
+            })
+        
+        resultado.append({
+            "id": secao.id,
+            "titulo": secao.titulo,
+            "descricao": secao.descricao,
+            "ordem": secao.ordem,
+            "perguntas": perguntas
+        })
+    
+    return resultado
+
+@app.post("/questionarios/{questionario_id}/secoes")
+def criar_secao(
+    questionario_id: int,
+    dados: SecaoCreate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    questionario = db.query(Questionario).filter(
+        Questionario.id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not questionario:
+        raise HTTPException(status_code=404, detail="Questionário não encontrado")
+    
+    secao = Secao(
+        questionario_id=questionario_id,
+        titulo=dados.titulo,
+        descricao=dados.descricao,
+        ordem=dados.ordem
+    )
+    
+    db.add(secao)
+    db.commit()
+    db.refresh(secao)
+    
+    return {
+        "id": secao.id,
+        "titulo": secao.titulo,
+        "descricao": secao.descricao,
+        "ordem": secao.ordem,
+        "perguntas": []
+    }
+
+@app.put("/questionarios/{questionario_id}/secoes/{secao_id}")
+def atualizar_secao(
+    questionario_id: int,
+    secao_id: int,
+    dados: SecaoUpdate,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    secao = db.query(Secao).join(Questionario).filter(
+        Secao.id == secao_id,
+        Secao.questionario_id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not secao:
+        raise HTTPException(status_code=404, detail="Seção não encontrada")
+    
+    if dados.titulo is not None:
+        secao.titulo = dados.titulo
+    if dados.descricao is not None:
+        secao.descricao = dados.descricao
+    if dados.ordem is not None:
+        secao.ordem = dados.ordem
+    
+    db.commit()
+    
+    return {"mensagem": "Seção atualizada com sucesso"}
+
+@app.delete("/questionarios/{questionario_id}/secoes/{secao_id}")
+def deletar_secao(
+    questionario_id: int,
+    secao_id: int,
+    usuario: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    secao = db.query(Secao).join(Questionario).filter(
+        Secao.id == secao_id,
+        Secao.questionario_id == questionario_id,
+        Questionario.criado_por_id == usuario.id
+    ).first()
+    
+    if not secao:
+        raise HTTPException(status_code=404, detail="Seção não encontrada")
+    
+    db.delete(secao)
+    db.commit()
+    
+    return {"mensagem": "Seção excluída com sucesso"}
+
+# ============================================================
+# Endpoints de Perguntas
+# ============================================================
+
 @app.post("/questionarios/{questionario_id}/perguntas")
 def adicionar_pergunta(
     questionario_id: int,
@@ -1955,6 +2112,7 @@ def adicionar_pergunta(
     
     pergunta = Pergunta(
         questionario_id=questionario_id,
+        secao_id=dados.secao_id,
         tipo=dados.tipo,
         titulo=dados.titulo,
         descricao=dados.descricao,
