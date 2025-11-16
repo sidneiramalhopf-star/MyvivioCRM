@@ -718,9 +718,9 @@ async function loadGrupos() {
             return;
         }
         
-        // Agrupar por status
-        const ativos = grupos.filter(g => g.status === 'ativo');
-        const inativos = grupos.filter(g => g.status === 'inativo');
+        // Agrupar por status (case-insensitive)
+        const ativos = grupos.filter(g => g.status && g.status.toLowerCase() === 'ativo');
+        const inativos = grupos.filter(g => g.status && g.status.toLowerCase() === 'inativo');
         
         let html = '';
         
