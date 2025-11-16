@@ -1,0 +1,234 @@
+# PROMPT COMPLETO PARA O REPLIT — SEÇÃO **GRUPOS VIVIO** (VERSÃO AVANÇADA + IA)
+
+## 🎯 **Objetivo Geral**
+
+Expandir e concluir a seção **Grupos** do CRM MyVIVIO, criando um sistema moderno, inteligente e sincronizado com IA, capaz de superar o funcionamento atual do Mywellness CRM. O Replit deverá **manter o que já existe**, estender funcionalidades, corrigir lacunas e habilitar recursos avançados, especialmente automações preditivas.
+
+Este prompt descreve todas as funcionalidades que devem estar em ação.
+
+---
+
+# 🟩 **1. Manter o que JÁ EXISTE no CRM VIVIO**
+
+O Replit **não deve apagar nem sobrescrever** o que já foi construído, incluindo:
+
+* Estrutura visual e navegação da página de Grupos.
+* Listagem atual de grupos.
+* Filtros básicos existentes.
+* Sistema de criação inicial de grupos (se já existir).
+* Modelo de dados já implementado.
+
+Esses itens devem ser preservados e servem como base para o upgrade descrito abaixo.
+
+---
+
+# 🟦 **2. Função Principal: Criar e Gerir Grupos Dinâmicos Inteligentes**
+
+O sistema deverá funcionar como um **segmentador avançado**, permitindo criar grupos baseados em regras fixas, comportamentos, previsões, perfis e IA.
+
+## **2.1 Estrutura de Criação do Grupo**
+
+Adicionar e/ou completar os seguintes componentes:
+
+* Nome do grupo
+* Descrição
+* Critérios (filtros)
+* Comportamentos monitorados
+* Status (ativo/inativo)
+* Integração com automações
+* Previsões realizadas pela IA
+
+O painel deverá exibir **critérios dinâmicos**.
+
+---
+
+# 🟧 **3. Critérios Avançados de Segmentação (NOVOS)**
+
+Adicionar filtros modernos, incluindo:
+
+### **A. Comportamento de Treino**
+
+* frequência semanal
+* dias sem treinar
+* tipo de treino preferido
+* intensidade média
+
+### **B. Interação com o App Vivio**
+
+* abertura do app
+* leitura de mensagens
+* cliques em notificações
+* abandono de formulários
+
+### **C. Dados de Saúde (quando disponíveis)**
+
+* humor
+* dor
+* energia física
+* sono
+
+### **D. Dados Administrativos**
+
+* departamento (para corporativo)
+* cargo
+* data de entrada na empresa
+
+### **E. Dados de Questionários**
+
+* pontuação geral
+* classificação do perfil (mente, corpo, energia)
+* respostas específicas
+
+### **F. Filtros Compostos (lógica avançada)**
+
+Permitir criar **regras AND/OR/NOR/XOR** com blocos visuais.
+
+Exemplo:
+
+```
+(SE Treino < 2x por semana) AND (SE Humor = baixo) → entra no grupo "Alto Risco".
+```
+
+---
+
+# 🟨 **4. IA Integrada em Grupos (SUPER DIFERENCIAL VIVIO)**
+
+A máquina de IA deve atuar em tempo real para:
+
+### **4.1. Agrupar automaticamente usuários que têm padrões similares**
+
+Clustering inteligente baseado em comportamento.
+
+### **4.2. Sugerir novos grupos automaticamente**
+
+Exemplos:
+
+* "Pessoas com treino irregular nas últimas 3 semanas"
+* "Usuários com alto estresse percebido"
+
+### **4.3. Analisar eficácia dos grupos**
+
+Mostrar se o grupo está:
+
+* crescendo
+* diminuindo
+* funcionando (impacto nas automações)
+
+### **4.4. Prever quem VAI entrar no grupo em 72h**
+
+Exemplo:
+Grupo: "Usuários prestes a faltar por 14 dias".
+
+### **4.5. Ajustar regras automaticamente (opcional)**
+
+O usuário pode ativar o modo IA "Auto-Optimizar".
+
+---
+
+# 🟥 **5. Tela Principal da Seção Grupos (Experiência Moderna)**
+
+Criar ou completar:
+
+* Dashboard com cartões dos grupos
+* Indicadores-chave (tamanho, crescimento, risco)
+* Filtros rápidos (ativos, automação ligada, previsão IA)
+* Botão "Criar Novo Grupo"
+* Botão "Sugestões de IA"
+
+---
+
+# 🟪 **6. Builder Visual de Grupos (Interface Inovadora)**
+
+A criação de grupos deve ser clara, visual e moderna.
+
+### Componentes a adicionar:
+
+* Blocos de critérios
+* Conectores visuais entre blocos
+* Árvore lógica (flowchart)
+* Preview do grupo (quem entraria hoje)
+* Estatísticas instantâneas
+
+### Recursos adicionais:
+
+* Drag & Drop
+* Validação automática
+* Sugestão de melhorias via IA
+
+---
+
+# 🟫 **7. Integração Direta com Automação**
+
+Implementar:
+
+* Opção "Este grupo ativa uma automação"
+* Conexão direta com qualquer automação existente
+* Visualização de workflows conectados
+* Dados de impacto:
+
+  * quantos usuários passaram pelo grupo
+  * quantos concluíram a automação
+
+---
+
+# ⬛ **8. Analytics Avançado do Grupo**
+
+Criar tela de métricas com:
+
+* tamanho do grupo
+* crescimento semanal
+* entrada e saída de usuários
+* variação comportamental
+* mapa de calor de risco
+* impacto das ações
+* gráficos integrados
+
+---
+
+# 🟫 **9. Funcionalidades Futuras (já deixar código preparado)**
+
+* Grupos preditivos completos
+* Grupos de energia (Metavida)
+* Grupos espirituais (bem-estar integral)
+* Grupos de sincronicidade (IA descobre padrões)
+* Grupos baseados em humor diário
+* Grupos baseados em texto livre (NLP)
+
+---
+
+# 🟩 **10. Instruções Técnicas para o Replit**
+
+### O Replit deve:
+
+* Manter tudo o que já existe.
+* Criar os novos módulos descritos acima.
+* Usar componentes modulares reutilizáveis.
+* Criar API mock para testes.
+* Conectar grupos às automações já existentes.
+* Criar lógica de IA simulada (mock) pronta para backend.
+* Garantir UX moderna.
+* Garantir compatibilidade com a seção Automação.
+* Documentar cada função.
+* Preparar integração com dados reais.
+
+---
+
+# Documento finalizado — pronto para uso no Replit.
+
+## Diferenciais do VIVIO Grupos em relação ao Mywellness
+
+1. **IA Adaptativa de Segmentação Dinâmica** – Grupos se atualizam automaticamente conforme comportamento e progresso real dos utilizadores, não apenas por filtros estáticos.
+2. **Predição de Engajamento** – A IA prevê quando um grupo está a perder interesse e aciona medidas corretivas automáticas.
+3. **Grupos Inteligentes Multicamadas** – Subgrupos automáticos por níveis, objetivos ou desempenho, algo inexistente no Mywellness.
+4. **Regras Comportamentais Avançadas** – Segmentações baseadas em padrões (ex.: “usuário falta 3 treinos consecutivos”).
+5. **Sincronização com Questionários Adaptativos** – Questionários mudam conforme o grupo e geram dados de segmentação em tempo real.
+6. **Ações de Automação Cruzadas** – O comportamento dentro de um grupo pode ativar tarefas, notificações, missões ou campanhas.
+7. **Mapeador Visual de Grupos** – Interface visual inteligente para gerir relações entre grupos, subgrupos, regras e fluxos.
+8. **Gamificação Personalizada por Grupo** – Recompensas, badges e rankings configuráveis por tipo de grupo.
+9. **Análises Preditivas Avançadas** – IA estima impacto de cada grupo (retenção, aderência, conversão) e sugere ajustes.
+10. **Grupos Baseados em Energia e Bem-Estar Integral (Metavida)** – Exclusivo da VIVIO, alinhado ao método do utilizador.
+11. **Sincronização com Aulas, Consultas e Programas** – Grupos automaticamente ajustam quem recebe programas, coaches ou sessões.
+12. **Chat Inteligente Integrado** – O Mywellness não possui comunicação contextualizada dentro de grupos.
+13. **Gestão Multiempresa e Multilocal** – Criado para empresas com vários polos e unidades.
+14. **Privacidade Avançada e Permissões Granulares** – Controle detalhado sobre quem vê e gere cada grupo.
+15. **Copilot de IA para Criar Grupos** – O utilizador descreve o tipo de grupo em texto livre e a IA cria filtros, automações e regras.
