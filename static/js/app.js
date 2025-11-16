@@ -9315,32 +9315,14 @@ async function melhorarComIA() {
 
 // Atualizar contadores do editor
 function atualizarContadoresEditor() {
-    const totalPerguntas = currentPerguntas.length;
-    
-    // Estimar tempo baseado no tipo de pergunta
-    // Texto curto/número: 30s, Texto longo: 1min, Escolha: 20s, Outros: 30s
-    let tempoEstimado = 0;
-    currentPerguntas.forEach(p => {
-        switch(p.tipo) {
-            case 'texto_longo':
-            case 'resposta_textual':
-                tempoEstimado += 60; // 1 minuto
-                break;
-            case 'escolha_unica':
-            case 'escolha_multipla':
-            case 'classificacao':
-                tempoEstimado += 20; // 20 segundos
-                break;
-            case 'problemas_musculares':
-            case 'problemas_osseos':
-            case 'problemas_cardio':
-                tempoEstimado += 45; // 45 segundos (mais detalhado)
-                break;
-            default:
-                tempoEstimado += 30; // 30 segundos
-        }
+    // Contar perguntas em todas as seções
+    let totalPerguntas = 0;
+    currentSecoes.forEach(secao => {
+        totalPerguntas += (secao.perguntas || []).length;
     });
     
+    // Calcular tempo estimado: 35 segundos por pergunta em média
+    const tempoEstimado = totalPerguntas * 35; // 35 segundos por pergunta
     const minutos = Math.ceil(tempoEstimado / 60);
     
     // Atualizar UI
