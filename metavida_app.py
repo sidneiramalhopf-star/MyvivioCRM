@@ -68,6 +68,7 @@ class Usuario(Base):
     risco_churn = Column(Float, default=0.0)
     unidade = relationship("Unidade", back_populates="usuarios")
     agendas = relationship("Agenda", back_populates="usuario")
+    jornadas = relationship("UsuarioJornada", back_populates="usuario")
 
 
 class Visitante(Base):
@@ -381,6 +382,55 @@ class EventoSistema(Base):
     data_registro = Column(DateTime, default=datetime.utcnow)
     processado = Column(Boolean, default=False)
     data_processamento = Column(DateTime, nullable=True)
+
+
+# ============================================================
+# Modelos de Automação - Sistema de Jornadas e Workflows
+# ============================================================
+
+
+class Jornada(Base):
+    __tablename__ = "jornadas"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    descricao = Column(Text, nullable=True)
+    gatilho_evento = Column(String, nullable=False)  # Ex: USUARIO_CRIADO, RESERVA_CRIADA, CHURN_ALERTA
+    ativa = Column(Boolean, default=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"), nullable=True)
+    criado_por_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    etapas = relationship("EtapaJornada", back_populates="jornada", order_by="EtapaJornada.ordem", cascade="all, delete-orphan")
+    unidade = relationship("Unidade")
+    criado_por = relationship("Usuario")
+
+
+class EtapaJornada(Base):
+    __tablename__ = "etapas_jornada"
+    id = Column(Integer, primary_key=True, index=True)
+    jornada_id = Column(Integer, ForeignKey("jornadas.id", ondelete="CASCADE"), nullable=False)
+    nome = Column(String, nullable=False)
+    ordem = Column(Integer, nullable=False)
+    acao_tipo = Column(String, nullable=False)  # ENVIAR_EMAIL, CRIAR_TAREFA, MUDAR_STATUS, CRIAR_GRUPO, etc
+    acao_config = Column(Text, nullable=False)  # JSON com detalhes da ação
+    
+    jornada = relationship("Jornada", back_populates="etapas")
+
+
+class UsuarioJornada(Base):
+    __tablename__ = "usuarios_jornadas"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    jornada_id = Column(Integer, ForeignKey("jornadas.id"), nullable=False)
+    etapa_atual_id = Column(Integer, ForeignKey("etapas_jornada.id"), nullable=True)
+    data_inicio = Column(DateTime, default=datetime.utcnow)
+    data_conclusao = Column(DateTime, nullable=True)
+    concluida = Column(Boolean, default=False)
+    
+    usuario = relationship("Usuario", back_populates="jornadas")
+    jornada = relationship("Jornada")
+    etapa_atual = relationship("EtapaJornada")
 
 
 # ============================================================
@@ -727,6 +777,9 @@ async def processar_eventos(db: Session):
             elif evento.tipo == "LEAD_CONVERTIDO":
                 print(f"[LEAD] Visitante convertido: {payload.get('nome')}")
             
+            # Processar jornadas acionadas por este evento
+            await processar_jornadas_por_evento(db, evento)
+            
             evento.processado = True
             evento.data_processamento = datetime.utcnow()
             db.commit()
@@ -734,6 +787,193 @@ async def processar_eventos(db: Session):
         except Exception as e:
             print(f"[ERRO] Falha ao processar evento {evento.id}: {e}")
             db.rollback()
+
+
+# ============================================================
+# Funções de Automação - Sistema de Jornadas
+# ============================================================
+
+
+async def executar_acao_workflow(db: Session, usuario: Usuario, etapa: EtapaJornada):
+    """Executa a ação definida na etapa do workflow"""
+    try:
+        config = json.loads(etapa.acao_config)
+        
+        if etapa.acao_tipo == "ENVIAR_EMAIL":
+            assunto = config.get("assunto", "Notificação VIVIO CRM")
+            corpo = config.get("corpo", "Mensagem automática.")
+            
+            # Personalização básica
+            corpo = corpo.replace("{usuario_nome}", usuario.nome).replace("{usuario_email}", usuario.email)
+            
+            await enviar_email(usuario.email, assunto, corpo)
+            print(f"[WORKFLOW] E-mail '{assunto}' enviado para {usuario.email}")
+            return True
+            
+        elif etapa.acao_tipo == "CRIAR_TAREFA":
+            titulo = config.get("titulo", "Tarefa de Acompanhamento")
+            descricao = config.get("descricao", f"Acompanhar usuário {usuario.nome} na jornada.")
+            
+            tarefa = Agenda(
+                usuario_id=usuario.id,
+                titulo=titulo,
+                descricao=descricao,
+                tipo_atividade="tarefa_automatica",
+                concluida=False
+            )
+            db.add(tarefa)
+            db.commit()
+            print(f"[WORKFLOW] Tarefa '{titulo}' criada para {usuario.nome}")
+            return True
+            
+        elif etapa.acao_tipo == "MUDAR_STATUS":
+            novo_status = config.get("status")
+            if novo_status == "inativo":
+                usuario.ativo = False
+            elif novo_status == "ativo":
+                usuario.ativo = True
+            db.commit()
+            print(f"[WORKFLOW] Status do usuário {usuario.nome} alterado para {novo_status}")
+            return True
+            
+        elif etapa.acao_tipo == "CRIAR_GRUPO":
+            nome_grupo = config.get("nome_grupo", "Grupo Automático")
+            descricao = config.get("descricao", "Grupo criado automaticamente por jornada")
+            
+            grupo = db.query(Grupo).filter(Grupo.nome == nome_grupo).first()
+            if not grupo:
+                grupo = Grupo(
+                    nome=nome_grupo,
+                    descricao=descricao,
+                    status="ativo",
+                    tipo_grupo="jornada_automatica",
+                    cor=config.get("cor", "#62b1ca"),
+                    unidade_id=usuario.unidade_id
+                )
+                db.add(grupo)
+                db.commit()
+            print(f"[WORKFLOW] Grupo '{nome_grupo}' criado/verificado")
+            return True
+            
+        elif etapa.acao_tipo == "ADICIONAR_AO_GRUPO":
+            grupo_id = config.get("grupo_id")
+            if grupo_id:
+                # Lógica de adicionar usuário ao grupo (implementar se necessário)
+                print(f"[WORKFLOW] Usuário {usuario.nome} adicionado ao grupo {grupo_id}")
+                return True
+                
+    except Exception as e:
+        print(f"[ERRO] Falha ao executar ação {etapa.acao_tipo}: {e}")
+        return False
+    
+    return False
+
+
+async def avancar_jornada(db: Session, usuario_jornada: UsuarioJornada):
+    """Avança o usuário para a próxima etapa da jornada"""
+    jornada = usuario_jornada.jornada
+    etapas = sorted(jornada.etapas, key=lambda e: e.ordem)
+    
+    if not etapas:
+        usuario_jornada.concluida = True
+        usuario_jornada.data_conclusao = datetime.utcnow()
+        db.commit()
+        print(f"[JORNADA] Jornada '{jornada.nome}' concluída (sem etapas)")
+        return
+        
+    etapa_atual = usuario_jornada.etapa_atual
+    
+    if etapa_atual is None:
+        # Primeira execução - iniciar na primeira etapa
+        proxima_etapa = etapas[0]
+    else:
+        # Encontrar próxima etapa
+        etapa_index = next((i for i, e in enumerate(etapas) if e.id == etapa_atual.id), -1)
+        if etapa_index == -1 or etapa_index == len(etapas) - 1:
+            # Última etapa concluída
+            usuario_jornada.concluida = True
+            usuario_jornada.data_conclusao = datetime.utcnow()
+            db.commit()
+            print(f"[JORNADA] Jornada '{jornada.nome}' concluída para usuário {usuario_jornada.usuario.nome}")
+            return
+        proxima_etapa = etapas[etapa_index + 1]
+        
+    # Executar ação da próxima etapa
+    sucesso = await executar_acao_workflow(db, usuario_jornada.usuario, proxima_etapa)
+    
+    if sucesso:
+        usuario_jornada.etapa_atual_id = proxima_etapa.id
+        db.commit()
+        print(f"[JORNADA] Etapa '{proxima_etapa.nome}' executada para usuário {usuario_jornada.usuario.nome}")
+
+
+async def iniciar_jornada(db: Session, usuario: Usuario, jornada: Jornada):
+    """Inicia uma nova jornada para um usuário"""
+    # Verificar se usuário já está nessa jornada
+    jornada_existente = db.query(UsuarioJornada).filter(
+        UsuarioJornada.usuario_id == usuario.id,
+        UsuarioJornada.jornada_id == jornada.id,
+        UsuarioJornada.concluida == False
+    ).first()
+    
+    if jornada_existente:
+        print(f"[JORNADA] Usuário {usuario.nome} já está na jornada '{jornada.nome}'")
+        return
+    
+    usuario_jornada = UsuarioJornada(
+        usuario_id=usuario.id,
+        jornada_id=jornada.id,
+        etapa_atual_id=None,
+        concluida=False
+    )
+    db.add(usuario_jornada)
+    db.commit()
+    db.refresh(usuario_jornada)
+    
+    print(f"[JORNADA] Jornada '{jornada.nome}' iniciada para usuário {usuario.nome}")
+    
+    # Executar primeira etapa
+    await avancar_jornada(db, usuario_jornada)
+
+
+async def processar_jornadas_por_evento(db: Session, evento: EventoSistema):
+    """Processa jornadas que são acionadas por um evento específico"""
+    try:
+        payload = json.loads(evento.payload)
+        usuario_id = payload.get("usuario_id")
+        
+        if not usuario_id:
+            return
+            
+        usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+        if not usuario:
+            return
+        
+        # Encontrar jornadas ativas que são acionadas por este evento
+        jornadas_ativas = db.query(Jornada).filter(
+            Jornada.gatilho_evento == evento.tipo,
+            Jornada.ativa == True
+        ).all()
+        
+        # Filtrar por unidade se usuário tiver unidade
+        if usuario.unidade_id:
+            jornadas_ativas = [j for j in jornadas_ativas if j.unidade_id is None or j.unidade_id == usuario.unidade_id]
+        
+        for jornada in jornadas_ativas:
+            await iniciar_jornada(db, usuario, jornada)
+            
+        # Avançar jornadas em andamento (se aplicável)
+        jornadas_em_andamento = db.query(UsuarioJornada).filter(
+            UsuarioJornada.usuario_id == usuario_id,
+            UsuarioJornada.concluida == False
+        ).all()
+        
+        for uj in jornadas_em_andamento:
+            # Apenas avança se houver lógica específica (por enquanto, skip)
+            pass
+            
+    except Exception as e:
+        print(f"[ERRO] Falha ao processar jornadas do evento {evento.id}: {e}")
 
 
 # ============================================================
@@ -794,7 +1034,7 @@ async def demo():
 # Endpoints de Autenticação
 # ============================================================
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RegistroRequest(BaseModel):
@@ -822,6 +1062,16 @@ def registrar(dados: RegistroRequest, db: Session = Depends(get_db)):
                       unidade_id=dados.unidade_id)
     db.add(usuario)
     db.commit()
+    db.refresh(usuario)
+    
+    # Registrar evento para acionar jornadas de onboarding
+    registrar_evento(db, "USUARIO_CRIADO", {
+        "usuario_id": usuario.id,
+        "usuario_nome": usuario.nome,
+        "usuario_email": usuario.email,
+        "unidade_id": usuario.unidade_id
+    })
+    
     return {"mensagem": "Usuário registrado com sucesso!"}
 
 
@@ -1345,6 +1595,16 @@ def reservar_aula(aula_id: int,
     reserva = ReservaAula(evento_aula_id=aula_id, usuario_id=usuario.id)
     db.add(reserva)
     db.commit()
+    db.refresh(reserva)
+    
+    # Registrar evento para acionar jornadas
+    registrar_evento(db, "RESERVA_CRIADA", {
+        "usuario_id": usuario.id,
+        "usuario_nome": usuario.nome,
+        "aula_id": aula_id,
+        "aula_nome": aula.nome_aula,
+        "reserva_id": reserva.id
+    })
 
     return {"mensagem": "Reserva realizada com sucesso!", "id": reserva.id}
 
@@ -2220,6 +2480,79 @@ class GrupoUpdate(BaseModel):
     crescimento_semanal: Optional[float] = None
 
 
+# ============================================================
+# Schemas Pydantic - Jornadas e Automação
+# ============================================================
+
+
+class JornadaBase(BaseModel):
+    nome: str
+    descricao: Optional[str] = None
+    gatilho_evento: str = Field(..., description="Evento que inicia a jornada (ex: USUARIO_CRIADO, CHURN_ALERTA)")
+    ativa: Optional[bool] = True
+
+
+class JornadaCreate(JornadaBase):
+    pass
+
+
+class JornadaUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+    gatilho_evento: Optional[str] = None
+    ativa: Optional[bool] = None
+
+
+class JornadaInDB(JornadaBase):
+    id: int
+    unidade_id: Optional[int] = None
+    criado_por_id: Optional[int] = None
+    data_criacao: datetime
+    data_atualizacao: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class EtapaJornadaBase(BaseModel):
+    nome: str
+    ordem: int
+    acao_tipo: str = Field(..., description="Tipo de ação (ex: ENVIAR_EMAIL, CRIAR_TAREFA, MUDAR_STATUS)")
+    acao_config: dict = Field(..., description="Configuração JSON da ação")
+
+
+class EtapaJornadaCreate(EtapaJornadaBase):
+    pass
+
+
+class EtapaJornadaUpdate(BaseModel):
+    nome: Optional[str] = None
+    ordem: Optional[int] = None
+    acao_tipo: Optional[str] = None
+    acao_config: Optional[dict] = None
+
+
+class EtapaJornadaInDB(EtapaJornadaBase):
+    id: int
+    jornada_id: int
+    
+    class Config:
+        from_attributes = True
+
+
+class UsuarioJornadaInDB(BaseModel):
+    id: int
+    usuario_id: int
+    jornada_id: int
+    etapa_atual_id: Optional[int] = None
+    data_inicio: datetime
+    data_conclusao: Optional[datetime] = None
+    concluida: bool
+    
+    class Config:
+        from_attributes = True
+
+
 @app.get("/questionarios")
 def listar_questionarios(usuario: Usuario = Depends(get_current_user),
                          db: Session = Depends(get_db)):
@@ -2990,6 +3323,256 @@ def obter_sugestoes_ia(usuario: Usuario = Depends(get_current_user),
     }]
 
     return sugestoes
+
+
+# ============================================================
+# Endpoints de Jornadas e Automação
+# ============================================================
+
+
+@app.get("/automacao/jornadas", response_model=List[JornadaInDB])
+def listar_jornadas(usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    """Lista todas as Jornadas do usuário"""
+    jornadas = db.query(Jornada).filter(
+        (Jornada.criado_por_id == usuario.id) | (Jornada.unidade_id == usuario.unidade_id)
+    ).order_by(Jornada.data_criacao.desc()).all()
+    
+    return jornadas
+
+
+@app.post("/automacao/jornadas", response_model=JornadaInDB)
+def criar_jornada(jornada: JornadaCreate,
+                  usuario: Usuario = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    """Cria uma nova Jornada (Workflow)"""
+    db_jornada = Jornada(
+        nome=jornada.nome,
+        descricao=jornada.descricao,
+        gatilho_evento=jornada.gatilho_evento,
+        ativa=jornada.ativa,
+        unidade_id=usuario.unidade_id,
+        criado_por_id=usuario.id
+    )
+    db.add(db_jornada)
+    db.commit()
+    db.refresh(db_jornada)
+    return db_jornada
+
+
+@app.get("/automacao/jornadas/{jornada_id}", response_model=JornadaInDB)
+def obter_jornada(jornada_id: int,
+                  usuario: Usuario = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    """Obtém uma jornada específica"""
+    jornada = db.query(Jornada).filter(Jornada.id == jornada_id).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    # Verificar permissão
+    if jornada.criado_por_id != usuario.id and jornada.unidade_id != usuario.unidade_id:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    return jornada
+
+
+@app.put("/automacao/jornadas/{jornada_id}")
+def atualizar_jornada(jornada_id: int,
+                      dados: JornadaUpdate,
+                      usuario: Usuario = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    """Atualiza uma jornada existente"""
+    jornada = db.query(Jornada).filter(
+        Jornada.id == jornada_id,
+        Jornada.criado_por_id == usuario.id
+    ).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    if dados.nome is not None:
+        jornada.nome = dados.nome
+    if dados.descricao is not None:
+        jornada.descricao = dados.descricao
+    if dados.gatilho_evento is not None:
+        jornada.gatilho_evento = dados.gatilho_evento
+    if dados.ativa is not None:
+        jornada.ativa = dados.ativa
+    
+    jornada.data_atualizacao = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Jornada atualizada com sucesso"}
+
+
+@app.delete("/automacao/jornadas/{jornada_id}")
+def deletar_jornada(jornada_id: int,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    """Deleta uma jornada"""
+    jornada = db.query(Jornada).filter(
+        Jornada.id == jornada_id,
+        Jornada.criado_por_id == usuario.id
+    ).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    db.delete(jornada)
+    db.commit()
+    
+    return {"mensagem": "Jornada excluída com sucesso"}
+
+
+@app.get("/automacao/jornadas/{jornada_id}/etapas", response_model=List[EtapaJornadaInDB])
+def listar_etapas_jornada(jornada_id: int,
+                          usuario: Usuario = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    """Lista todas as etapas de uma Jornada"""
+    jornada = db.query(Jornada).filter(Jornada.id == jornada_id).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    return db.query(EtapaJornada).filter(
+        EtapaJornada.jornada_id == jornada_id
+    ).order_by(EtapaJornada.ordem).all()
+
+
+@app.post("/automacao/jornadas/{jornada_id}/etapas", response_model=EtapaJornadaInDB)
+def adicionar_etapa_jornada(jornada_id: int,
+                            etapa: EtapaJornadaCreate,
+                            usuario: Usuario = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    """Adiciona uma etapa (ação) a uma Jornada"""
+    db_jornada = db.query(Jornada).filter(
+        Jornada.id == jornada_id,
+        Jornada.criado_por_id == usuario.id
+    ).first()
+    
+    if not db_jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    db_etapa = EtapaJornada(
+        jornada_id=jornada_id,
+        nome=etapa.nome,
+        ordem=etapa.ordem,
+        acao_tipo=etapa.acao_tipo,
+        acao_config=json.dumps(etapa.acao_config)
+    )
+    db.add(db_etapa)
+    db.commit()
+    db.refresh(db_etapa)
+    return db_etapa
+
+
+@app.put("/automacao/etapas/{etapa_id}")
+def atualizar_etapa(etapa_id: int,
+                    dados: EtapaJornadaUpdate,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    """Atualiza uma etapa existente"""
+    etapa = db.query(EtapaJornada).filter(EtapaJornada.id == etapa_id).first()
+    
+    if not etapa:
+        raise HTTPException(status_code=404, detail="Etapa não encontrada")
+    
+    # Verificar se usuário tem permissão
+    jornada = db.query(Jornada).filter(
+        Jornada.id == etapa.jornada_id,
+        Jornada.criado_por_id == usuario.id
+    ).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    if dados.nome is not None:
+        etapa.nome = dados.nome
+    if dados.ordem is not None:
+        etapa.ordem = dados.ordem
+    if dados.acao_tipo is not None:
+        etapa.acao_tipo = dados.acao_tipo
+    if dados.acao_config is not None:
+        etapa.acao_config = json.dumps(dados.acao_config)
+    
+    db.commit()
+    
+    return {"mensagem": "Etapa atualizada com sucesso"}
+
+
+@app.delete("/automacao/etapas/{etapa_id}")
+def deletar_etapa(etapa_id: int,
+                  usuario: Usuario = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    """Deleta uma etapa"""
+    etapa = db.query(EtapaJornada).filter(EtapaJornada.id == etapa_id).first()
+    
+    if not etapa:
+        raise HTTPException(status_code=404, detail="Etapa não encontrada")
+    
+    # Verificar se usuário tem permissão
+    jornada = db.query(Jornada).filter(
+        Jornada.id == etapa.jornada_id,
+        Jornada.criado_por_id == usuario.id
+    ).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    db.delete(etapa)
+    db.commit()
+    
+    return {"mensagem": "Etapa excluída com sucesso"}
+
+
+@app.get("/automacao/jornadas/{jornada_id}/progresso")
+def obter_progresso_jornada(jornada_id: int,
+                            usuario: Usuario = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    """Obtém o progresso de uma jornada (quantos usuários em cada etapa)"""
+    jornada = db.query(Jornada).filter(Jornada.id == jornada_id).first()
+    
+    if not jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+    
+    # Buscar todas as instâncias dessa jornada
+    usuarios_jornada = db.query(UsuarioJornada).filter(
+        UsuarioJornada.jornada_id == jornada_id
+    ).all()
+    
+    # Contar usuários por etapa
+    etapas = {etapa.id: {"nome": etapa.nome, "ordem": etapa.ordem, "usuarios": 0} for etapa in jornada.etapas}
+    concluidos = 0
+    em_andamento = 0
+    
+    for uj in usuarios_jornada:
+        if uj.concluida:
+            concluidos += 1
+        else:
+            em_andamento += 1
+            if uj.etapa_atual_id and uj.etapa_atual_id in etapas:
+                etapas[uj.etapa_atual_id]["usuarios"] += 1
+    
+    return {
+        "jornada_id": jornada_id,
+        "nome": jornada.nome,
+        "total_usuarios": len(usuarios_jornada),
+        "em_andamento": em_andamento,
+        "concluidos": concluidos,
+        "etapas": list(etapas.values())
+    }
+
+
+@app.post("/automacao/processar")
+async def run_automacao(usuario: Usuario = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """Endpoint para processar eventos e avançar jornadas manualmente"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    await processar_eventos(db)
+    return {"mensagem": "Processamento de automação e jornadas concluído"}
 
 
 # ============================================================

@@ -9995,3 +9995,39 @@ async function visualizarEventos() {
     }
 }
 
+
+// ============================================================
+// Processamento de Jornadas
+// ============================================================
+
+
+async function processarJornadas() {
+    try {
+        const token = localStorage.getItem('token');
+        
+        showToast('Processando jornadas...', 'info');
+        
+        const response = await fetch('/automacao/processar', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao processar jornadas');
+        }
+        
+        const resultado = await response.json();
+        
+        showToast(resultado.mensagem, 'success');
+        
+        // Recarregar dashboard de IA após processar
+        setTimeout(() => loadDashboardIA(), 1000);
+        
+    } catch (error) {
+        console.error('Erro ao processar jornadas:', error);
+        showToast('Erro ao processar jornadas', 'error');
+    }
+}
+

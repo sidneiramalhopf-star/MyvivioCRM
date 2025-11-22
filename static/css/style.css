@@ -10312,6 +10312,27 @@ textarea.form-control {
     color: white;
 }
 
+.ia-acao-btn.processar-jornadas {
+    border-color: #3498db;
+}
+
+.ia-acao-btn.processar-jornadas i {
+    color: #3498db;
+}
+
+.ia-acao-btn.processar-jornadas:hover {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-color: #3498db;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(52, 152, 219, 0.3);
+}
+
+.ia-acao-btn.processar-jornadas:hover i,
+.ia-acao-btn.processar-jornadas:hover span,
+.ia-acao-btn.processar-jornadas:hover small {
+    color: white;
+}
+
 /* Seção de riscos */
 .ia-riscos-secao {
     margin-top: 40px;
