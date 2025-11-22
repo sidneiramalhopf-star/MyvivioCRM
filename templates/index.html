@@ -1388,6 +1388,90 @@
                             <p>Configure atividades automatizadas para engajamento dos membros.</p>
                         </div>
 
+                        <!-- Página IA -->
+                        <div id="automacao-ia" class="automacao-page">
+                            <div class="jornadas-header">
+                                <h1>Inteligência Artificial</h1>
+                            </div>
+
+                            <div class="jornadas-intro">
+                                <h2>Machine Learning & Automação Inteligente</h2>
+                                <p>Previna churn, identifique padrões e automatize ações com modelos de IA treinados nos dados da sua unidade</p>
+                            </div>
+
+                            <!-- Métricas de IA -->
+                            <div class="ia-metricas-container">
+                                <div class="ia-metrica-card">
+                                    <div class="ia-metrica-icone alto-risco">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="ia-metrica-conteudo">
+                                        <h3 id="ia-alto-risco">--</h3>
+                                        <p>Alto Risco de Churn</p>
+                                    </div>
+                                </div>
+                                <div class="ia-metrica-card">
+                                    <div class="ia-metrica-icone medio-risco">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                    <div class="ia-metrica-conteudo">
+                                        <h3 id="ia-medio-risco">--</h3>
+                                        <p>Médio Risco</p>
+                                    </div>
+                                </div>
+                                <div class="ia-metrica-card">
+                                    <div class="ia-metrica-icone baixo-risco">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="ia-metrica-conteudo">
+                                        <h3 id="ia-baixo-risco">--</h3>
+                                        <p>Baixo Risco</p>
+                                    </div>
+                                </div>
+                                <div class="ia-metrica-card">
+                                    <div class="ia-metrica-icone total">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="ia-metrica-conteudo">
+                                        <h3 id="ia-total-usuarios">--</h3>
+                                        <p>Total de Usuários</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ações de IA -->
+                            <div class="ia-acoes-container">
+                                <button class="ia-acao-btn treinar" onclick="treinarModeloIA()">
+                                    <i class="fas fa-robot"></i>
+                                    <span>Treinar Modelo de Churn</span>
+                                    <small>Atualiza previsões com dados recentes</small>
+                                </button>
+                                <button class="ia-acao-btn visualizar" onclick="visualizarRiscosChurn()">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Visualizar Análise de Riscos</span>
+                                    <small>Ver detalhes de todos os usuários</small>
+                                </button>
+                                <button class="ia-acao-btn exportar" onclick="exportarDadosCSV()">
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>Exportar Dados CSV</span>
+                                    <small>Download de relatório completo</small>
+                                </button>
+                                <button class="ia-acao-btn eventos" onclick="visualizarEventos()">
+                                    <i class="fas fa-bell"></i>
+                                    <span>Eventos do Sistema</span>
+                                    <small>Histórico de automações</small>
+                                </button>
+                            </div>
+
+                            <!-- Lista de Usuários em Risco -->
+                            <div class="ia-riscos-secao">
+                                <h2>Usuários com Alto Risco de Churn</h2>
+                                <div id="ia-lista-riscos" class="ia-lista-riscos">
+                                    <p class="ia-empty-state">Clique em "Treinar Modelo" para gerar previsões</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Página de Detalhes da Jornada -->
                         <div id="automacao-jornada-detalhes" class="automacao-page">
                             <!-- Breadcrumb e botão voltar -->

@@ -23,14 +23,15 @@ The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend a
 - **Backend Framework**: FastAPI.
 - **Frontend**: HTML5, CSS3, and vanilla JavaScript.
 - **Database**: SQLAlchemy ORM with SQLite for development, designed for easy migration to PostgreSQL.
-- **Authentication**: JWT-based authentication using PyJWT and HTTPBearer, with Argon2 for secure password hashing.
-- **Data Models**: Comprehensive models for `Unidade`, `Usuario`, `Visitante`, `Programa`, `Sala`, `Instrutor`, `EventoCalendario`, `EventoAula`, `ReservaAula`, `Attendance`, `Exercicio`, `Questionario`, `Pergunta`, `OpcaoPergunta`, and `Grupo`.
+- **Authentication**: JWT-based authentication using PyJWT and HTTPBearer, with Argon2 for secure password hashing. Includes `/me` endpoint to retrieve current user information.
+- **Data Models**: Comprehensive models for `Unidade`, `Usuario`, `Visitante`, `Programa`, `Sala`, `Instrutor`, `EventoCalendario`, `EventoAula`, `ReservaAula`, `Attendance`, `Exercicio`, `Questionario`, `Pergunta`, `OpcaoPergunta`, `Grupo`, and `EventoSistema` (for event-driven automation).
+- **Machine Learning**: Integrated scikit-learn for churn prediction with `Usuario.risco_churn`, `Unidade.modelo_churn`, and `Visitante.lead_score` fields. Logistic Regression model trained on user activity patterns (dias_inatividade, reservas_canceladas).
 - **Attendance System**: "Single Source of Truth" attendance system with validated statuses and unique database constraints.
 - **File Upload System**: Secure file upload for exercise photos (jpg, png) and videos (mp4, webm, mov, max 40MB).
-- **Reporting**: Circular graphs using Matplotlib and CSV export.
+- **Reporting**: Circular graphs using Matplotlib and CSV export with ML risk analysis.
 - **Email**: Asynchronous email sending via aiosmtplib.
-- **API Endpoints**: Robust set of API endpoints for authentication, statistics, agenda, programs, visitors, units, AI metrics, full CRUD operations for calendar, classes, attendance, exercise library management (CRUD + file uploads), questionnaires (full CRUD + duplication), and groups (full CRUD + AI suggestions + member listing + duplication).
-- **Security**: All sensitive endpoints protected with JWT authentication.
+- **API Endpoints**: Robust set of API endpoints for authentication, statistics, agenda, programs, visitors, units, AI metrics, full CRUD operations for calendar, classes, attendance, exercise library management (CRUD + file uploads), questionnaires (full CRUD + duplication), groups (full CRUD + AI suggestions + member listing + duplication), and ML/AI endpoints (`/admin/ia/treinar_churn`, `/admin/ia/riscos_churn`, `/usuarios/{id}/risco_churn`, `/admin/eventos/processar`, `/admin/eventos/listar`, `/painel/exportar_usuarios_csv`).
+- **Security**: All sensitive endpoints protected with JWT authentication. Admin-only access for ML/AI features.
 
 ### Feature Specifications
 - **Comprehensive Calendar System**: CRUD for events, filtering, reminders, and completion tracking.
@@ -54,3 +55,5 @@ The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend a
 - **Email Client**: aiosmtplib
 - **Reporting/PDF**: ReportLab
 - **Frontend Icons**: Font Awesome
+- **Machine Learning**: pandas, scikit-learn
+- **Inteligência Artificial Dashboard (Nov 22, 2025)**: Complete ML/AI system integrated into Automação section with dedicated "Inteligência Artificial" tab. Backend: Logistic Regression model using scikit-learn trained on user behavior (dias_inatividade, reservas_canceladas) to predict churn risk with continuous probability 0-100%. Event-driven architecture with `EventoSistema` model for tracking CHURN_ALERTA, RESERVA_CRIADA, LEAD_CONVERTIDO, GRUPO_ATUALIZADO, QUESTIONARIO_RESPONDIDO events. API endpoints: `/admin/ia/treinar_churn/{unidade_id}` (POST - trains model and updates Usuario.risco_churn for all users), `/admin/ia/riscos_churn` (GET - returns categorized user list: ALTO >75%, MÉDIO 40-75%, BAIXO <40%), `/usuarios/{id}/risco_churn` (GET - individual user risk), `/admin/eventos/processar` (POST - manual event processing), `/admin/eventos/listar` (GET - event history with JSON payloads), `/painel/exportar_usuarios_csv` (GET - CSV export with risk analysis). Frontend: Professional dashboard with 4 metric cards (gradient icons, real-time counts), 4 action buttons (treinar, visualizar, exportar CSV, eventos) with gradient hover effects, high-risk user list with avatars and colored badges, modal overlays for detailed analysis. Functions: loadDashboardIA(), treinarModeloIA(), visualizarRiscosChurn(), exportarDadosCSV(), visualizarEventos(). UX: Consistent VIVIO design language (#62b1ca accent, #1f2746 dark blue), toast notifications for all actions, loading states, error handling. Security: Admin-only access enforced on all endpoints. Integration: Login flow enhanced to store both `token` and `user` object in localStorage for seamless auth. Model persistence stored in `Unidade.modelo_churn` as pickled binary. Designed for future expansion: lead scoring (Visitante.lead_score), group auto-creation from high-risk segments, workflow triggers on churn alerts.

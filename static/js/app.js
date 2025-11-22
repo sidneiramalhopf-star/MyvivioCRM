@@ -155,7 +155,22 @@ async function handleLogin(e) {
             const data = await response.json();
             authToken = data.access_token;
             localStorage.setItem('authToken', authToken);
-            currentUser = { email: email, nome: data.nome || email.split('@')[0] };
+            localStorage.setItem('token', authToken);
+            
+            const userResponse = await fetch(`${API_BASE}/me`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            
+            if (userResponse.ok) {
+                const userData = await userResponse.json();
+                currentUser = userData;
+                localStorage.setItem('user', JSON.stringify(userData));
+            } else {
+                currentUser = { email: email, nome: email.split('@')[0] };
+            }
+            
             showToast('Login realizado com sucesso!', 'success');
             showDashboard();
             await loadDashboardData();
@@ -440,6 +455,8 @@ function switchAutomacaoView(view, evt) {
         loadGrupos();
     } else if (view === 'atividades') {
         loadAtividades();
+    } else if (view === 'ia') {
+        loadDashboardIA();
     }
 }
 
@@ -2898,7 +2915,8 @@ const sidebarConfigs = {
             { id: 'jornadas', icon: 'fa-route', label: 'Jornadas', action: 'switchAutomacaoView' },
             { id: 'questionarios', icon: 'fa-clipboard-question', label: 'Questionários', action: 'switchAutomacaoView' },
             { id: 'grupos', icon: 'fa-users', label: 'Grupos', action: 'switchAutomacaoView' },
-            { id: 'atividades', icon: 'fa-tasks', label: 'Atividades', action: 'switchAutomacaoView' }
+            { id: 'atividades', icon: 'fa-tasks', label: 'Atividades', action: 'switchAutomacaoView' },
+            { id: 'ia', icon: 'fa-brain', label: 'Inteligência Artificial', action: 'switchAutomacaoView' }
         ]
     }
 };
@@ -9669,6 +9687,278 @@ function atualizarContadoresEditor() {
     
     if (contadorTempo) {
         contadorTempo.textContent = `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`;
+    }
+}
+
+
+// ============================================================
+// Inteligência Artificial Dashboard
+// ============================================================
+
+async function loadDashboardIA() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/admin/ia/riscos_churn', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar dashboard IA');
+        }
+        
+        const dados = await response.json();
+        
+        document.getElementById('ia-alto-risco').textContent = dados.alto_risco;
+        document.getElementById('ia-medio-risco').textContent = dados.medio_risco;
+        document.getElementById('ia-baixo-risco').textContent = dados.baixo_risco;
+        document.getElementById('ia-total-usuarios').textContent = dados.total;
+        
+        const usuariosAltoRisco = dados.usuarios.filter(u => u.nivel === 'ALTO');
+        renderListaRiscos(usuariosAltoRisco);
+        
+    } catch (error) {
+        console.error('Erro ao carregar dashboard IA:', error);
+        showToast('Erro ao carregar dados de IA', 'error');
+    }
+}
+
+function renderListaRiscos(usuarios) {
+    const lista = document.getElementById('ia-lista-riscos');
+    
+    if (usuarios.length === 0) {
+        lista.innerHTML = '<p class="ia-empty-state">Nenhum usuário com alto risco de churn</p>';
+        return;
+    }
+    
+    lista.innerHTML = usuarios.map(usuario => {
+        const inicial = usuario.nome.charAt(0).toUpperCase();
+        const classeRisco = usuario.nivel.toLowerCase();
+        
+        return `
+            <div class="ia-usuario-risco">
+                <div class="ia-usuario-info">
+                    <div class="ia-usuario-avatar">${inicial}</div>
+                    <div class="ia-usuario-dados">
+                        <h4>${usuario.nome}</h4>
+                        <p>${usuario.email}</p>
+                    </div>
+                </div>
+                <div class="ia-risco-badge ${classeRisco}">
+                    <i class="fas ${classeRisco === 'alto' ? 'fa-exclamation-triangle' : classeRisco === 'medio' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                    ${usuario.risco_churn}% risco
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function treinarModeloIA() {
+    try {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        showToast('Treinando modelo de IA...', 'info');
+        
+        const response = await fetch(`/admin/ia/treinar_churn/${user.unidade_id}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao treinar modelo');
+        }
+        
+        const resultado = await response.json();
+        
+        showToast(`Modelo treinado com sucesso! Acurácia: ${(resultado.acuracia * 100).toFixed(2)}%`, 'success');
+        
+        setTimeout(() => loadDashboardIA(), 1000);
+        
+    } catch (error) {
+        console.error('Erro ao treinar modelo:', error);
+        showToast('Erro ao treinar modelo de IA', 'error');
+    }
+}
+
+async function visualizarRiscosChurn() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/admin/ia/riscos_churn', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar riscos');
+        }
+        
+        const dados = await response.json();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-dialog" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h2>Análise Detalhada de Riscos de Churn</h2>
+                    <button class="btn-close-modal" onclick="this.closest('.modal-overlay').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
+                    <div class="ia-metricas-container" style="margin-bottom: 30px;">
+                        <div class="ia-metrica-card">
+                            <div class="ia-metrica-icone alto-risco">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="ia-metrica-conteudo">
+                                <h3>${dados.alto_risco}</h3>
+                                <p>Alto Risco</p>
+                            </div>
+                        </div>
+                        <div class="ia-metrica-card">
+                            <div class="ia-metrica-icone medio-risco">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="ia-metrica-conteudo">
+                                <h3>${dados.medio_risco}</h3>
+                                <p>Médio Risco</p>
+                            </div>
+                        </div>
+                        <div class="ia-metrica-card">
+                            <div class="ia-metrica-icone baixo-risco">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="ia-metrica-conteudo">
+                                <h3>${dados.baixo_risco}</h3>
+                                <p>Baixo Risco</p>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 style="margin-bottom: 16px;">Todos os Usuários</h3>
+                    <div class="ia-lista-riscos">
+                        ${dados.usuarios.map(usuario => {
+                            const inicial = usuario.nome.charAt(0).toUpperCase();
+                            const classeRisco = usuario.nivel.toLowerCase();
+                            return `
+                                <div class="ia-usuario-risco">
+                                    <div class="ia-usuario-info">
+                                        <div class="ia-usuario-avatar">${inicial}</div>
+                                        <div class="ia-usuario-dados">
+                                            <h4>${usuario.nome}</h4>
+                                            <p>${usuario.email}</p>
+                                        </div>
+                                    </div>
+                                    <div class="ia-risco-badge ${classeRisco}">
+                                        <i class="fas ${classeRisco === 'alto' ? 'fa-exclamation-triangle' : classeRisco === 'medio' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                                        ${usuario.risco_churn}% risco
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+    } catch (error) {
+        console.error('Erro ao visualizar riscos:', error);
+        showToast('Erro ao carregar análise de riscos', 'error');
+    }
+}
+
+async function exportarDadosCSV() {
+    try {
+        const token = localStorage.getItem('token');
+        
+        showToast('Preparando exportação...', 'info');
+        
+        const response = await fetch('/painel/exportar_usuarios_csv', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao exportar dados');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `usuarios_viviocrm_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showToast('Dados exportados com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao exportar CSV:', error);
+        showToast('Erro ao exportar dados', 'error');
+    }
+}
+
+async function visualizarEventos() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/admin/eventos/listar', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar eventos');
+        }
+        
+        const dados = await response.json();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-dialog" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h2>Eventos do Sistema (${dados.total})</h2>
+                    <button class="btn-close-modal" onclick="this.closest('.modal-overlay').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
+                    ${dados.eventos.length === 0 ? 
+                        '<p class="ia-empty-state">Nenhum evento registrado</p>' :
+                        dados.eventos.map(evento => `
+                            <div class="ia-usuario-risco" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <i class="fas fa-bell" style="color: #62b1ca; font-size: 18px;"></i>
+                                        <strong>${evento.tipo}</strong>
+                                    </div>
+                                    <small style="color: #888;">${new Date(evento.data_registro).toLocaleString('pt-BR')}</small>
+                                </div>
+                                <div style="padding-left: 30px; font-size: 13px; color: #666;">
+                                    <pre style="background: #f8f9fa; padding: 8px; border-radius: 6px; margin: 0; overflow-x: auto;">${JSON.stringify(evento.payload, null, 2)}</pre>
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+    } catch (error) {
+        console.error('Erro ao visualizar eventos:', error);
+        showToast('Erro ao carregar eventos', 'error');
     }
 }
 

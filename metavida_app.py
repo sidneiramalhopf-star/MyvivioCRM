@@ -838,6 +838,19 @@ def login(dados: LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": token, "tipo": "bearer"}
 
 
+@app.get("/me")
+def get_me(usuario: Usuario = Depends(get_current_user)):
+    """Retorna informações do usuário logado"""
+    return {
+        "id": usuario.id,
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "tipo": usuario.tipo,
+        "unidade_id": usuario.unidade_id,
+        "ativo": usuario.ativo
+    }
+
+
 # ============================================================
 # Endpoints de Estatísticas
 # ============================================================
