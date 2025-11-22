@@ -1,0 +1,180 @@
+# ============================================================
+# Lógica de Automação e Fluxo de Trabalho
+# ============================================================
+
+async def executar_acao_workflow(db: Session, usuario: Usuario, etapa: EtapaJornada):
+    """ Executa a ação definida na etapa do workflow. """
+    config = json.loads(etapa.acao_config)
+    
+    if etapa.acao_tipo == "ENVIAR_EMAIL":
+        assunto = config.get("assunto", "Notificação MyvivioCRM")
+        corpo = config.get("corpo", "Mensagem automática.")
+        
+        # Personalização básica
+        corpo = corpo.replace("{usuario_nome}", usuario.nome).replace("{usuario_email}", usuario.email)
+        
+        await enviar_email(usuario.email, assunto, corpo)
+        print(f"Ação: E-mail '{assunto}' enviado para {usuario.email}")
+        return True
+        
+    elif etapa.acao_tipo == "CRIAR_TAREFA":
+        # Simulação de criação de tarefa (integrar com o modelo Agenda, se existir)
+        titulo = config.get("titulo", "Tarefa de Acompanhamento")
+        descricao = config.get("descricao", f"Acompanhar usuário {usuario.nome} na jornada.")
+        print(f"Ação: Tarefa '{titulo}' criada para {usuario.nome}")
+        return True
+        
+    elif etapa.acao_tipo == "MUDAR_STATUS":
+        novo_status = config.get("status")
+        if novo_status == "inativo":
+            usuario.ativo = False
+            db.commit()
+            print(f"Ação: Status do usuário {usuario.nome} alterado para {novo_status}")
+            return True
+            
+    return False
+
+async def avancar_jornada(db: Session, usuario_jornada: UsuarioJornada):
+    """ Avança o usuário para a próxima etapa da jornada. """
+    jornada = usuario_jornada.jornada
+    etapas = jornada.etapas
+    
+    if not etapas:
+        usuario_jornada.concluida = True
+        db.commit()
+        return
+        
+    etapa_atual = usuario_jornada.etapa_atual
+    
+    if etapa_atual is None:
+        proxima_etapa = etapas[0]
+    else:
+        etapa_index = next((i for i, e in enumerate(etapas) if e.id == etapa_atual.id), -1)
+        if etapa_index == -1 or etapa_index == len(etapas) - 1:
+            usuario_jornada.concluida = True
+            db.commit()
+            return
+        proxima_etapa = etapas[etapa_index + 1]
+        
+    sucesso = await executar_acao_workflow(db, usuario_jornada.usuario, proxima_etapa)
+    
+    if sucesso:
+        usuario_jornada.etapa_atual = proxima_etapa
+        db.commit()
+
+async def iniciar_jornada(db: Session, usuario: Usuario, jornada: Jornada):
+    """ Inicia uma nova jornada para um usuário. """
+    usuario_jornada = UsuarioJornada(
+        usuario_id=usuario.id,
+        jornada_id=jornada.id,
+        etapa_atual_id=None,
+        concluida=False
+    )
+    db.add(usuario_jornada)
+    db.commit()
+    db.refresh(usuario_jornada)
+    await avancar_jornada(db, usuario_jornada)
+
+async def processar_eventos(db: Session):
+    """ Processa eventos pendentes e avança as jornadas. """
+    eventos = db.query(EventoSistema).filter(EventoSistema.processado == False).all()
+    
+    for evento in eventos:
+        try:
+            payload = json.loads(evento.payload)
+            usuario_id = payload.get("usuario_id")
+            usuario = db.query(Usuario).get(usuario_id)
+            
+            if usuario:
+                # 1. Verificar Jornadas que são acionadas por este evento
+                jornadas_ativas = db.query(Jornada).filter(
+                    Jornada.gatilho_evento == evento.tipo,
+                    Jornada.ativa == True
+                ).all()
+                
+                for jornada in jornadas_ativas:
+                    if not db.query(UsuarioJornada).filter(
+                        UsuarioJornada.usuario_id == usuario_id,
+                        UsuarioJornada.jornada_id == jornada.id,
+                        UsuarioJornada.concluida == False
+                    ).first():
+                        await iniciar_jornada(db, usuario, jornada)
+                        
+                # 2. Verificar Jornadas em andamento que podem ser avançadas
+                jornadas_em_andamento = db.query(UsuarioJornada).filter(
+                    UsuarioJornada.usuario_id == usuario_id,
+                    UsuarioJornada.concluida == False
+                ).all()
+                
+                for uj in jornadas_em_andamento:
+                    # Por simplicidade, avança a jornada em andamento a cada evento processado
+                    await avancar_jornada(db, uj)
+            
+            evento.processado = True
+            db.commit()
+        except Exception as e:
+            print(f"Erro ao processar evento {evento.id}: {e}")
+            db.rollback()
+
+# ============================================================
+# Endpoints de Automação (TAB 'Automação' no frontend)
+# ============================================================
+
+@app.post("/automacao/jornadas", response_model=JornadaInDB)
+def criar_jornada(jornada: JornadaCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Cria uma nova Jornada (Workflow). """
+    db_jornada = Jornada(**jornada.model_dump())
+    db.add(db_jornada)
+    db.commit()
+    db.refresh(db_jornada)
+    return db_jornada
+
+@app.get("/automacao/jornadas", response_model=List[JornadaInDB])
+def listar_jornadas(admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Lista todas as Jornadas. """
+    return db.query(Jornada).all()
+
+@app.post("/automacao/jornadas/{jornada_id}/etapas", response_model=EtapaJornadaInDB)
+def adicionar_etapa_jornada(jornada_id: int, etapa: EtapaJornadaCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Adiciona uma etapa (ação) a uma Jornada. """
+    db_jornada = db.query(Jornada).get(jornada_id)
+    if not db_jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+        
+    db_etapa = EtapaJornada(
+        jornada_id=jornada_id,
+        nome=etapa.nome,
+        ordem=etapa.ordem,
+        acao_tipo=etapa.acao_tipo,
+        acao_config=json.dumps(etapa.acao_config)
+    )
+    db.add(db_etapa)
+    db.commit()
+    db.refresh(db_etapa)
+    return db_etapa
+
+@app.get("/automacao/jornadas/{jornada_id}/etapas", response_model=List[EtapaJornadaInDB])
+def listar_etapas_jornada(jornada_id: int, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Lista todas as etapas de uma Jornada. """
+    return db.query(EtapaJornada).filter(EtapaJornada.jornada_id == jornada_id).order_by(EtapaJornada.ordem).all()
+
+@app.post("/automacao/processar")
+async def run_automacao(admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Endpoint para processar eventos e avançar jornadas. """
+    await processar_eventos(db)
+    return {"mensagem": "Processamento de automação e jornadas concluído."}
+
+# ============================================================
+# Ponto de Gatilho (Exemplo)
+# ============================================================
+
+# Este trecho deve ser adicionado ao seu endpoint de criação de usuário:
+# @app.post("/configuracao/usuarios", response_model=UsuarioInDB)
+# def criar_usuario(...):
+#     # ... (criação do usuário)
+#     db.refresh(db_usuario)
+#     
+#     # REGISTRO DE EVENTO: Aciona a jornada de onboarding
+#     registrar_evento(db, "USUARIO_CRIADO", {"usuario_id": db_usuario.id})
+#     
+#     return db_usuario
