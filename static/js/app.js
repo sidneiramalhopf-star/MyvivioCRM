@@ -9886,6 +9886,13 @@ async function visualizarRiscosChurn() {
         
         document.body.appendChild(modal);
         
+        // Fechar ao clicar fora do modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
     } catch (error) {
         console.error('Erro ao visualizar riscos:', error);
         showToast('Erro ao carregar análise de riscos', 'error');
@@ -9974,6 +9981,13 @@ async function visualizarEventos() {
         `;
         
         document.body.appendChild(modal);
+        
+        // Fechar ao clicar fora do modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
         
     } catch (error) {
         console.error('Erro ao visualizar eventos:', error);
