@@ -16,6 +16,10 @@ from typing import Optional, List
 import jwt
 from passlib.context import CryptContext
 import os
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+import pickle
+import json
 
 # ============================================================
 # Configurações básicas
@@ -43,7 +47,9 @@ class Unidade(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, unique=True)
     endereco = Column(String)
+    telefone = Column(String, nullable=True)
     risco_desistencia = Column(Float, default=0.0)
+    modelo_churn = Column(Text, nullable=True)
     usuarios = relationship("Usuario", back_populates="unidade")
     programas = relationship("Programa", back_populates="unidade")
 
@@ -59,6 +65,7 @@ class Usuario(Base):
     ativo = Column(Boolean, default=True)
     data_cadastro = Column(DateTime, default=datetime.utcnow)
     ultima_atividade = Column(DateTime, default=datetime.utcnow)
+    risco_churn = Column(Float, default=0.0)
     unidade = relationship("Unidade", back_populates="usuarios")
     agendas = relationship("Agenda", back_populates="usuario")
 
@@ -72,6 +79,7 @@ class Visitante(Base):
     unidade_id = Column(Integer, ForeignKey("unidades.id"))
     data_visita = Column(DateTime, default=datetime.utcnow)
     convertido = Column(Boolean, default=False)
+    lead_score = Column(Integer, default=0)
     unidade = relationship("Unidade")
 
 
@@ -361,6 +369,21 @@ class Grupo(Base):
 
 
 # ============================================================
+# Modelo de Eventos - Sistema Event-Driven para Automações
+# ============================================================
+
+
+class EventoSistema(Base):
+    __tablename__ = "eventos_sistema"
+    id = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String, nullable=False)  # RESERVA_CRIADA, CHURN_ALERTA, LEAD_CONVERTIDO, etc
+    payload = Column(Text, nullable=True)  # JSON com dados do evento
+    data_registro = Column(DateTime, default=datetime.utcnow)
+    processado = Column(Boolean, default=False)
+    data_processamento = Column(DateTime, nullable=True)
+
+
+# ============================================================
 # Inicializar Banco de Dados
 # ============================================================
 
@@ -560,6 +583,157 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(
     except jwt.PyJWTError:
         raise HTTPException(status_code=401,
                             detail="Token inválido ou expirado")
+
+
+# ============================================================
+# Funções de Machine Learning - Previsão de Churn
+# ============================================================
+
+
+def treinar_modelo_churn(db: Session, unidade_id: int):
+    """Treina modelo de Regressão Logística para prever risco de churn"""
+    usuarios = db.query(Usuario).filter(Usuario.unidade_id == unidade_id).all()
+    
+    if len(usuarios) < 10:
+        return {"sucesso": False, "mensagem": "Dados insuficientes para treinamento (mínimo 10 usuários)"}
+    
+    data = []
+    for u in usuarios:
+        dias_inatividade = (datetime.utcnow() - u.ultima_atividade).days
+        
+        reservas_canceladas = db.query(ReservaAula).filter(
+            ReservaAula.usuario_id == u.id,
+            ReservaAula.cancelada == True
+        ).count()
+        
+        total_reservas = db.query(ReservaAula).filter(
+            ReservaAula.usuario_id == u.id
+        ).count()
+        
+        taxa_cancelamento = (reservas_canceladas / total_reservas * 100) if total_reservas > 0 else 0
+        
+        churn = 1 if dias_inatividade > 60 and taxa_cancelamento > 40 else 0
+        
+        data.append({
+            'dias_inatividade': dias_inatividade,
+            'taxa_cancelamento': taxa_cancelamento,
+            'churn': churn
+        })
+    
+    df = pd.DataFrame(data)
+    X = df[['dias_inatividade', 'taxa_cancelamento']]
+    y = df['churn']
+    
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X, y)
+    
+    modelo_serializado = pickle.dumps(model)
+    unidade = db.query(Unidade).get(unidade_id)
+    unidade.modelo_churn = modelo_serializado.hex()
+    db.commit()
+    
+    return {"sucesso": True, "mensagem": f"Modelo treinado com {len(usuarios)} usuários"}
+
+
+def prever_risco_churn(db: Session, usuario: Usuario):
+    """Usa modelo treinado para prever risco de churn do usuário"""
+    unidade = db.query(Unidade).get(usuario.unidade_id)
+    if not unidade or not unidade.modelo_churn:
+        return 0.0
+    
+    try:
+        model = pickle.loads(bytes.fromhex(unidade.modelo_churn))
+    except:
+        return 0.0
+    
+    dias_inatividade = (datetime.utcnow() - usuario.ultima_atividade).days
+    
+    reservas_canceladas = db.query(ReservaAula).filter(
+        ReservaAula.usuario_id == usuario.id,
+        ReservaAula.cancelada == True
+    ).count()
+    
+    total_reservas = db.query(ReservaAula).filter(
+        ReservaAula.usuario_id == usuario.id
+    ).count()
+    
+    taxa_cancelamento = (reservas_canceladas / total_reservas * 100) if total_reservas > 0 else 0
+    
+    risco = model.predict_proba([[dias_inatividade, taxa_cancelamento]])[0][1]
+    
+    usuario.risco_churn = round(risco, 4)
+    db.commit()
+    
+    if risco > 0.75:
+        registrar_evento(db, "CHURN_ALERTA", {
+            "usuario_id": usuario.id,
+            "usuario_nome": usuario.nome,
+            "risco": round(risco * 100, 2)
+        })
+    
+    return risco
+
+
+# ============================================================
+# Funções de Sistema de Eventos (Event-Driven)
+# ============================================================
+
+
+def registrar_evento(db: Session, tipo: str, payload: dict):
+    """Registra um evento no sistema para processamento assíncrono"""
+    evento = EventoSistema(
+        tipo=tipo,
+        payload=json.dumps(payload)
+    )
+    db.add(evento)
+    db.commit()
+    db.refresh(evento)
+    return evento
+
+
+async def processar_eventos(db: Session):
+    """Processa eventos pendentes (automações, notificações, etc)"""
+    eventos = db.query(EventoSistema).filter(EventoSistema.processado == False).limit(50).all()
+    
+    for evento in eventos:
+        try:
+            payload = json.loads(evento.payload)
+            
+            if evento.tipo == "CHURN_ALERTA":
+                print(f"[ALERTA CHURN] Usuário {payload.get('usuario_nome')} com risco de {payload.get('risco')}%")
+                
+                grupo_alto_risco = db.query(Grupo).filter(
+                    Grupo.nome == "Alto Risco de Churn",
+                    Grupo.tipo_grupo == "dinamico"
+                ).first()
+                
+                if not grupo_alto_risco:
+                    grupo_alto_risco = Grupo(
+                        nome="Alto Risco de Churn",
+                        descricao="Usuários com alta probabilidade de desistência (criado automaticamente por IA)",
+                        status="ativo",
+                        tipo_grupo="dinamico",
+                        cor="#e74c3c",
+                        automacao_ativa=True,
+                        criterios=json.dumps({"risco_churn": {"operador": ">", "valor": 0.75}})
+                    )
+                    db.add(grupo_alto_risco)
+                    db.commit()
+                    print(f"[GRUPO CRIADO] Grupo 'Alto Risco de Churn' criado automaticamente")
+            
+            elif evento.tipo == "RESERVA_CRIADA":
+                print(f"[RESERVA] Nova reserva criada por usuário ID {payload.get('usuario_id')}")
+            
+            elif evento.tipo == "LEAD_CONVERTIDO":
+                print(f"[LEAD] Visitante convertido: {payload.get('nome')}")
+            
+            evento.processado = True
+            evento.data_processamento = datetime.utcnow()
+            db.commit()
+            
+        except Exception as e:
+            print(f"[ERRO] Falha ao processar evento {evento.id}: {e}")
+            db.rollback()
 
 
 # ============================================================
@@ -2803,3 +2977,144 @@ def obter_sugestoes_ia(usuario: Usuario = Depends(get_current_user),
     }]
 
     return sugestoes
+
+
+# ============================================================
+# Endpoints de IA e Machine Learning
+# ============================================================
+
+
+@app.post("/admin/ia/treinar_churn/{unidade_id}")
+def endpoint_treinar_churn(unidade_id: int,
+                           usuario: Usuario = Depends(get_current_user),
+                           db: Session = Depends(get_db)):
+    """Treina modelo de ML para previsão de churn na unidade"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    resultado = treinar_modelo_churn(db, unidade_id)
+    return resultado
+
+
+@app.get("/admin/ia/riscos_churn")
+def endpoint_listar_riscos_churn(usuario: Usuario = Depends(get_current_user),
+                                  db: Session = Depends(get_db)):
+    """Lista todos os usuários com seus riscos de churn calculados"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    usuarios = db.query(Usuario).filter(Usuario.unidade_id == usuario.unidade_id).all()
+    
+    riscos = []
+    for u in usuarios:
+        risco = prever_risco_churn(db, u)
+        riscos.append({
+            "id": u.id,
+            "nome": u.nome,
+            "email": u.email,
+            "risco_churn": round(risco * 100, 2),
+            "nivel": "ALTO" if risco > 0.75 else "MÉDIO" if risco > 0.40 else "BAIXO",
+            "ultima_atividade": u.ultima_atividade.isoformat() if u.ultima_atividade else None
+        })
+    
+    riscos.sort(key=lambda x: x['risco_churn'], reverse=True)
+    
+    return {
+        "total": len(riscos),
+        "alto_risco": len([r for r in riscos if r['nivel'] == 'ALTO']),
+        "medio_risco": len([r for r in riscos if r['nivel'] == 'MÉDIO']),
+        "baixo_risco": len([r for r in riscos if r['nivel'] == 'BAIXO']),
+        "usuarios": riscos
+    }
+
+
+@app.get("/usuarios/{usuario_id}/risco_churn")
+def endpoint_risco_churn_usuario(usuario_id: int,
+                                  usuario: Usuario = Depends(get_current_user),
+                                  db: Session = Depends(get_db)):
+    """Calcula e retorna risco de churn de um usuário específico"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    usuario_alvo = db.query(Usuario).get(usuario_id)
+    if not usuario_alvo:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    risco = prever_risco_churn(db, usuario_alvo)
+    
+    return {
+        "usuario_id": usuario_id,
+        "nome": usuario_alvo.nome,
+        "risco_churn": round(risco * 100, 2),
+        "nivel": "ALTO" if risco > 0.75 else "MÉDIO" if risco > 0.40 else "BAIXO"
+    }
+
+
+@app.post("/admin/eventos/processar")
+async def endpoint_processar_eventos(usuario: Usuario = Depends(get_current_user),
+                                      db: Session = Depends(get_db)):
+    """Processa eventos pendentes manualmente"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    await processar_eventos(db)
+    
+    return {"mensagem": "Eventos processados com sucesso"}
+
+
+@app.get("/admin/eventos/listar")
+def endpoint_listar_eventos(processados: bool = False,
+                            usuario: Usuario = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    """Lista eventos do sistema"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    eventos = db.query(EventoSistema).filter(
+        EventoSistema.processado == processados
+    ).order_by(EventoSistema.data_registro.desc()).limit(100).all()
+    
+    return {
+        "total": len(eventos),
+        "eventos": [{
+            "id": e.id,
+            "tipo": e.tipo,
+            "payload": json.loads(e.payload) if e.payload else {},
+            "data_registro": e.data_registro.isoformat(),
+            "processado": e.processado
+        } for e in eventos]
+    }
+
+
+@app.get("/painel/exportar_usuarios_csv")
+def exportar_usuarios_csv(usuario: Usuario = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    """Exporta dados de usuários para CSV com análise de risco"""
+    if usuario.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+    
+    usuarios = db.query(Usuario).filter(Usuario.unidade_id == usuario.unidade_id).all()
+    
+    data = []
+    for u in usuarios:
+        data.append({
+            "ID": u.id,
+            "Nome": u.nome,
+            "Email": u.email,
+            "Tipo": u.tipo,
+            "Ativo": "Sim" if u.ativo else "Não",
+            "Risco_Churn_%": round(u.risco_churn * 100, 2),
+            "Nivel_Risco": "ALTO" if u.risco_churn > 0.75 else "MÉDIO" if u.risco_churn > 0.40 else "BAIXO",
+            "Data_Cadastro": u.data_cadastro.strftime("%d/%m/%Y") if u.data_cadastro else "",
+            "Ultima_Atividade": u.ultima_atividade.strftime("%d/%m/%Y") if u.ultima_atividade else ""
+        })
+    
+    df = pd.DataFrame(data)
+    csv_path = "/tmp/usuarios_viviocrm.csv"
+    df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+    
+    return FileResponse(
+        path=csv_path,
+        filename=f"usuarios_viviocrm_{datetime.utcnow().strftime('%Y%m%d')}.csv",
+        media_type="text/csv"
+    )
