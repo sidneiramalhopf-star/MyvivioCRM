@@ -9698,6 +9698,17 @@ function atualizarContadoresEditor() {
 async function loadDashboardIA() {
     try {
         const token = localStorage.getItem('token');
+        
+        // Verificar autenticação
+        if (!token) {
+            document.getElementById('ia-alto-risco').textContent = '--';
+            document.getElementById('ia-medio-risco').textContent = '--';
+            document.getElementById('ia-baixo-risco').textContent = '--';
+            document.getElementById('ia-total-usuarios').textContent = '--';
+            document.getElementById('ia-lista-riscos').innerHTML = '<p class="ia-empty-state">Faça login para visualizar dados de IA</p>';
+            return;
+        }
+        
         const response = await fetch('/admin/ia/riscos_churn', {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -9705,6 +9716,14 @@ async function loadDashboardIA() {
         });
         
         if (!response.ok) {
+            if (response.status === 401) {
+                document.getElementById('ia-alto-risco').textContent = '--';
+                document.getElementById('ia-medio-risco').textContent = '--';
+                document.getElementById('ia-baixo-risco').textContent = '--';
+                document.getElementById('ia-total-usuarios').textContent = '--';
+                document.getElementById('ia-lista-riscos').innerHTML = '<p class="ia-empty-state">Sessão expirada. Faça login novamente.</p>';
+                return;
+            }
             throw new Error('Erro ao carregar dashboard IA');
         }
         
