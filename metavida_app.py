@@ -509,9 +509,47 @@ def criar_constraint_unico_attendance():
         conn.close()
 
 
+def migrar_schema_b2b_startup():
+    """
+    Migração automática para suporte B2B - executada no startup
+    """
+    import sqlite3
+    
+    conn = sqlite3.connect("gym_wellness.db")
+    cursor = conn.cursor()
+    
+    def column_exists(table_name, column_name):
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = [col[1] for col in cursor.fetchall()]
+        return column_name in columns
+    
+    try:
+        if not column_exists('unidades', 'tipo_unidade'):
+            cursor.execute("ALTER TABLE unidades ADD COLUMN tipo_unidade VARCHAR DEFAULT 'B2C'")
+            print("✅ Migração B2B: Coluna 'tipo_unidade' adicionada")
+        
+        if not column_exists('visitantes', 'tipo_lead'):
+            cursor.execute("ALTER TABLE visitantes ADD COLUMN tipo_lead VARCHAR DEFAULT 'Individual'")
+            print("✅ Migração B2B: Coluna 'tipo_lead' adicionada")
+        
+        if not column_exists('visitantes', 'empresa'):
+            cursor.execute("ALTER TABLE visitantes ADD COLUMN empresa VARCHAR")
+            print("✅ Migração B2B: Coluna 'empresa' adicionada")
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"⚠️ Erro durante migração B2B (pode já estar aplicada): {e}")
+    finally:
+        conn.close()
+
+
 def init_sample_data():
     db = SessionLocal()
     try:
+        # Passo 1: MIGRAÇÃO B2B AUTOMÁTICA
+        migrar_schema_b2b_startup()
+        
         # Passo 2: LIMPEZA AUTOMÁTICA DE DUPLICATAS
         limpar_duplicatas_attendance_startup(db)
 

@@ -10434,3 +10434,426 @@ textarea.form-control {
     color: #27ae60;
 }
 
+/* ========================================
+   CONTRATOS B2B
+   ======================================== */
+
+/* Header de Contratos */
+.contratos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.contratos-header h1 {
+    font-size: var(--font-h1);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.btn-novo-contrato {
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--font-body);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-novo-contrato:hover {
+    background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Dashboard B2B */
+.dashboard-b2b {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-b2b h2 {
+    font-size: var(--font-h2);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-b2b h3 {
+    font-size: var(--font-h3);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* KPI Grid */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #4a90a4 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.kpi-icon.success {
+    background: linear-gradient(135deg, var(--success-color) 0%, #1e8449 100%);
+}
+
+.kpi-icon.warning {
+    background: linear-gradient(135deg, var(--warning-color) 0%, #d68910 100%);
+}
+
+.kpi-icon.info {
+    background: linear-gradient(135deg, var(--info-color) 0%, #3498db 100%);
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-label {
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+}
+
+/* Contratos em Risco */
+.contratos-risco-section {
+    margin-top: 2rem;
+}
+
+.contratos-risco-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.contrato-risco-item {
+    background: #fff8f0;
+    border: 1px solid #ffe5cc;
+    border-left: 4px solid var(--warning-color);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.contrato-risco-item:hover {
+    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.1);
+}
+
+.risco-info h4 {
+    font-size: var(--font-h3);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.risco-descricao {
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.risco-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.risco-percentage {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.risco-percentage.high {
+    color: var(--danger-color);
+}
+
+.risco-percentage.medium {
+    color: var(--warning-color);
+}
+
+.risco-label {
+    font-size: var(--font-tiny);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+/* Listagem de Contratos */
+.contratos-listagem {
+    margin-top: 2rem;
+}
+
+.contratos-listagem h2 {
+    font-size: var(--font-h2);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.contratos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Cards de Contratos */
+.contrato-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.contrato-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.contrato-card.ativo {
+    border-left: 4px solid var(--success-color);
+}
+
+.contrato-card.atencao {
+    border-left: 4px solid var(--warning-color);
+}
+
+.contrato-card.critico {
+    border-left: 4px solid var(--danger-color);
+}
+
+.contrato-card.expirado {
+    border-left: 4px solid #95a5a6;
+    opacity: 0.7;
+}
+
+.contrato-card-header {
+    padding: 1.25rem;
+    background: #f5f7fa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contrato-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.contrato-card-header h3 {
+    font-size: var(--font-h3);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+.contrato-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 12px;
+    font-size: var(--font-tiny);
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: #e5f5e9;
+    color: var(--success-color);
+}
+
+.badge-warning {
+    background: #fff4e5;
+    color: var(--warning-color);
+}
+
+.badge-danger {
+    background: #ffe5e5;
+    color: var(--danger-color);
+}
+
+.contrato-card-body {
+    padding: 1.25rem;
+}
+
+.contrato-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.contrato-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.contrato-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+}
+
+.contrato-info-item i {
+    font-size: 0.875rem;
+    color: var(--primary-color);
+}
+
+.contrato-info-item.text-warning {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.contrato-info-item.text-warning i {
+    color: var(--warning-color);
+}
+
+.contrato-card-footer {
+    padding: 0.75rem 1.25rem;
+    background: #f5f7fa;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.btn-icon-action {
+    width: 36px;
+    height: 36px;
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.btn-icon-action:hover {
+    background: var(--btn-primary-hover);
+    transform: scale(1.1);
+}
+
+/* Modal de Contrato */
+.modal-contrato {
+    max-width: 600px;
+}
+
+.modal-contrato .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.modal-contrato .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-body);
+    transition: border-color 0.3s;
+    font-family: inherit;
+}
+
+.modal-contrato .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.modal-contrato .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Empty State */
+.empty-message {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 3rem;
+    font-size: var(--font-body);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contratos-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .contratos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-contrato .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .contrato-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

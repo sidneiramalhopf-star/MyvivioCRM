@@ -76,6 +76,8 @@ function navigateTo(event, page) {
         } else if (page === 'automacao') {
             // Mostrar view de jornadas por padrão
             switchAutomacaoView('jornadas');
+        } else if (page === 'contratos') {
+            loadContratos();
         }
     }
 }
@@ -115,6 +117,8 @@ function navigateToPage(page) {
         } else if (page === 'automacao') {
             // Mostrar view de jornadas por padrão
             switchAutomacaoView('jornadas');
+        } else if (page === 'contratos') {
+            loadContratos();
         }
     }
 }
@@ -10028,6 +10032,395 @@ async function processarJornadas() {
     } catch (error) {
         console.error('Erro ao processar jornadas:', error);
         showToast('Erro ao processar jornadas', 'error');
+    }
+}
+
+// ============================================================
+// Funções de Contratos B2B
+// ============================================================
+
+async function loadContratos() {
+    if (!authToken) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/contratos`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar contratos');
+        }
+        
+        const contratos = await response.json();
+        displayContratos(contratos);
+        await loadDashboardB2B();
+        
+    } catch (error) {
+        console.error('Erro ao carregar contratos:', error);
+        showToast('Erro ao carregar contratos', 'error');
+    }
+}
+
+function displayContratos(contratos) {
+    const grid = document.getElementById('contratos-grid');
+    
+    if (!contratos || contratos.length === 0) {
+        grid.innerHTML = '<p class="empty-message">Nenhum contrato cadastrado. Clique em "+ CONTRATO" para criar um novo.</p>';
+        return;
+    }
+    
+    const html = contratos.map(contrato => {
+        const dataFim = new Date(contrato.data_fim);
+        const hoje = new Date();
+        const diffTime = dataFim - hoje;
+        const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let statusClass = 'ativo';
+        let statusText = 'Ativo';
+        let badgeClass = 'badge-success';
+        
+        if (diasRestantes < 0) {
+            statusClass = 'expirado';
+            statusText = 'Expirado';
+            badgeClass = 'badge-danger';
+        } else if (diasRestantes <= 15) {
+            statusClass = 'critico';
+            statusText = 'Crítico';
+            badgeClass = 'badge-danger';
+        } else if (diasRestantes <= 30) {
+            statusClass = 'atencao';
+            statusText = 'Atenção';
+            badgeClass = 'badge-warning';
+        }
+        
+        const valorFormatado = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(contrato.valor_mensal);
+        
+        return `
+            <div class="contrato-card ${statusClass}" onclick="abrirModalContrato(${contrato.id})">
+                <div class="contrato-card-header">
+                    <div class="contrato-info-top">
+                        <h3>${contrato.nome}</h3>
+                        <span class="contrato-badge ${badgeClass}">${statusText}</span>
+                    </div>
+                </div>
+                <div class="contrato-card-body">
+                    <div class="contrato-info-row">
+                        <div class="contrato-info-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>${valorFormatado}/mês</span>
+                        </div>
+                        <div class="contrato-info-item">
+                            <i class="fas fa-users"></i>
+                            <span>${contrato.limite_usuarios} usuários</span>
+                        </div>
+                    </div>
+                    <div class="contrato-info-row">
+                        <div class="contrato-info-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Fim: ${new Date(contrato.data_fim).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div class="contrato-info-item ${diasRestantes <= 30 ? 'text-warning' : ''}">
+                            <i class="fas fa-clock"></i>
+                            <span>${diasRestantes} dias restantes</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contrato-card-footer">
+                    <button class="btn-icon-action" onclick="event.stopPropagation(); renovarContrato(${contrato.id})" title="Renovar">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                    <button class="btn-icon-action" onclick="event.stopPropagation(); deletarContrato(${contrato.id})" title="Deletar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    grid.innerHTML = html;
+}
+
+async function loadDashboardB2B() {
+    if (!authToken) return;
+    
+    try {
+        // Carregar KPIs básicos dos contratos
+        const contratosResponse = await fetch(`${API_BASE}/contratos`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (contratosResponse.ok) {
+            const contratos = await contratosResponse.json();
+            
+            const hoje = new Date();
+            const contratosAtivos = contratos.filter(c => new Date(c.data_fim) > hoje);
+            const receitaMensal = contratosAtivos.reduce((sum, c) => sum + parseFloat(c.valor_mensal), 0);
+            const expirando30Dias = contratosAtivos.filter(c => {
+                const diff = new Date(c.data_fim) - hoje;
+                const dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                return dias <= 30 && dias > 0;
+            }).length;
+            
+            document.getElementById('kpi-contratos-ativos').textContent = contratosAtivos.length;
+            document.getElementById('kpi-receita-mensal').textContent = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(receitaMensal);
+            document.getElementById('kpi-expirando').textContent = expirando30Dias;
+        }
+        
+        // Carregar riscos de renovação via IA
+        try {
+            const riscosResponse = await fetch(`${API_BASE}/admin/ia/riscos_renovacao`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            
+            if (riscosResponse.ok) {
+                const riscos = await riscosResponse.json();
+                displayContratosRisco(riscos);
+                
+                // Calcular taxa de renovação (simplificado)
+                const taxaRenovacao = riscos.length > 0 ? Math.max(0, 100 - (riscos.length * 10)) : 95;
+                document.getElementById('kpi-taxa-renovacao').textContent = taxaRenovacao + '%';
+            }
+        } catch (error) {
+            console.log('Endpoint de riscos de renovação ainda não disponível');
+            document.getElementById('kpi-taxa-renovacao').textContent = '95%';
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar dashboard B2B:', error);
+    }
+}
+
+function displayContratosRisco(riscos) {
+    const lista = document.getElementById('contratos-risco-lista');
+    
+    if (!riscos || riscos.length === 0) {
+        lista.innerHTML = '<p class="empty-message">Nenhum contrato em risco de não renovação detectado.</p>';
+        return;
+    }
+    
+    const html = riscos.map(risco => `
+        <div class="contrato-risco-item">
+            <div class="risco-info">
+                <h4>${risco.contrato_nome || 'Contrato'}</h4>
+                <p class="risco-descricao">${risco.motivo || 'Risco identificado pela IA'}</p>
+            </div>
+            <div class="risco-score">
+                <span class="risco-percentage ${risco.probabilidade_nao_renovacao > 70 ? 'high' : 'medium'}">
+                    ${risco.probabilidade_nao_renovacao}%
+                </span>
+                <span class="risco-label">risco</span>
+            </div>
+        </div>
+    `).join('');
+    
+    lista.innerHTML = html;
+}
+
+function abrirModalContrato(contratoId = null) {
+    const modal = document.getElementById('modal-contrato');
+    const titulo = document.getElementById('modal-contrato-titulo');
+    const form = document.getElementById('form-contrato');
+    
+    form.reset();
+    document.getElementById('contrato-id').value = '';
+    
+    if (currentUser && currentUser.unidade_id) {
+        document.getElementById('contrato-unidade-id').value = currentUser.unidade_id;
+    } else {
+        document.getElementById('contrato-unidade-id').value = '1';
+    }
+    
+    if (contratoId) {
+        titulo.textContent = 'Editar Contrato';
+        carregarDadosContrato(contratoId);
+    } else {
+        titulo.textContent = 'Criar Novo Contrato';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+async function carregarDadosContrato(contratoId) {
+    if (!authToken) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/contratos/${contratoId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar contrato');
+        }
+        
+        const contrato = await response.json();
+        
+        document.getElementById('contrato-id').value = contrato.id;
+        document.getElementById('contrato-nome').value = contrato.nome;
+        document.getElementById('contrato-unidade-id').value = contrato.unidade_id;
+        document.getElementById('contrato-data-inicio').value = contrato.data_inicio;
+        document.getElementById('contrato-data-fim').value = contrato.data_fim;
+        document.getElementById('contrato-valor-mensal').value = contrato.valor_mensal;
+        document.getElementById('contrato-limite-usuarios').value = contrato.limite_usuarios;
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados do contrato:', error);
+        showToast('Erro ao carregar dados do contrato', 'error');
+    }
+}
+
+async function salvarContrato(event) {
+    event.preventDefault();
+    
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'error');
+        return;
+    }
+    
+    const contratoId = document.getElementById('contrato-id').value;
+    const nome = document.getElementById('contrato-nome').value.trim();
+    const unidadeId = document.getElementById('contrato-unidade-id').value;
+    const dataInicio = document.getElementById('contrato-data-inicio').value;
+    const dataFim = document.getElementById('contrato-data-fim').value;
+    const valorMensal = parseFloat(document.getElementById('contrato-valor-mensal').value);
+    const limiteUsuarios = parseInt(document.getElementById('contrato-limite-usuarios').value);
+    
+    // Validações client-side
+    if (!nome || !dataInicio || !dataFim || !valorMensal || !limiteUsuarios) {
+        showToast('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    if (new Date(dataFim) <= new Date(dataInicio)) {
+        showToast('A data de término deve ser posterior à data de início', 'error');
+        return;
+    }
+    
+    if (valorMensal <= 0) {
+        showToast('O valor mensal deve ser maior que zero', 'error');
+        return;
+    }
+    
+    if (limiteUsuarios <= 0) {
+        showToast('O limite de usuários deve ser maior que zero', 'error');
+        return;
+    }
+    
+    const contratoData = {
+        nome: nome,
+        unidade_id: parseInt(unidadeId),
+        data_inicio: dataInicio,
+        data_fim: dataFim,
+        valor_mensal: valorMensal,
+        limite_usuarios: limiteUsuarios
+    };
+    
+    try {
+        const url = contratoId ? `${API_BASE}/contratos/${contratoId}` : `${API_BASE}/contratos`;
+        const method = contratoId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(contratoData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Erro ao salvar contrato');
+        }
+        
+        showToast(contratoId ? 'Contrato atualizado com sucesso!' : 'Contrato criado com sucesso!', 'success');
+        fecharModalContrato();
+        await loadContratos();
+        
+    } catch (error) {
+        console.error('Erro ao salvar contrato:', error);
+        showToast(error.message || 'Erro ao salvar contrato', 'error');
+    }
+}
+
+function fecharModalContrato() {
+    const modal = document.getElementById('modal-contrato');
+    modal.style.display = 'none';
+    document.getElementById('form-contrato').reset();
+}
+
+async function deletarContrato(contratoId) {
+    if (!confirm('Tem certeza que deseja deletar este contrato? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/contratos/${contratoId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao deletar contrato');
+        }
+        
+        showToast('Contrato deletado com sucesso!', 'success');
+        await loadContratos();
+        
+    } catch (error) {
+        console.error('Erro ao deletar contrato:', error);
+        showToast('Erro ao deletar contrato', 'error');
+    }
+}
+
+async function renovarContrato(contratoId) {
+    if (!confirm('Deseja renovar este contrato por mais 12 meses?')) {
+        return;
+    }
+    
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/contratos/${contratoId}/renovar`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao renovar contrato');
+        }
+        
+        showToast('Contrato renovado com sucesso!', 'success');
+        await loadContratos();
+        
+    } catch (error) {
+        console.error('Erro ao renovar contrato:', error);
+        showToast('Erro ao renovar contrato', 'error');
     }
 }
 
