@@ -1,0 +1,712 @@
+# ============================================================
+# MyvivioCRM - Gym & Corporate Wellness Management System
+# Versão Híbrida (B2C/B2B) com IA, Automação/Workflow, Painel e Contratos
+# Pronto para Replit
+# ============================================================
+
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import FileResponse
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, Session
+from datetime import datetime, timedelta, timezone
+from typing import Optional, List
+import jwt
+from passlib.context import CryptContext
+import os
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+import pickle
+import aiosmtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from pydantic import BaseModel, Field
+import json
+
+# ============================================================
+# Configurações básicas
+# ============================================================
+
+DATABASE_URL = "sqlite:///./gym_wellness.db"
+SECRET_KEY = os.getenv("SESSION_SECRET", "gym_wellness_secret_key_CHANGE_IN_PRODUCTION")
+ALGORITHM = "HS256"
+
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+security = HTTPBearer()
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# ============================================================
+# Modelos de Banco de Dados (SQLAlchemy)
+# ============================================================
+
+class Unidade(Base):
+    __tablename__ = "unidades"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, unique=True)
+    endereco = Column(String)
+    # Refatoração B2C/B2B: Tipo de Unidade
+    tipo_unidade = Column(String, default="B2C") # B2C (Academia/Studio) ou B2B (Corporativo)
+    modelo_churn = Column(Text, nullable=True) 
+    risco_desistencia = Column(Float, default=0.0) # Risco de Churn da Unidade (B2C) ou Risco de Não Renovação (B2B)
+    usuarios = relationship("Usuario", back_populates="unidade")
+    programas = relationship("Programa", back_populates="unidade")
+    contratos = relationship("Contrato", back_populates="unidade")
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True)
+    senha = Column(String)
+    nome = Column(String)
+    tipo = Column(String) # admin, instrutor, cliente
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    ativo = Column(Boolean, default=True)
+    data_cadastro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    ultima_atividade = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    risco_churn = Column(Float, default=0.0) 
+    unidade = relationship("Unidade", back_populates="usuarios")
+    agendas = relationship("Agenda", back_populates="usuario")
+    jornadas = relationship("UsuarioJornada", back_populates="usuario")
+
+class Lead(Base):
+    __tablename__ = "leads"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String)
+    email = Column(String)
+    telefone = Column(String)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    data_contato = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    convertido = Column(Boolean, default=False)
+    lead_score = Column(Integer, default=0) 
+    # Refatoração B2C/B2B: Tipo de Lead
+    tipo_lead = Column(String, default="Individual") # Individual (B2C) ou Corporativo (B2B)
+    empresa = Column(String, nullable=True) # Nome da empresa para Leads Corporativos
+    unidade = relationship("Unidade")
+
+class Contrato(Base):
+    __tablename__ = "contratos"
+    id = Column(Integer, primary_key=True, index=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    nome = Column(String)
+    data_inicio = Column(DateTime)
+    data_fim = Column(DateTime)
+    valor_mensal = Column(Float)
+    limite_usuarios = Column(Integer, nullable=True) # Para B2B
+    status = Column(String, default="Ativo") # Ativo, Expirado, Pendente
+    unidade = relationship("Unidade", back_populates="contratos")
+
+# Modelos de Automação (Jornada e Workflow) - Mantidos
+class EventoAula(Base):
+    __tablename__ = "eventos_aulas"
+    id = Column(Integer, primary_key=True, index=True)
+    nome_aula = Column(String)
+    data_hora = Column(DateTime)
+    limite_inscricoes = Column(Integer)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    reservas = relationship("ReservaAula", back_populates="evento_aula")
+
+class ReservaAula(Base):
+    __tablename__ = "reservas_aulas"
+    id = Column(Integer, primary_key=True, index=True)
+    evento_aula_id = Column(Integer, ForeignKey("eventos_aulas.id"))
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    data_reserva = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    cancelada = Column(Boolean, default=False)
+    evento_aula = relationship("EventoAula", back_populates="reservas")
+    usuario = relationship("Usuario")
+
+class EventoSistema(Base):
+    __tablename__ = "eventos_sistema"
+    id = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String)
+    payload = Column(Text)
+    data_registro = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    processado = Column(Boolean, default=False)
+
+class Jornada(Base):
+    __tablename__ = "jornadas"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, unique=True)
+    gatilho_evento = Column(String)
+    ativa = Column(Boolean, default=True)
+    etapas = relationship("EtapaJornada", back_populates="jornada", order_by="EtapaJornada.ordem")
+
+class EtapaJornada(Base):
+    __tablename__ = "etapas_jornada"
+    id = Column(Integer, primary_key=True, index=True)
+    jornada_id = Column(Integer, ForeignKey("jornadas.id"))
+    nome = Column(String)
+    ordem = Column(Integer)
+    acao_tipo = Column(String)
+    acao_config = Column(Text)
+    jornada = relationship("Jornada", back_populates="etapas")
+
+class UsuarioJornada(Base):
+    __tablename__ = "usuarios_jornadas"
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    jornada_id = Column(Integer, ForeignKey("jornadas.id"))
+    etapa_atual_id = Column(Integer, ForeignKey("etapas_jornada.id"), nullable=True)
+    data_inicio = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    concluida = Column(Boolean, default=False)
+    usuario = relationship("Usuario", back_populates="jornadas")
+    jornada = relationship("Jornada")
+    etapa_atual = relationship("EtapaJornada")
+
+# Outros modelos (Programa, Agenda, MetricaEngajamento, etc.) seriam mantidos aqui.
+
+# ============================================================
+# Schemas Pydantic
+# ============================================================
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UsuarioBase(BaseModel):
+    email: str
+    nome: str
+    tipo: str
+    unidade_id: int
+    ativo: Optional[bool] = True
+
+class UsuarioCreate(UsuarioBase):
+    senha: str
+
+class UsuarioInDB(UsuarioBase):
+    id: int
+    data_cadastro: datetime
+    risco_churn: float
+
+    class Config:
+        from_attributes = True
+
+class UnidadeBase(BaseModel):
+    nome: str
+    endereco: str
+    tipo_unidade: str = Field(default="B2C", description="B2C ou B2B")
+
+class UnidadeCreate(UnidadeBase):
+    pass
+
+class UnidadeInDB(UnidadeBase):
+    id: int
+    risco_desistencia: float
+
+    class Config:
+        from_attributes = True
+
+class LeadCreate(BaseModel):
+    nome: str
+    email: str
+    telefone: str
+    unidade_id: int
+    tipo_lead: str = Field(default="Individual", description="Individual ou Corporativo")
+    empresa: Optional[str] = None
+
+class ContratoCreate(BaseModel):
+    unidade_id: int
+    nome: str
+    data_inicio: datetime
+    data_fim: datetime
+    valor_mensal: float
+    limite_usuarios: Optional[int] = None
+
+class ContratoInDB(ContratoCreate):
+    id: int
+    status: str
+    class Config:
+        from_attributes = True
+
+# Schemas de Automação (Jornada e Etapa) - Mantidos
+class JornadaBase(BaseModel):
+    nome: str
+    gatilho_evento: str = Field(..., description="Evento que inicia a jornada (ex: USUARIO_CRIADO)")
+    ativa: Optional[bool] = True
+
+class JornadaCreate(JornadaBase):
+    pass
+
+class JornadaInDB(JornadaBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+class EtapaJornadaBase(BaseModel):
+    nome: str
+    ordem: int
+    acao_tipo: str = Field(..., description="Tipo de ação (ex: ENVIAR_EMAIL, CRIAR_TAREFA)")
+    acao_config: dict = Field(..., description="Configuração JSON da ação")
+
+class EtapaJornadaCreate(EtapaJornadaBase):
+    pass
+
+class EtapaJornadaInDB(EtapaJornadaBase):
+    id: int
+    jornada_id: int
+    class Config:
+        from_attributes = True
+
+# ============================================================
+# Funções de Utilitário e Dependências - Mantidas
+# ============================================================
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Credenciais inválidas")
+        token_data = TokenData(email=email)
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    
+    user = db.query(Usuario).filter(Usuario.email == token_data.email).first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado")
+    return user
+
+def get_admin_user(current_user: Usuario = Depends(get_current_user)):
+    if current_user.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso negado. Requer privilégios de administrador.")
+    return current_user
+
+async def enviar_email(destinatario: str, assunto: str, corpo: str):
+    # Função de e-mail mantida
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER", "noreply@myvivio.com")
+    smtp_pass = os.getenv("SMTP_PASSWORD", "")
+    
+    message = MIMEMultipart()
+    message["From"] = smtp_user
+    message["To"] = destinatario
+    message["Subject"] = assunto
+    message.attach(MIMEText(corpo, "html"))
+    
+    try:
+        if smtp_pass:
+            await aiosmtplib.send(
+                message,
+                hostname=smtp_host,
+                port=smtp_port,
+                username=smtp_user,
+                password=smtp_pass,
+                start_tls=True
+            )
+            return True
+        return False
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+        return False
+
+def registrar_evento(db: Session, tipo: str, payload: dict):
+    evento = EventoSistema(
+        tipo=tipo,
+        payload=json.dumps(payload)
+    )
+    db.add(evento)
+    db.commit()
+    db.refresh(evento)
+    return evento
+
+# ============================================================
+# Lógica de IA/ML (Previsão de Churn)
+# ============================================================
+
+def treinar_modelo_churn(db: Session, unidade_id: int):
+    # Lógica de treinamento de modelo de churn (mantida)
+    usuarios = db.query(Usuario).filter(Usuario.unidade_id == unidade_id).all()
+    
+    data = []
+    for u in usuarios:
+        dias_inatividade = (datetime.now(timezone.utc) - u.ultima_atividade).days
+        reservas_canceladas = db.query(ReservaAula).filter(
+            ReservaAula.usuario_id == u.id,
+            ReservaAula.cancelada == True
+        ).count()
+        
+        churn = 1 if dias_inatividade > 60 and reservas_canceladas > 5 else 0
+        
+        data.append({
+            'dias_inatividade': dias_inatividade,
+            'reservas_canceladas': reservas_canceladas,
+            'churn': churn,
+            'usuario_id': u.id
+        })
+    
+    if not data or len(data) < 10:
+        return "Dados insuficientes para treinamento."
+
+    df = pd.DataFrame(data)
+    X = df[['dias_inatividade', 'reservas_canceladas']]
+    y = df['churn']
+    
+    model = LogisticRegression()
+    model.fit(X, y)
+    
+    modelo_serializado = pickle.dumps(model)
+    unidade = db.query(Unidade).get(unidade_id)
+    unidade.modelo_churn = modelo_serializado.decode('latin1')
+    db.commit()
+    
+    return "Modelo treinado e salvo com sucesso."
+
+def prever_risco_churn(db: Session, usuario: Usuario):
+    # Lógica de previsão de risco de churn (mantida)
+    unidade = db.query(Unidade).get(usuario.unidade_id)
+    if not unidade or not unidade.modelo_churn:
+        return 0.0
+
+    try:
+        model = pickle.loads(unidade.modelo_churn.encode('latin1'))
+    except:
+        return 0.0
+
+    dias_inatividade = (datetime.now(timezone.utc) - usuario.ultima_atividade).days
+    reservas_canceladas = db.query(ReservaAula).filter(
+        ReservaAula.usuario_id == usuario.id,
+        ReservaAula.cancelada == True
+    ).count()
+    
+    risco = model.predict_proba([[dias_inatividade, reservas_canceladas]])[0][1]
+    
+    usuario.risco_churn = risco
+    db.commit()
+    
+    if risco > 0.75:
+        registrar_evento(db, "CHURN_ALERTA", {"usuario_id": usuario.id, "risco": risco})
+        
+    return risco
+
+# ============================================================
+# Lógica de Automação e Fluxo de Trabalho (Workflow) - Mantida
+# ============================================================
+
+async def executar_acao_workflow(db: Session, usuario: Usuario, etapa: EtapaJornada):
+    config = json.loads(etapa.acao_config)
+    
+    if etapa.acao_tipo == "ENVIAR_EMAIL":
+        assunto = config.get("assunto", "Notificação MyvivioCRM")
+        corpo = config.get("corpo", "Mensagem automática.")
+        
+        corpo = corpo.replace("{usuario_nome}", usuario.nome).replace("{usuario_email}", usuario.email)
+        
+        await enviar_email(usuario.email, assunto, corpo)
+        return True
+        
+    elif etapa.acao_tipo == "CRIAR_TAREFA":
+        print(f"Ação: Tarefa '{config.get('titulo', 'Tarefa de Acompanhamento')}' criada para {usuario.nome}")
+        return True
+        
+    elif etapa.acao_tipo == "MUDAR_STATUS":
+        novo_status = config.get("status")
+        if novo_status == "inativo":
+            usuario.ativo = False
+            db.commit()
+            return True
+            
+    return False
+
+async def avancar_jornada(db: Session, usuario_jornada: UsuarioJornada):
+    jornada = usuario_jornada.jornada
+    etapas = jornada.etapas
+    
+    if not etapas:
+        usuario_jornada.concluida = True
+        db.commit()
+        return
+        
+    etapa_atual = usuario_jornada.etapa_atual
+    
+    if etapa_atual is None:
+        proxima_etapa = etapas[0]
+    else:
+        etapa_index = next((i for i, e in enumerate(etapas) if e.id == etapa_atual.id), -1)
+        if etapa_index == -1 or etapa_index == len(etapas) - 1:
+            usuario_jornada.concluida = True
+            db.commit()
+            return
+        proxima_etapa = etapas[etapa_index + 1]
+        
+    sucesso = await executar_acao_workflow(db, usuario_jornada.usuario, proxima_etapa)
+    
+    if sucesso:
+        usuario_jornada.etapa_atual = proxima_etapa
+        db.commit()
+
+async def iniciar_jornada(db: Session, usuario: Usuario, jornada: Jornada):
+    usuario_jornada = UsuarioJornada(
+        usuario_id=usuario.id,
+        jornada_id=jornada.id,
+        etapa_atual_id=None,
+        concluida=False
+    )
+    db.add(usuario_jornada)
+    db.commit()
+    db.refresh(usuario_jornada)
+    await avancar_jornada(db, usuario_jornada)
+
+async def processar_eventos(db: Session):
+    eventos = db.query(EventoSistema).filter(EventoSistema.processado == False).all()
+    
+    for evento in eventos:
+        try:
+            payload = json.loads(evento.payload)
+            usuario_id = payload.get("usuario_id")
+            usuario = db.query(Usuario).get(usuario_id)
+            
+            if usuario:
+                jornadas_ativas = db.query(Jornada).filter(
+                    Jornada.gatilho_evento == evento.tipo,
+                    Jornada.ativa == True
+                ).all()
+                
+                for jornada in jornadas_ativas:
+                    if not db.query(UsuarioJornada).filter(
+                        UsuarioJornada.usuario_id == usuario_id,
+                        UsuarioJornada.jornada_id == jornada.id,
+                        UsuarioJornada.concluida == False
+                    ).first():
+                        await iniciar_jornada(db, usuario, jornada)
+                        
+                jornadas_em_andamento = db.query(UsuarioJornada).filter(
+                    UsuarioJornada.usuario_id == usuario_id,
+                    UsuarioJornada.concluida == False
+                ).all()
+                
+                for uj in jornadas_em_andamento:
+                    await avancar_jornada(db, uj)
+            
+            evento.processado = True
+            db.commit()
+        except Exception as e:
+            print(f"Erro ao processar evento {evento.id}: {e}")
+            db.rollback()
+
+# ============================================================
+# Inicialização do FastAPI e Criação das Tabelas
+# ============================================================
+
+app = FastAPI(
+    title="MyvivioCRM Híbrido (B2C/B2B)",
+    description="Backend FastAPI para Gestão de Wellness com IA e Automação."
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ============================================================
+# Endpoints de Configuração (Admin)
+# ============================================================
+
+@app.post("/configuracao/unidades", response_model=UnidadeInDB)
+def criar_unidade(unidade: UnidadeCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    db_unidade = Unidade(**unidade.model_dump())
+    db.add(db_unidade)
+    db.commit()
+    db.refresh(db_unidade)
+    return db_unidade
+
+@app.post("/configuracao/usuarios", response_model=UsuarioInDB)
+def criar_usuario(usuario: UsuarioCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    hashed_password = get_password_hash(usuario.senha)
+    db_usuario = Usuario(
+        email=usuario.email,
+        senha=hashed_password,
+        nome=usuario.nome,
+        tipo=usuario.tipo,
+        unidade_id=usuario.unidade_id
+    )
+    db.add(db_usuario)
+    db.commit()
+    db.refresh(db_usuario)
+    
+    registrar_evento(db, "USUARIO_CRIADO", {"usuario_id": db_usuario.id})
+    
+    return db_usuario
+
+# ============================================================
+# Endpoints de Leads (B2C/B2B)
+# ============================================================
+
+@app.post("/leads", response_model=LeadCreate)
+def criar_lead(lead: LeadCreate, db: Session = Depends(get_db)):
+    db_lead = Lead(**lead.model_dump())
+    db.add(db_lead)
+    db.commit()
+    db.refresh(db_lead)
+    
+    # Exemplo de evento para iniciar jornada de vendas B2C ou B2B
+    if lead.tipo_lead == "Individual":
+        registrar_evento(db, "LEAD_B2C_CRIADO", {"lead_id": db_lead.id})
+    else:
+        registrar_evento(db, "LEAD_B2B_CRIADO", {"lead_id": db_lead.id})
+        
+    return db_lead
+
+# ============================================================
+# Endpoints de Contratos (B2C/B2B)
+# ============================================================
+
+@app.post("/contratos", response_model=ContratoInDB)
+def criar_contrato(contrato: ContratoCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    db_contrato = Contrato(**contrato.model_dump())
+    db.add(db_contrato)
+    db.commit()
+    db.refresh(db_contrato)
+    
+    registrar_evento(db, "CONTRATO_CRIADO", {"contrato_id": db_contrato.id})
+    
+    return db_contrato
+
+# ============================================================
+# Endpoints de Automação (TAB 'Automação') - Mantidos
+# ============================================================
+
+@app.post("/automacao/jornadas", response_model=JornadaInDB)
+def criar_jornada(jornada: JornadaCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    db_jornada = Jornada(**jornada.model_dump())
+    db.add(db_jornada)
+    db.commit()
+    db.refresh(db_jornada)
+    return db_jornada
+
+@app.get("/automacao/jornadas", response_model=List[JornadaInDB])
+def listar_jornadas(admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    return db.query(Jornada).all()
+
+@app.post("/automacao/jornadas/{jornada_id}/etapas", response_model=EtapaJornadaInDB)
+def adicionar_etapa_jornada(jornada_id: int, etapa: EtapaJornadaCreate, admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    db_jornada = db.query(Jornada).get(jornada_id)
+    if not db_jornada:
+        raise HTTPException(status_code=404, detail="Jornada não encontrada")
+        
+    db_etapa = EtapaJornada(
+        jornada_id=jornada_id,
+        nome=etapa.nome,
+        ordem=etapa.ordem,
+        acao_tipo=etapa.acao_tipo,
+        acao_config=json.dumps(etapa.acao_config)
+    )
+    db.add(db_etapa)
+    db.commit()
+    db.refresh(db_etapa)
+    return db_etapa
+
+@app.post("/automacao/processar")
+async def run_automacao(admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    await processar_eventos(db)
+    return {"mensagem": "Processamento de automação e jornadas concluído."}
+
+# ============================================================
+# Endpoints do PAINEL (Relatórios) - Ajustado para Híbrido
+# ============================================================
+
+@app.get("/painel/relatorio_unidades")
+def relatorio_unidades(admin: Usuario = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """ Retorna um relatório de unidades, filtrável por tipo (B2C/B2B). """
+    unidades = db.query(Unidade).all()
+    
+    data = [{
+        "id": u.id,
+        "nome": u.nome,
+        "tipo": u.tipo_unidade,
+        "risco_desistencia": u.risco_desistencia,
+        "total_usuarios": db.query(Usuario).filter(Usuario.unidade_id == u.id).count(),
+        "total_contratos": db.query(Contrato).filter(Contrato.unidade_id == u.id).count()
+    } for u in unidades]
+    
+    return {"total_unidades": len(data), "dados": data}
+
+# Outros endpoints (IA/ML, etc.) seriam mantidos aqui.
+
+# ============================================================
+# Execução para Replit
+# ============================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    with SessionLocal() as db:
+        Base.metadata.create_all(bind=engine)
+        print("Tabelas do banco de dados criadas/verificadas.")
+        
+        # Criação de dados de teste (Unidade B2C e B2B)
+        if not db.query(Unidade).filter(Unidade.nome == "Academia Central").first():
+            db_unidade_b2c = Unidade(nome="Academia Central", endereco="Rua B2C", tipo_unidade="B2C")
+            db_unidade_b2b = Unidade(nome="Wellness Corp", endereco="Av B2B", tipo_unidade="B2B")
+            db.add_all([db_unidade_b2c, db_unidade_b2b])
+            db.commit()
+            db.refresh(db_unidade_b2c)
+            db.refresh(db_unidade_b2b)
+            print("Unidades B2C e B2B de teste criadas.")
+            
+            # Criação de Admin
+            hashed_password = get_password_hash("senha123")
+            db_usuario = Usuario(
+                email="admin@myvivio.com",
+                senha=hashed_password,
+                nome="Admin Híbrido",
+                tipo="admin",
+                unidade_id=db_unidade_b2c.id
+            )
+            db.add(db_usuario)
+            db.commit()
+            print("Usuário Admin de teste criado: admin@myvivio.com / senha123")
+            
+            # Criação de Jornada de Onboarding de exemplo (mantida)
+            if not db.query(Jornada).filter(Jornada.nome == "Onboarding de Novo Cliente").first():
+                jornada = Jornada(nome="Onboarding de Novo Cliente", gatilho_evento="USUARIO_CRIADO", ativa=True)
+                db.add(jornada)
+                db.commit()
+                db.refresh(jornada)
+                
+                etapa1 = EtapaJornada(
+                    jornada_id=jornada.id,
+                    nome="E-mail de Boas-Vindas",
+                    ordem=1,
+                    acao_tipo="ENVIAR_EMAIL",
+                    acao_config=json.dumps({
+                        "assunto": "Bem-vindo ao MyvivioCRM, {usuario_nome}!",
+                        "corpo": "Olá {usuario_nome}, sua conta foi criada com sucesso. Estamos felizes em tê-lo conosco!"
+                    })
+                )
+                db.add(etapa1)
+                db.commit()
+                print("Jornada de Onboarding de exemplo criada.")
+
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
