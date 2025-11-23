@@ -48,10 +48,12 @@ class Unidade(Base):
     nome = Column(String, unique=True)
     endereco = Column(String)
     telefone = Column(String, nullable=True)
+    tipo_unidade = Column(String, default="B2C")
     risco_desistencia = Column(Float, default=0.0)
     modelo_churn = Column(Text, nullable=True)
     usuarios = relationship("Usuario", back_populates="unidade")
     programas = relationship("Programa", back_populates="unidade")
+    contratos = relationship("Contrato", back_populates="unidade")
 
 
 class Usuario(Base):
@@ -81,6 +83,8 @@ class Visitante(Base):
     data_visita = Column(DateTime, default=datetime.utcnow)
     convertido = Column(Boolean, default=False)
     lead_score = Column(Integer, default=0)
+    tipo_lead = Column(String, default="Individual")
+    empresa = Column(String, nullable=True)
     unidade = relationship("Unidade")
 
 
@@ -340,6 +344,19 @@ class OpcaoPergunta(Base):
 # ============================================================
 # Modelo de Grupos - Sistema de Segmentação Inteligente
 # ============================================================
+
+
+class Contrato(Base):
+    __tablename__ = "contratos"
+    id = Column(Integer, primary_key=True, index=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    nome = Column(String, nullable=False)
+    data_inicio = Column(DateTime)
+    data_fim = Column(DateTime)
+    valor_mensal = Column(Float)
+    limite_usuarios = Column(Integer, nullable=True)
+    status = Column(String, default="ativo")
+    unidade = relationship("Unidade", back_populates="contratos")
 
 
 class Grupo(Base):
@@ -633,6 +650,13 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(
     except jwt.PyJWTError:
         raise HTTPException(status_code=401,
                             detail="Token inválido ou expirado")
+
+
+def get_admin_user(current_user: Usuario = Depends(get_current_user)):
+    """Verifica se o usuário atual é administrador"""
+    if current_user.tipo != "admin":
+        raise HTTPException(status_code=403, detail="Acesso negado. Requer privilégios de administrador.")
+    return current_user
 
 
 # ============================================================
@@ -2453,6 +2477,43 @@ class QuestionarioUpdate(BaseModel):
 
 
 # ============================================================
+# Schemas Pydantic - Contratos B2B
+# ============================================================
+
+
+class ContratoCreate(BaseModel):
+    unidade_id: int
+    nome: str
+    data_inicio: datetime
+    data_fim: datetime
+    valor_mensal: float
+    limite_usuarios: Optional[int] = None
+
+
+class ContratoUpdate(BaseModel):
+    nome: Optional[str] = None
+    data_inicio: Optional[datetime] = None
+    data_fim: Optional[datetime] = None
+    valor_mensal: Optional[float] = None
+    limite_usuarios: Optional[int] = None
+    status: Optional[str] = None
+
+
+class ContratoResponse(BaseModel):
+    id: int
+    unidade_id: int
+    nome: str
+    data_inicio: datetime
+    data_fim: datetime
+    valor_mensal: float
+    limite_usuarios: Optional[int] = None
+    status: str
+    
+    class Config:
+        from_attributes = True
+
+
+# ============================================================
 # Schemas Pydantic - Grupos
 # ============================================================
 
@@ -3007,6 +3068,155 @@ def duplicar_questionario(questionario_id: int,
 
 # ============================================================
 # Endpoints de Grupos - Sistema de Segmentação Inteligente
+# ============================================================
+
+
+# ============================================================
+# Endpoints - Contratos B2B
+# ============================================================
+
+
+@app.get("/contratos")
+def listar_contratos(usuario: Usuario = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    """Lista todos os contratos da unidade"""
+    contratos = db.query(Contrato).filter(
+        Contrato.unidade_id == usuario.unidade_id).order_by(
+            Contrato.data_inicio.desc()).all()
+    
+    return [ContratoResponse.from_orm(c) for c in contratos]
+
+
+@app.post("/contratos", response_model=ContratoResponse)
+def criar_contrato(dados: ContratoCreate,
+                   usuario: Usuario = Depends(get_admin_user),
+                   db: Session = Depends(get_db)):
+    """Cria um novo contrato (admin only)"""
+    contrato = Contrato(**dados.dict())
+    db.add(contrato)
+    db.commit()
+    db.refresh(contrato)
+    
+    registrar_evento(db, "CONTRATO_CRIADO", {
+        "contrato_id": contrato.id,
+        "unidade_id": contrato.unidade_id,
+        "valor_mensal": contrato.valor_mensal
+    })
+    
+    return contrato
+
+
+@app.get("/contratos/{contrato_id}", response_model=ContratoResponse)
+def obter_contrato(contrato_id: int,
+                   usuario: Usuario = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    """Obtém detalhes de um contrato específico"""
+    contrato = db.query(Contrato).filter(
+        Contrato.id == contrato_id,
+        Contrato.unidade_id == usuario.unidade_id).first()
+    
+    if not contrato:
+        raise HTTPException(status_code=404, detail="Contrato não encontrado")
+    
+    return contrato
+
+
+@app.put("/contratos/{contrato_id}", response_model=ContratoResponse)
+def atualizar_contrato(contrato_id: int,
+                       dados: ContratoUpdate,
+                       usuario: Usuario = Depends(get_admin_user),
+                       db: Session = Depends(get_db)):
+    """Atualiza um contrato existente"""
+    contrato = db.query(Contrato).filter(
+        Contrato.id == contrato_id,
+        Contrato.unidade_id == usuario.unidade_id).first()
+    
+    if not contrato:
+        raise HTTPException(status_code=404, detail="Contrato não encontrado")
+    
+    for key, value in dados.dict(exclude_unset=True).items():
+        setattr(contrato, key, value)
+    
+    db.commit()
+    db.refresh(contrato)
+    
+    return contrato
+
+
+@app.delete("/contratos/{contrato_id}")
+def deletar_contrato(contrato_id: int,
+                     usuario: Usuario = Depends(get_admin_user),
+                     db: Session = Depends(get_db)):
+    """Deleta um contrato"""
+    contrato = db.query(Contrato).filter(
+        Contrato.id == contrato_id,
+        Contrato.unidade_id == usuario.unidade_id).first()
+    
+    if not contrato:
+        raise HTTPException(status_code=404, detail="Contrato não encontrado")
+    
+    db.delete(contrato)
+    db.commit()
+    
+    return {"mensagem": "Contrato deletado com sucesso"}
+
+
+@app.post("/contratos/{contrato_id}/renovar", response_model=ContratoResponse)
+def renovar_contrato(contrato_id: int,
+                     meses: int = 12,
+                     usuario: Usuario = Depends(get_admin_user),
+                     db: Session = Depends(get_db)):
+    """Renova um contrato existente"""
+    contrato = db.query(Contrato).filter(
+        Contrato.id == contrato_id,
+        Contrato.unidade_id == usuario.unidade_id).first()
+    
+    if not contrato:
+        raise HTTPException(status_code=404, detail="Contrato não encontrado")
+    
+    contrato.data_fim = contrato.data_fim + timedelta(days=30 * meses)
+    contrato.status = "ativo"
+    
+    db.commit()
+    db.refresh(contrato)
+    
+    registrar_evento(db, "CONTRATO_RENOVADO", {
+        "contrato_id": contrato.id,
+        "unidade_id": contrato.unidade_id,
+        "nova_data_fim": contrato.data_fim.isoformat()
+    })
+    
+    return contrato
+
+
+@app.get("/contratos/expirados/lista")
+def listar_contratos_expirados(usuario: Usuario = Depends(get_admin_user),
+                                db: Session = Depends(get_db)):
+    """Lista contratos que estão expirando em até 30 dias"""
+    hoje = datetime.utcnow()
+    limite = hoje + timedelta(days=30)
+    
+    contratos = db.query(Contrato).filter(
+        Contrato.unidade_id == usuario.unidade_id,
+        Contrato.data_fim <= limite,
+        Contrato.data_fim >= hoje,
+        Contrato.status == "ativo"
+    ).all()
+    
+    resultado = []
+    for c in contratos:
+        dias_restantes = (c.data_fim - hoje).days
+        resultado.append({
+            **ContratoResponse.from_orm(c).dict(),
+            "dias_restantes": dias_restantes,
+            "status_alerta": "critico" if dias_restantes <= 15 else "atencao"
+        })
+    
+    return resultado
+
+
+# ============================================================
+# Endpoints - Grupos
 # ============================================================
 
 
@@ -3679,6 +3889,59 @@ def endpoint_listar_eventos(processados: bool = False,
             "data_registro": e.data_registro.isoformat(),
             "processado": e.processado
         } for e in eventos]
+    }
+
+
+@app.get("/admin/ia/riscos_renovacao")
+def listar_riscos_renovacao(usuario: Usuario = Depends(get_admin_user),
+                             db: Session = Depends(get_db)):
+    """Lista contratos B2B em risco de não renovação"""
+    hoje = datetime.utcnow()
+    limite = hoje + timedelta(days=90)
+    
+    contratos = db.query(Contrato).filter(
+        Contrato.unidade_id == usuario.unidade_id,
+        Contrato.data_fim <= limite,
+        Contrato.data_fim >= hoje,
+        Contrato.status == "ativo"
+    ).all()
+    
+    riscos = []
+    for c in contratos:
+        dias_restantes = (c.data_fim - hoje).days
+        risco_percentual = 100 - (dias_restantes / 90 * 100)
+        
+        usuarios_ativos = db.query(Usuario).filter(
+            Usuario.unidade_id == c.unidade_id,
+            Usuario.ativo == True
+        ).count()
+        
+        nivel = "CRITICO" if dias_restantes <= 15 else "ALTO" if dias_restantes <= 30 else "MEDIO"
+        
+        riscos.append({
+            "contrato_id": c.id,
+            "nome": c.nome,
+            "valor_mensal": c.valor_mensal,
+            "data_fim": c.data_fim.isoformat(),
+            "dias_restantes": dias_restantes,
+            "risco_nao_renovacao": round(risco_percentual, 2),
+            "nivel": nivel,
+            "usuarios_ativos": usuarios_ativos,
+            "limite_usuarios": c.limite_usuarios,
+            "taxa_uso": round((usuarios_ativos / c.limite_usuarios * 100), 2) if c.limite_usuarios else None
+        })
+    
+    riscos.sort(key=lambda x: x['dias_restantes'])
+    
+    receita_em_risco = sum([r['valor_mensal'] for r in riscos if r['nivel'] in ['CRITICO', 'ALTO']])
+    
+    return {
+        "total_contratos": len(riscos),
+        "criticos": len([r for r in riscos if r['nivel'] == 'CRITICO']),
+        "alto_risco": len([r for r in riscos if r['nivel'] == 'ALTO']),
+        "medio_risco": len([r for r in riscos if r['nivel'] == 'MEDIO']),
+        "receita_mensal_em_risco": receita_em_risco,
+        "contratos": riscos
     }
 
 
