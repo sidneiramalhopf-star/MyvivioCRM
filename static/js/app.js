@@ -79,6 +79,9 @@ function navigateTo(event, page) {
         } else if (page === 'painel') {
             // Mostrar view de aulas por padrão no painel de relatórios
             switchPainelView('aulas');
+        } else if (page === 'configuracao') {
+            // Mostrar view de loja por padrão nas configurações
+            switchConfiguracaoView('loja');
         } else if (page === 'contratos') {
             loadContratos();
         }
@@ -123,6 +126,9 @@ function navigateToPage(page) {
         } else if (page === 'painel') {
             // Mostrar view de aulas por padrão no painel de relatórios
             switchPainelView('aulas');
+        } else if (page === 'configuracao') {
+            // Mostrar view de loja por padrão nas configurações
+            switchConfiguracaoView('loja');
         } else if (page === 'contratos') {
             loadContratos();
         }
@@ -473,6 +479,70 @@ function switchAutomacaoView(view, evt) {
 // ============================================
 // PAINEL DE RELATÓRIOS - Funções de Navegação
 // ============================================
+
+function switchConfiguracaoView(view, evt) {
+    console.log('switchConfiguracaoView:', view);
+    
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    } else {
+        const btnToActivate = document.querySelector(`.unified-menu-item[data-menu-id="${view}"]`);
+        if (btnToActivate) {
+            btnToActivate.classList.add('active');
+        }
+    }
+    
+    document.querySelectorAll('.config-page').forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    const targetPage = document.getElementById(`config-${view}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+    }
+    
+    if (view === 'loja') {
+        carregarConfigLoja();
+    } else if (view === 'aparelhos') {
+        carregarConfigAparelhos();
+    } else if (view === 'dispositivos') {
+        carregarConfigDispositivos();
+    } else if (view === 'customizacao') {
+        carregarConfigCustomizacao();
+    } else if (view === 'unidade') {
+        carregarConfigUnidade();
+    } else if (view === 'assinaturas') {
+        carregarConfigAssinaturas();
+    }
+}
+
+async function carregarConfigLoja() {
+    console.log('Carregando configurações da loja...');
+}
+
+async function carregarConfigAparelhos() {
+    console.log('Carregando configurações de aparelhos...');
+}
+
+async function carregarConfigDispositivos() {
+    console.log('Carregando configurações de dispositivos...');
+}
+
+async function carregarConfigCustomizacao() {
+    console.log('Carregando configurações de customização...');
+}
+
+async function carregarConfigUnidade() {
+    console.log('Carregando configurações da unidade...');
+}
+
+async function carregarConfigAssinaturas() {
+    console.log('Carregando configurações de assinaturas e planos...');
+}
 
 function switchPainelView(view, evt) {
     console.log('switchPainelView:', view);
@@ -3176,6 +3246,17 @@ const sidebarConfigs = {
             { id: 'contratos', icon: 'fa-file-contract', label: 'Contratos', action: 'switchPainelView' },
             { id: 'visitantes', icon: 'fa-user-plus', label: 'Visitantes', action: 'switchPainelView' },
             { id: 'financeiro', icon: 'fa-coins', label: 'Financeiro', action: 'switchPainelView' }
+        ]
+    },
+    configuracao: {
+        title: 'Configurações',
+        items: [
+            { id: 'loja', icon: 'fa-store', label: 'Loja', action: 'switchConfiguracaoView' },
+            { id: 'aparelhos', icon: 'fa-dumbbell', label: 'Aparelhos', action: 'switchConfiguracaoView' },
+            { id: 'dispositivos', icon: 'fa-mobile-screen', label: 'Dispositivos', action: 'switchConfiguracaoView' },
+            { id: 'customizacao', icon: 'fa-palette', label: 'Customização', action: 'switchConfiguracaoView' },
+            { id: 'unidade', icon: 'fa-building', label: 'Unidade', action: 'switchConfiguracaoView' },
+            { id: 'assinaturas', icon: 'fa-credit-card', label: 'Assinaturas e Planos', action: 'switchConfiguracaoView' }
         ]
     }
 };

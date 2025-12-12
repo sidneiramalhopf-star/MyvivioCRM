@@ -115,7 +115,7 @@
                             <span>Painel</span>
                         </a>
                         <div class="nav-divider"></div>
-                        <a href="#" class="nav-item" onclick="navigateTo(event, 'config')">
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'configuracao')">
                             <i class="fas fa-cog"></i>
                             <span>Configuração</span>
                         </a>
@@ -2906,26 +2906,176 @@
                         </div>
                     </div>
 
-                    <div id="page-config" class="page-content">
+                    <div id="page-configuracao" class="page-content has-unified-sidebar" data-default-view="loja">
                         <div class="page-header">
-                            <h1><i class="fas fa-cog"></i> Configuração</h1>
+                            <h1><i class="fas fa-cog"></i> Configurações</h1>
                         </div>
-                        <div class="config-section">
-                            <div class="config-card">
-                                <h3>Perfil do Usuário</h3>
-                                <p>Gerencie suas informações pessoais</p>
+                        
+                        <!-- Loja -->
+                        <div id="config-loja" class="config-page active" style="display: block;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-store"></i> Loja</h2>
+                                <p class="config-description">Configure produtos, preços e estoque da sua loja.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-box"></i></div>
+                                        <h3>Produtos</h3>
+                                        <p>Gerencie o catálogo de produtos disponíveis</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Gerenciar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-tags"></i></div>
+                                        <h3>Categorias</h3>
+                                        <p>Organize produtos em categorias</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Configurar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-percent"></i></div>
+                                        <h3>Promoções</h3>
+                                        <p>Configure descontos e ofertas especiais</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Criar</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="config-card">
-                                <h3>Unidade</h3>
-                                <p>Configurações da unidade</p>
+                        </div>
+                        
+                        <!-- Aparelhos -->
+                        <div id="config-aparelhos" class="config-page" style="display: none;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-dumbbell"></i> Aparelhos</h2>
+                                <p class="config-description">Gerencie os equipamentos e máquinas da sua unidade.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-plus-circle"></i></div>
+                                        <h3>Adicionar Aparelho</h3>
+                                        <p>Cadastre novos equipamentos</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Adicionar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-list"></i></div>
+                                        <h3>Lista de Aparelhos</h3>
+                                        <p>Visualize e edite equipamentos cadastrados</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Ver Lista</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-wrench"></i></div>
+                                        <h3>Manutenção</h3>
+                                        <p>Agende manutenções preventivas</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Agendar</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="config-card">
-                                <h3>Notificações</h3>
-                                <p>Preferências de notificação</p>
+                        </div>
+                        
+                        <!-- Dispositivos -->
+                        <div id="config-dispositivos" class="config-page" style="display: none;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-mobile-screen"></i> Dispositivos</h2>
+                                <p class="config-description">Configure tablets, catracas e outros dispositivos conectados.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-tablet-alt"></i></div>
+                                        <h3>Tablets</h3>
+                                        <p>Gerencie tablets de check-in</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Configurar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-door-open"></i></div>
+                                        <h3>Catracas</h3>
+                                        <p>Configure controle de acesso</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Configurar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-wifi"></i></div>
+                                        <h3>Conexões</h3>
+                                        <p>Status de dispositivos conectados</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Verificar</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="config-card">
-                                <h3>Segurança</h3>
-                                <p>Alterar senha e configurações de segurança</p>
+                        </div>
+                        
+                        <!-- Customização -->
+                        <div id="config-customizacao" class="config-page" style="display: none;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-palette"></i> Customização</h2>
+                                <p class="config-description">Personalize a aparência e branding da sua plataforma.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-image"></i></div>
+                                        <h3>Logo</h3>
+                                        <p>Altere o logo da sua empresa</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Alterar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-paint-brush"></i></div>
+                                        <h3>Cores</h3>
+                                        <p>Personalize a paleta de cores</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Editar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-envelope"></i></div>
+                                        <h3>E-mails</h3>
+                                        <p>Personalize templates de e-mail</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Configurar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Unidade -->
+                        <div id="config-unidade" class="config-page" style="display: none;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-building"></i> Unidade</h2>
+                                <p class="config-description">Configure as informações da sua unidade/filial.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-info-circle"></i></div>
+                                        <h3>Dados da Unidade</h3>
+                                        <p>Nome, endereço e contato</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Editar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-clock"></i></div>
+                                        <h3>Horários</h3>
+                                        <p>Configure horários de funcionamento</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Configurar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                        <h3>Localização</h3>
+                                        <p>Atualize localização no mapa</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Atualizar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Assinaturas e Planos -->
+                        <div id="config-assinaturas" class="config-page" style="display: none;">
+                            <div class="config-container">
+                                <h2><i class="fas fa-credit-card"></i> Assinaturas e Planos</h2>
+                                <p class="config-description">Gerencie os planos de assinatura e preços.</p>
+                                <div class="config-grid">
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-plus"></i></div>
+                                        <h3>Criar Plano</h3>
+                                        <p>Adicione novos planos de assinatura</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Criar</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-list-alt"></i></div>
+                                        <h3>Listar Planos</h3>
+                                        <p>Visualize e edite planos existentes</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Ver</button>
+                                    </div>
+                                    <div class="config-card-new">
+                                        <div class="config-card-icon"><i class="fas fa-dollar-sign"></i></div>
+                                        <h3>Preços</h3>
+                                        <p>Configure tabela de preços</p>
+                                        <button class="btn-config" onclick="showToast('Funcionalidade em desenvolvimento')">Editar</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
