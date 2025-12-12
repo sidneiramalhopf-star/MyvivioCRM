@@ -4015,3 +4015,351 @@ def exportar_usuarios_csv(usuario: Usuario = Depends(get_current_user),
         filename=f"usuarios_viviocrm_{datetime.utcnow().strftime('%Y%m%d')}.csv",
         media_type="text/csv"
     )
+
+
+# ============================================
+# ENDPOINTS DE RELATÓRIOS - PAINEL
+# ============================================
+
+@app.get("/relatorios/aulas")
+def relatorio_aulas(data_inicio: str = None, data_fim: str = None,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    """Retorna dados para relatório de aulas"""
+    query = db.query(EventoAula).filter(EventoAula.unidade_id == usuario.unidade_id)
+    
+    if data_inicio:
+        query = query.filter(EventoAula.data >= data_inicio)
+    if data_fim:
+        query = query.filter(EventoAula.data <= data_fim)
+    
+    aulas = query.all()
+    
+    total_aulas = len(aulas)
+    total_reservas = sum([db.query(ReservaAula).filter(ReservaAula.aula_id == a.id).count() for a in aulas])
+    total_presencas = db.query(Attendance).filter(Attendance.status == 'presente').count()
+    cancelamentos = db.query(ReservaAula).filter(ReservaAula.status == 'cancelado').count()
+    
+    taxa_ocupacao = 0
+    if aulas:
+        capacidade_total = sum([a.capacidade_maxima or 0 for a in aulas])
+        if capacidade_total > 0:
+            taxa_ocupacao = round((total_reservas / capacidade_total) * 100, 1)
+    
+    aulas_dados = []
+    for a in aulas[:50]:
+        instrutor = db.query(Instrutor).filter(Instrutor.id == a.instrutor_id).first()
+        sala = db.query(Sala).filter(Sala.id == a.sala_id).first()
+        reservas = db.query(ReservaAula).filter(ReservaAula.aula_id == a.id).count()
+        presencas = db.query(Attendance).join(ReservaAula).filter(
+            ReservaAula.aula_id == a.id,
+            Attendance.status == 'presente'
+        ).count()
+        taxa = round((presencas / reservas * 100), 1) if reservas > 0 else 0
+        
+        aulas_dados.append({
+            "data": a.data.strftime("%d/%m/%Y") if a.data else "",
+            "nome": a.nome,
+            "instrutor": instrutor.nome if instrutor else "-",
+            "sala": sala.nome if sala else "-",
+            "reservas": reservas,
+            "presencas": presencas,
+            "taxa": taxa
+        })
+    
+    return {
+        "total_aulas": total_aulas,
+        "total_presencas": total_presencas,
+        "taxa_ocupacao": taxa_ocupacao,
+        "cancelamentos": cancelamentos,
+        "aulas": aulas_dados
+    }
+
+
+@app.get("/relatorios/automacao")
+def relatorio_automacao(usuario: Usuario = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """Retorna dados para relatório de automação"""
+    jornadas_ativas = db.query(Jornada).filter(
+        Jornada.unidade_id == usuario.unidade_id,
+        Jornada.ativa == True
+    ).count()
+    
+    grupos_ativos = db.query(Grupo).filter(
+        Grupo.unidade_id == usuario.unidade_id,
+        Grupo.ativo == True
+    ).count()
+    
+    usuarios_em_jornadas = db.query(UsuarioJornada).join(Jornada).filter(
+        Jornada.unidade_id == usuario.unidade_id,
+        UsuarioJornada.status == 'em_progresso'
+    ).count()
+    
+    questionarios_total = db.query(Questionario).filter(
+        Questionario.unidade_id == usuario.unidade_id
+    ).count()
+    
+    return {
+        "jornadas_ativas": jornadas_ativas,
+        "questionarios_respondidos": questionarios_total,
+        "grupos_ativos": grupos_ativos,
+        "usuarios_em_jornadas": usuarios_em_jornadas
+    }
+
+
+@app.get("/relatorios/loja")
+def relatorio_loja(usuario: Usuario = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    """Retorna dados para relatório da loja (estrutura inicial)"""
+    return {
+        "total_vendas": 0,
+        "receita_total": 0,
+        "produtos_vendidos": 0,
+        "mais_vendido": "-"
+    }
+
+
+@app.get("/relatorios/equipe")
+def relatorio_equipe(usuario: Usuario = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    """Retorna dados para relatório da equipe"""
+    instrutores = db.query(Instrutor).filter(
+        Instrutor.unidade_id == usuario.unidade_id
+    ).all()
+    
+    total_instrutores = len(instrutores)
+    
+    aulas_por_instrutor = {}
+    for inst in instrutores:
+        count = db.query(EventoAula).filter(EventoAula.instrutor_id == inst.id).count()
+        aulas_por_instrutor[inst.nome] = count
+    
+    total_aulas = sum(aulas_por_instrutor.values())
+    destaque = max(aulas_por_instrutor, key=aulas_por_instrutor.get) if aulas_por_instrutor else "-"
+    
+    return {
+        "total_instrutores": total_instrutores,
+        "horas_trabalhadas": total_aulas * 1,
+        "aulas_ministradas": total_aulas,
+        "destaque": destaque
+    }
+
+
+@app.get("/relatorios/contratos")
+def relatorio_contratos(usuario: Usuario = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """Retorna dados para relatório de contratos B2B"""
+    contratos = db.query(Contrato).filter(
+        Contrato.unidade_id == usuario.unidade_id
+    ).all()
+    
+    ativos = [c for c in contratos if c.status == "ativo"]
+    receita_mensal = sum([c.valor_mensal for c in ativos])
+    
+    hoje = datetime.utcnow()
+    em_risco = len([c for c in ativos if c.data_fim and (c.data_fim - hoje).days <= 30])
+    
+    renovacoes = len([c for c in contratos if c.renovacoes and c.renovacoes > 0])
+    
+    return {
+        "contratos_ativos": len(ativos),
+        "receita_mensal": receita_mensal,
+        "renovacoes": renovacoes,
+        "em_risco": em_risco
+    }
+
+
+@app.get("/relatorios/visitantes")
+def relatorio_visitantes(usuario: Usuario = Depends(get_current_user),
+                         db: Session = Depends(get_db)):
+    """Retorna dados para relatório de visitantes/leads"""
+    visitantes = db.query(Visitante).filter(
+        Visitante.unidade_id == usuario.unidade_id
+    ).all()
+    
+    total_leads = len(visitantes)
+    conversoes = len([v for v in visitantes if v.convertido])
+    taxa_conversao = round((conversoes / total_leads * 100), 1) if total_leads > 0 else 0
+    
+    origens = {}
+    for v in visitantes:
+        origem = v.origem or "Direto"
+        origens[origem] = origens.get(origem, 0) + 1
+    
+    origem_principal = max(origens, key=origens.get) if origens else "-"
+    
+    return {
+        "total_leads": total_leads,
+        "conversoes": conversoes,
+        "taxa_conversao": taxa_conversao,
+        "origem_principal": origem_principal
+    }
+
+
+@app.get("/relatorios/financeiro")
+def relatorio_financeiro(usuario: Usuario = Depends(get_current_user),
+                         db: Session = Depends(get_db)):
+    """Retorna dados para relatório financeiro"""
+    contratos = db.query(Contrato).filter(
+        Contrato.unidade_id == usuario.unidade_id,
+        Contrato.status == "ativo"
+    ).all()
+    
+    receita_b2b = sum([c.valor_mensal for c in contratos])
+    receita_b2c = 0
+    receita_total = receita_b2b + receita_b2c
+    
+    return {
+        "receita_total": receita_total,
+        "receita_b2b": receita_b2b,
+        "receita_b2c": receita_b2c,
+        "crescimento": 0
+    }
+
+
+@app.get("/relatorios/{tipo}/download")
+def download_relatorio(tipo: str, formato: str = "csv",
+                       data_inicio: str = None, data_fim: str = None,
+                       usuario: Usuario = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """Gera arquivo de download para relatórios"""
+    from io import BytesIO, StringIO
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib import colors
+    
+    data = []
+    headers = []
+    titulo = ""
+    
+    if tipo == "aulas":
+        titulo = "Relatório de Aulas"
+        headers = ["Data", "Aula", "Instrutor", "Sala", "Reservas", "Presenças", "Taxa"]
+        aulas = db.query(EventoAula).filter(EventoAula.unidade_id == usuario.unidade_id).limit(100).all()
+        for a in aulas:
+            instrutor = db.query(Instrutor).filter(Instrutor.id == a.instrutor_id).first()
+            sala = db.query(Sala).filter(Sala.id == a.sala_id).first()
+            reservas = db.query(ReservaAula).filter(ReservaAula.aula_id == a.id).count()
+            data.append([
+                a.data.strftime("%d/%m/%Y") if a.data else "",
+                a.nome,
+                instrutor.nome if instrutor else "-",
+                sala.nome if sala else "-",
+                reservas,
+                0,
+                "0%"
+            ])
+    
+    elif tipo == "automacao":
+        titulo = "Relatório de Automação"
+        headers = ["Tipo", "Nome", "Status", "Criado em"]
+        jornadas = db.query(Jornada).filter(Jornada.unidade_id == usuario.unidade_id).all()
+        for j in jornadas:
+            data.append([
+                "Jornada",
+                j.nome,
+                "Ativa" if j.ativa else "Inativa",
+                j.criado_em.strftime("%d/%m/%Y") if j.criado_em else ""
+            ])
+    
+    elif tipo == "contratos":
+        titulo = "Relatório de Contratos"
+        headers = ["Nome", "Valor Mensal", "Início", "Fim", "Status", "Limite Usuários"]
+        contratos = db.query(Contrato).filter(Contrato.unidade_id == usuario.unidade_id).all()
+        for c in contratos:
+            data.append([
+                c.nome,
+                f"R$ {c.valor_mensal:,.2f}",
+                c.data_inicio.strftime("%d/%m/%Y") if c.data_inicio else "",
+                c.data_fim.strftime("%d/%m/%Y") if c.data_fim else "",
+                c.status,
+                c.limite_usuarios
+            ])
+    
+    elif tipo == "equipe":
+        titulo = "Relatório da Equipe"
+        headers = ["Nome", "Email", "Especialidades"]
+        instrutores = db.query(Instrutor).filter(Instrutor.unidade_id == usuario.unidade_id).all()
+        for i in instrutores:
+            data.append([i.nome, i.email, i.especialidades or "-"])
+    
+    elif tipo == "visitantes":
+        titulo = "Relatório de Visitantes"
+        headers = ["Nome", "Email", "Telefone", "Origem", "Convertido"]
+        visitantes = db.query(Visitante).filter(Visitante.unidade_id == usuario.unidade_id).all()
+        for v in visitantes:
+            data.append([
+                v.nome,
+                v.email or "-",
+                v.telefone or "-",
+                v.origem or "Direto",
+                "Sim" if v.convertido else "Não"
+            ])
+    
+    elif tipo == "financeiro":
+        titulo = "Relatório Financeiro"
+        headers = ["Tipo", "Descrição", "Valor"]
+        contratos = db.query(Contrato).filter(
+            Contrato.unidade_id == usuario.unidade_id,
+            Contrato.status == "ativo"
+        ).all()
+        for c in contratos:
+            data.append(["B2B", c.nome, f"R$ {c.valor_mensal:,.2f}"])
+    
+    else:
+        raise HTTPException(status_code=400, detail="Tipo de relatório não suportado")
+    
+    if formato == "csv":
+        df = pd.DataFrame(data, columns=headers)
+        csv_path = f"/tmp/relatorio_{tipo}.csv"
+        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        
+        return FileResponse(
+            path=csv_path,
+            filename=f"relatorio_{tipo}_{datetime.utcnow().strftime('%Y%m%d')}.csv",
+            media_type="text/csv"
+        )
+    
+    elif formato == "pdf":
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph(titulo, styles['Heading1']))
+        elements.append(Paragraph(f"Gerado em: {datetime.utcnow().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+        elements.append(Paragraph("<br/><br/>", styles['Normal']))
+        
+        table_data = [headers] + data
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f2746')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e8e8e8')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f7fa')])
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        
+        buffer.seek(0)
+        pdf_path = f"/tmp/relatorio_{tipo}.pdf"
+        with open(pdf_path, 'wb') as f:
+            f.write(buffer.getvalue())
+        
+        return FileResponse(
+            path=pdf_path,
+            filename=f"relatorio_{tipo}_{datetime.utcnow().strftime('%Y%m%d')}.pdf",
+            media_type="application/pdf"
+        )
+    
+    raise HTTPException(status_code=400, detail="Formato não suportado")
