@@ -76,6 +76,9 @@ function navigateTo(event, page) {
         } else if (page === 'automacao') {
             // Mostrar view de jornadas por padrão
             switchAutomacaoView('jornadas');
+        } else if (page === 'painel') {
+            // Mostrar view de aulas por padrão no painel de relatórios
+            switchPainelView('aulas');
         } else if (page === 'contratos') {
             loadContratos();
         }
@@ -117,6 +120,9 @@ function navigateToPage(page) {
         } else if (page === 'automacao') {
             // Mostrar view de jornadas por padrão
             switchAutomacaoView('jornadas');
+        } else if (page === 'painel') {
+            // Mostrar view de aulas por padrão no painel de relatórios
+            switchPainelView('aulas');
         } else if (page === 'contratos') {
             loadContratos();
         }
