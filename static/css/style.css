@@ -10857,3 +10857,247 @@ textarea.form-control {
     }
 }
 
+/* ============================================
+   PAINEL DE RELATÓRIOS
+   ============================================ */
+
+.painel-page {
+    display: none;
+    padding: 1.5rem;
+}
+
+.painel-page.active {
+    display: block;
+}
+
+.relatorio-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.relatorio-filtros {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filtro-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filtro-grupo label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-small);
+}
+
+.filtro-datas {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.filtro-datas span {
+    color: var(--text-secondary);
+    font-size: var(--font-small);
+}
+
+.filtro-input {
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-body);
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.filtro-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn-filtrar {
+    padding: 0.6rem 1.25rem;
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.btn-filtrar:hover {
+    background: var(--btn-primary-hover);
+}
+
+.relatorio-acoes {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-download {
+    padding: 0.6rem 1.25rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    background: white;
+}
+
+.btn-download.csv {
+    color: #27ae60;
+    border-color: #27ae60;
+}
+
+.btn-download.csv:hover {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-download.pdf {
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.btn-download.pdf:hover {
+    background: #e74c3c;
+    color: white;
+}
+
+.relatorio-preview {
+    margin-top: 1.5rem;
+}
+
+.relatorio-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card > i {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+}
+
+.relatorio-tabela-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.relatorio-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-body);
+}
+
+.relatorio-tabela th,
+.relatorio-tabela td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.relatorio-tabela th {
+    background: var(--light-bg);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.relatorio-tabela tbody tr:hover {
+    background: rgba(98, 177, 202, 0.05);
+}
+
+.relatorio-tabela tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Responsive Painel */
+@media (max-width: 1024px) {
+    .relatorio-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .relatorio-filtros {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filtro-datas {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .relatorio-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .relatorio-acoes {
+        flex-direction: column;
+    }
+    
+    .btn-download {
+        justify-content: center;
+    }
+}
+

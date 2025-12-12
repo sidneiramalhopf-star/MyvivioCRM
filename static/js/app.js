@@ -464,6 +464,243 @@ function switchAutomacaoView(view, evt) {
     }
 }
 
+// ============================================
+// PAINEL DE RELATÓRIOS - Funções de Navegação
+// ============================================
+
+function switchPainelView(view, evt) {
+    console.log('switchPainelView:', view);
+    
+    document.querySelectorAll('.unified-menu-item').forEach(btn => btn.classList.remove('active'));
+    
+    if (evt) {
+        evt.target.closest('.unified-menu-item').classList.add('active');
+    } else {
+        const btnToActivate = document.querySelector(`.unified-menu-item[data-menu-id="${view}"]`);
+        if (btnToActivate) {
+            btnToActivate.classList.add('active');
+        }
+    }
+    
+    document.querySelectorAll('.painel-page').forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    const targetPage = document.getElementById(`painel-${view}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+    }
+    
+    // Carregar dados específicos de cada relatório
+    if (view === 'aulas') {
+        carregarRelatorioAulas();
+    } else if (view === 'automacao') {
+        carregarRelatorioAutomacao();
+    } else if (view === 'loja') {
+        carregarRelatorioLoja();
+    } else if (view === 'equipe') {
+        carregarRelatorioEquipe();
+    } else if (view === 'contratos') {
+        carregarRelatorioContratos();
+    } else if (view === 'visitantes') {
+        carregarRelatorioVisitantes();
+    } else if (view === 'financeiro') {
+        carregarRelatorioFinanceiro();
+    }
+}
+
+// Funções para carregar dados dos relatórios
+async function carregarRelatorioAulas() {
+    const dataInicio = document.getElementById('aulas-data-inicio')?.value || '';
+    const dataFim = document.getElementById('aulas-data-fim')?.value || '';
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/relatorios/aulas?data_inicio=${dataInicio}&data_fim=${dataFim}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-aulas-total').textContent = data.total_aulas || 0;
+            document.getElementById('stat-aulas-presencas').textContent = data.total_presencas || 0;
+            document.getElementById('stat-aulas-ocupacao').textContent = (data.taxa_ocupacao || 0) + '%';
+            document.getElementById('stat-aulas-cancelamentos').textContent = data.cancelamentos || 0;
+            
+            const tbody = document.getElementById('tbody-aulas');
+            if (tbody && data.aulas) {
+                tbody.innerHTML = data.aulas.map(a => `
+                    <tr>
+                        <td>${a.data}</td>
+                        <td>${a.nome}</td>
+                        <td>${a.instrutor}</td>
+                        <td>${a.sala}</td>
+                        <td>${a.reservas}</td>
+                        <td>${a.presencas}</td>
+                        <td>${a.taxa}%</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.log('Carregando dados de aulas...');
+    }
+}
+
+async function carregarRelatorioAutomacao() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/automacao', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-jornadas-ativas').textContent = data.jornadas_ativas || 0;
+            document.getElementById('stat-questionarios-resp').textContent = data.questionarios_respondidos || 0;
+            document.getElementById('stat-grupos-ativos').textContent = data.grupos_ativos || 0;
+            document.getElementById('stat-usuarios-jornadas').textContent = data.usuarios_em_jornadas || 0;
+        }
+    } catch (error) {
+        console.log('Carregando dados de automação...');
+    }
+}
+
+async function carregarRelatorioLoja() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/loja', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-vendas-total').textContent = data.total_vendas || 0;
+            document.getElementById('stat-receita-loja').textContent = 'R$ ' + (data.receita_total || 0).toLocaleString('pt-BR');
+            document.getElementById('stat-produtos-vendidos').textContent = data.produtos_vendidos || 0;
+            document.getElementById('stat-produto-top').textContent = data.mais_vendido || '-';
+        }
+    } catch (error) {
+        console.log('Carregando dados da loja...');
+    }
+}
+
+async function carregarRelatorioEquipe() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/equipe', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-instrutores-total').textContent = data.total_instrutores || 0;
+            document.getElementById('stat-horas-trabalhadas').textContent = (data.horas_trabalhadas || 0) + 'h';
+            document.getElementById('stat-aulas-ministradas').textContent = data.aulas_ministradas || 0;
+            document.getElementById('stat-instrutor-destaque').textContent = data.destaque || '-';
+        }
+    } catch (error) {
+        console.log('Carregando dados da equipe...');
+    }
+}
+
+async function carregarRelatorioContratos() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/contratos', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-contratos-ativos-rel').textContent = data.contratos_ativos || 0;
+            document.getElementById('stat-receita-contratos').textContent = 'R$ ' + (data.receita_mensal || 0).toLocaleString('pt-BR');
+            document.getElementById('stat-renovacoes').textContent = data.renovacoes || 0;
+            document.getElementById('stat-contratos-risco').textContent = data.em_risco || 0;
+        }
+    } catch (error) {
+        console.log('Carregando dados de contratos...');
+    }
+}
+
+async function carregarRelatorioVisitantes() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/visitantes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-leads-total').textContent = data.total_leads || 0;
+            document.getElementById('stat-conversoes').textContent = data.conversoes || 0;
+            document.getElementById('stat-taxa-conversao').textContent = (data.taxa_conversao || 0) + '%';
+            document.getElementById('stat-origem-principal').textContent = data.origem_principal || '-';
+        }
+    } catch (error) {
+        console.log('Carregando dados de visitantes...');
+    }
+}
+
+async function carregarRelatorioFinanceiro() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/relatorios/financeiro', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('stat-receita-total').textContent = 'R$ ' + (data.receita_total || 0).toLocaleString('pt-BR');
+            document.getElementById('stat-receita-b2b').textContent = 'R$ ' + (data.receita_b2b || 0).toLocaleString('pt-BR');
+            document.getElementById('stat-receita-b2c').textContent = 'R$ ' + (data.receita_b2c || 0).toLocaleString('pt-BR');
+            document.getElementById('stat-crescimento').textContent = (data.crescimento || 0) + '%';
+        }
+    } catch (error) {
+        console.log('Carregando dados financeiros...');
+    }
+}
+
+// Função para download de relatórios
+async function downloadRelatorio(tipo, formato) {
+    const token = localStorage.getItem('token');
+    
+    let dataInicio = '';
+    let dataFim = '';
+    
+    const inputInicio = document.getElementById(`${tipo}-data-inicio`) || document.getElementById(`${tipo}-rel-data-inicio`);
+    const inputFim = document.getElementById(`${tipo}-data-fim`) || document.getElementById(`${tipo}-rel-data-fim`);
+    
+    if (inputInicio) dataInicio = inputInicio.value;
+    if (inputFim) dataFim = inputFim.value;
+    
+    try {
+        const response = await fetch(`/relatorios/${tipo}/download?formato=${formato}&data_inicio=${dataInicio}&data_fim=${dataFim}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_${tipo}_${new Date().toISOString().split('T')[0]}.${formato}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+            showToast(`Relatório de ${tipo} exportado com sucesso!`, 'success');
+        } else {
+            showToast('Erro ao exportar relatório', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao baixar relatório:', error);
+        showToast('Erro ao exportar relatório', 'error');
+    }
+}
+
 async function loadJornadas() {
     // Carregar jornadas (mock data por enquanto)
     const jornadasGrid = document.getElementById('jornadas-grid');
@@ -2921,6 +3158,18 @@ const sidebarConfigs = {
             { id: 'grupos', icon: 'fa-users', label: 'Grupos', action: 'switchAutomacaoView' },
             { id: 'atividades', icon: 'fa-tasks', label: 'Atividades', action: 'switchAutomacaoView' },
             { id: 'ia', icon: 'fa-brain', label: 'Inteligência Artificial', action: 'switchAutomacaoView' }
+        ]
+    },
+    painel: {
+        title: 'Painel de Relatórios',
+        items: [
+            { id: 'aulas', icon: 'fa-chalkboard-user', label: 'Aulas', action: 'switchPainelView' },
+            { id: 'automacao', icon: 'fa-robot', label: 'Automação', action: 'switchPainelView' },
+            { id: 'loja', icon: 'fa-store', label: 'Loja', action: 'switchPainelView' },
+            { id: 'equipe', icon: 'fa-users-gear', label: 'Membros da Equipe', action: 'switchPainelView' },
+            { id: 'contratos', icon: 'fa-file-contract', label: 'Contratos', action: 'switchPainelView' },
+            { id: 'visitantes', icon: 'fa-user-plus', label: 'Visitantes', action: 'switchPainelView' },
+            { id: 'financeiro', icon: 'fa-coins', label: 'Financeiro', action: 'switchPainelView' }
         ]
     }
 };

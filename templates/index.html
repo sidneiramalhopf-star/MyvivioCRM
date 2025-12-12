@@ -110,6 +110,10 @@
                             <i class="fas fa-robot"></i>
                             <span>Automação</span>
                         </a>
+                        <a href="#" class="nav-item" onclick="navigateTo(event, 'painel')">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Painel</span>
+                        </a>
                         <div class="nav-divider"></div>
                         <a href="#" class="nav-item" onclick="navigateTo(event, 'config')">
                             <i class="fas fa-cog"></i>
@@ -2444,6 +2448,460 @@
                             <h2>Todos os Contratos</h2>
                             <div class="contratos-grid" id="contratos-grid">
                                 <!-- Cards de contratos serão carregados dinamicamente -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== PAINEL DE RELATÓRIOS ========== -->
+                    <div id="page-painel" class="page-content">
+                        <!-- Subtab Aulas -->
+                        <div id="painel-aulas" class="painel-page active">
+                            <div class="page-header">
+                                <h1><i class="fas fa-chalkboard-user"></i> Relatórios de Aulas</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="aulas-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="aulas-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioAulas()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('aulas', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('aulas', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-aulas">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-calendar-check"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-aulas-total">0</span>
+                                                <span class="stat-label">Total de Aulas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-users"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-aulas-presencas">0</span>
+                                                <span class="stat-label">Presenças Registradas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-percentage"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-aulas-ocupacao">0%</span>
+                                                <span class="stat-label">Taxa de Ocupação</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-user-xmark"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-aulas-cancelamentos">0</span>
+                                                <span class="stat-label">Cancelamentos</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="relatorio-tabela-container">
+                                        <table class="relatorio-tabela" id="tabela-aulas">
+                                            <thead>
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Aula</th>
+                                                    <th>Instrutor</th>
+                                                    <th>Sala</th>
+                                                    <th>Reservas</th>
+                                                    <th>Presenças</th>
+                                                    <th>Taxa</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-aulas">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Automação -->
+                        <div id="painel-automacao" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-robot"></i> Relatórios de Automação</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="automacao-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="automacao-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioAutomacao()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('automacao', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('automacao', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-automacao">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-route"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-jornadas-ativas">0</span>
+                                                <span class="stat-label">Jornadas Ativas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-clipboard-question"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-questionarios-resp">0</span>
+                                                <span class="stat-label">Questionários Respondidos</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-users"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-grupos-ativos">0</span>
+                                                <span class="stat-label">Grupos Ativos</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-user-check"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-usuarios-jornadas">0</span>
+                                                <span class="stat-label">Usuários em Jornadas</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Loja -->
+                        <div id="painel-loja" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-store"></i> Relatórios da Loja</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="loja-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="loja-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioLoja()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('loja', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('loja', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-loja">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-vendas-total">0</span>
+                                                <span class="stat-label">Total de Vendas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-receita-loja">R$ 0</span>
+                                                <span class="stat-label">Receita Total</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-box"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-produtos-vendidos">0</span>
+                                                <span class="stat-label">Produtos Vendidos</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-star"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-produto-top">-</span>
+                                                <span class="stat-label">Mais Vendido</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Equipe -->
+                        <div id="painel-equipe" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-users-gear"></i> Relatórios da Equipe</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="equipe-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="equipe-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioEquipe()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('equipe', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('equipe', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-equipe">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-user-tie"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-instrutores-total">0</span>
+                                                <span class="stat-label">Total de Instrutores</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-clock"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-horas-trabalhadas">0h</span>
+                                                <span class="stat-label">Horas Trabalhadas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-chalkboard-user"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-aulas-ministradas">0</span>
+                                                <span class="stat-label">Aulas Ministradas</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-trophy"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-instrutor-destaque">-</span>
+                                                <span class="stat-label">Destaque do Mês</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Contratos -->
+                        <div id="painel-contratos" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-file-contract"></i> Relatórios de Contratos</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="contratos-rel-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="contratos-rel-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioContratos()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('contratos', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('contratos', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-contratos">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-file-signature"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-contratos-ativos-rel">0</span>
+                                                <span class="stat-label">Contratos Ativos</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-money-bill-trend-up"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-receita-contratos">R$ 0</span>
+                                                <span class="stat-label">Receita Mensal B2B</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-rotate"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-renovacoes">0</span>
+                                                <span class="stat-label">Renovações no Período</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-triangle-exclamation"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-contratos-risco">0</span>
+                                                <span class="stat-label">Em Risco</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Visitantes -->
+                        <div id="painel-visitantes" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-user-plus"></i> Relatórios de Visitantes</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="visitantes-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="visitantes-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioVisitantes()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('visitantes', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('visitantes', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-visitantes">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-user-plus"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-leads-total">0</span>
+                                                <span class="stat-label">Total de Leads</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-user-check"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-conversoes">0</span>
+                                                <span class="stat-label">Conversões</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-percentage"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-taxa-conversao">0%</span>
+                                                <span class="stat-label">Taxa de Conversão</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-bullseye"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-origem-principal">-</span>
+                                                <span class="stat-label">Origem Principal</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab Financeiro -->
+                        <div id="painel-financeiro" class="painel-page">
+                            <div class="page-header">
+                                <h1><i class="fas fa-coins"></i> Relatórios Financeiros</h1>
+                            </div>
+                            <div class="relatorio-container">
+                                <div class="relatorio-filtros">
+                                    <div class="filtro-grupo">
+                                        <label>Período</label>
+                                        <div class="filtro-datas">
+                                            <input type="date" id="financeiro-data-inicio" class="filtro-input">
+                                            <span>até</span>
+                                            <input type="date" id="financeiro-data-fim" class="filtro-input">
+                                        </div>
+                                    </div>
+                                    <button class="btn-filtrar" onclick="carregarRelatorioFinanceiro()">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                </div>
+                                <div class="relatorio-acoes">
+                                    <button class="btn-download csv" onclick="downloadRelatorio('financeiro', 'csv')">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn-download pdf" onclick="downloadRelatorio('financeiro', 'pdf')">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                                <div class="relatorio-preview" id="preview-financeiro">
+                                    <div class="relatorio-stats">
+                                        <div class="stat-card">
+                                            <i class="fas fa-wallet"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-receita-total">R$ 0</span>
+                                                <span class="stat-label">Receita Total</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-building"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-receita-b2b">R$ 0</span>
+                                                <span class="stat-label">Receita B2B</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-user"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-receita-b2c">R$ 0</span>
+                                                <span class="stat-label">Receita B2C</span>
+                                            </div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <i class="fas fa-chart-line"></i>
+                                            <div class="stat-info">
+                                                <span class="stat-value" id="stat-crescimento">0%</span>
+                                                <span class="stat-label">Crescimento</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
