@@ -9,6 +9,64 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedLogo();
 });
 
+async function authFetch(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        handleSessionExpired();
+        throw new Error('Não autenticado');
+    }
+    
+    const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+    };
+    
+    if (options.body && !(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+    
+    try {
+        const response = await fetch(url, { ...options, headers });
+        
+        if (response.status === 401) {
+            handleSessionExpired();
+            throw new Error('Sessão expirada');
+        }
+        
+        return response;
+    } catch (error) {
+        if (error.message === 'Sessão expirada' || error.message === 'Não autenticado') {
+            throw error;
+        }
+        console.error('Erro de rede:', error);
+        throw error;
+    }
+}
+
+function handleSessionExpired() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    authToken = null;
+    currentUser = null;
+    
+    showToast('Sua sessão expirou. Faça login novamente.', 'warning');
+    
+    document.getElementById('dashboard-section').classList.remove('active');
+    document.getElementById('login-section').classList.add('active');
+}
+
+function isAdmin() {
+    return currentUser && (currentUser.tipo === 'admin' || currentUser.tipo === 'gerente');
+}
+
+function updateMenuVisibility() {
+    const adminOnlyItems = document.querySelectorAll('.admin-only');
+    adminOnlyItems.forEach(item => {
+        item.style.display = isAdmin() ? 'flex' : 'none';
+    });
+}
+
 function setupEventListeners() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -238,27 +296,22 @@ async function loadDashboardData() {
     if (!authToken) return;
     
     try {
-        const statsResponse = await fetch(`${API_BASE}/stats/overview`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const statsResponse = await authFetch(`${API_BASE}/stats/overview`);
         if (statsResponse.ok) {
             const stats = await statsResponse.json();
             updateStats(stats);
         }
 
-        const metricasResponse = await fetch(`${API_BASE}/metricas/ia?unidade_id=1`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const unidadeId = currentUser?.unidade_id || 1;
+        const metricasResponse = await authFetch(`${API_BASE}/metricas/ia?unidade_id=${unidadeId}`);
         if (metricasResponse.ok) {
             const metricas = await metricasResponse.json();
             updateMetrics(metricas);
         }
     } catch (error) {
-        console.error('Erro ao carregar dados do dashboard', error);
+        if (error.message !== 'Sessão expirada' && error.message !== 'Não autenticado') {
+            console.error('Erro ao carregar dados do dashboard', error);
+        }
     }
 }
 
@@ -266,11 +319,7 @@ async function loadDayToDayData() {
     if (!authToken) return;
     
     try {
-        const agendasResponse = await fetch(`${API_BASE}/agendas/historico`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
+        const agendasResponse = await authFetch(`${API_BASE}/agendas/historico`);
         
         if (agendasResponse.ok) {
             const agendas = await agendasResponse.json();
@@ -3069,12 +3118,42 @@ async function concluirAgenda(id) {
     }
 }
 
-function checkAuth() {
+async function checkAuth() {
     const token = localStorage.getItem('authToken');
+    const savedUser = localStorage.getItem('user');
+    
     if (token) {
         authToken = token;
-        showDashboard();
-        loadDashboardData();
+        
+        if (savedUser) {
+            try {
+                currentUser = JSON.parse(savedUser);
+            } catch (e) {
+                currentUser = null;
+            }
+        }
+        
+        try {
+            const response = await fetch(`${API_BASE}/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                currentUser = await response.json();
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                showDashboard();
+                updateMenuVisibility();
+                loadDashboardData();
+            } else if (response.status === 401) {
+                handleSessionExpired();
+            }
+        } catch (error) {
+            if (savedUser) {
+                showDashboard();
+                updateMenuVisibility();
+                loadDashboardData();
+            }
+        }
     }
 }
 
@@ -3088,6 +3167,8 @@ function showDashboard() {
             el.textContent = currentUser.nome || currentUser.email.split('@')[0];
         });
     }
+    
+    updateMenuVisibility();
 }
 
 function logout() {
