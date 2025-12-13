@@ -4860,34 +4860,68 @@ function renderCalendarioSemanal() {
     renderAulasSemanais();
 }
 
-// Renderizar as aulas no grid
-function renderAulasSemanais() {
-    if (!window.mockData || !window.mockData.aulasSemanais) return;
+// Buscar aulas do backend
+async function carregarAulasSemanaisDoBackend() {
+    if (!authToken) return [];
     
     const inicio = getStartOfWeek(semanaAtual);
     const fim = getEndOfWeek(semanaAtual);
     
-    // Formatar datas para comparação (YYYY-MM-DD) usando data local
     const inicioStr = formatarDataLocal(inicio);
     const fimStr = formatarDataLocal(fim);
     
-    // Filtrar aulas da semana atual (comparar strings de data)
-    const aulas = window.mockData.aulasSemanais.filter(aula => {
-        return aula.data >= inicioStr && aula.data <= fimStr;
-    });
-    
+    try {
+        const response = await fetch(`${API_BASE}/aulas?data_inicio=${inicioStr}&data_fim=${fimStr}T23:59:59`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const aulas = await response.json();
+            return aulas.map(a => {
+                const dataHora = new Date(a.data_hora);
+                const horaInicio = `${String(dataHora.getHours()).padStart(2, '0')}:${String(dataHora.getMinutes()).padStart(2, '0')}`;
+                const horaFim = calcularHoraFim(dataHora, a.duracao_minutos || 60);
+                return {
+                    id: a.id,
+                    tipo: a.nome_aula,
+                    instrutor: a.instrutor || 'Sem instrutor',
+                    sala: a.sala || 'Sem sala',
+                    data: formatarDataLocal(dataHora),
+                    horario_inicio: horaInicio,
+                    horario_fim: horaFim,
+                    capacidade: a.limite_inscricoes || 20,
+                    inscritos: a.total_reservas || 0,
+                    duracao_minutos: a.duracao_minutos || 60,
+                    descricao: a.descricao
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar aulas:', error);
+    }
+    return [];
+}
+
+function calcularHoraFim(dataHora, duracaoMinutos) {
+    const fim = new Date(dataHora.getTime() + duracaoMinutos * 60000);
+    return `${String(fim.getHours()).padStart(2, '0')}:${String(fim.getMinutes()).padStart(2, '0')}`;
+}
+
+// Renderizar as aulas no grid
+async function renderAulasSemanais() {
+    const aulas = await carregarAulasSemanaisDoBackend();
     aulasSemanaisCache = [...aulas];
     
     // Limpar aulas antigas
     document.querySelectorAll('.aula-bloco').forEach(bloco => bloco.remove());
     
+    if (aulas.length === 0) return;
+    
     aulas.forEach(aula => {
-        // Buscar célula pela data real, não apenas dia da semana
         const celula = document.querySelector(`.dia-celula[data-date="${aula.data}"][data-horario="${aula.horario_inicio}"]`);
         if (!celula) return;
         
-        const tipoAula = window.mockData.tiposAula.find(t => t.nome === aula.tipo);
-        const cor = tipoAula ? tipoAula.cor : '#62b1ca';
+        const cor = '#62b1ca';
         
         const blocoDiv = document.createElement('div');
         blocoDiv.className = 'aula-bloco';
@@ -4897,7 +4931,7 @@ function renderAulasSemanais() {
             clicarAulaSemanal(aula.id);
         };
         
-        const percentual = Math.round((aula.inscritos / aula.capacidade) * 100);
+        const percentual = aula.capacidade > 0 ? Math.round((aula.inscritos / aula.capacidade) * 100) : 0;
         
         blocoDiv.innerHTML = `
             <div>
@@ -5182,8 +5216,8 @@ function preencherFormularioAula(aula) {
     document.getElementById('modal-capacidade-max').value = aula.capacidade || '20';
 }
 
-// Salvar aula (criar ou editar)
-function salvarAula() {
+// Salvar aula agendada (criar ou editar no calendário)
+async function salvarAulaAgendamento() {
     const dados = {
         tipo: document.getElementById('modal-tipo-aula').value,
         instrutor: document.getElementById('modal-instrutor').value,
@@ -5197,47 +5231,102 @@ function salvarAula() {
         inscritos: aulaEditando ? aulaEditando.inscritos : 0
     };
     
-    // Validações básicas
-    if (!dados.tipo || !dados.instrutor || !dados.sala || !dados.data || !dados.horario_inicio || !dados.horario_fim) {
+    if (!dados.tipo || !dados.data || !dados.horario_inicio) {
         showToast('Preencha todos os campos obrigatórios', 'error');
         return;
     }
     
-    if (aulaEditando) {
-        // Editar aula existente
-        const index = aulasSemanaisCache.findIndex(a => a.id === aulaEditando.id);
-        if (index !== -1) {
-            aulasSemanaisCache[index] = { ...aulaEditando, ...dados };
-            window.mockData.aulasSemanais = [...aulasSemanaisCache];
-            showToast('Aula atualizada com sucesso!', 'success');
-        }
-    } else {
-        // Criar nova aula
-        const novaAula = {
-            id: `sem_${Date.now()}`,
-            ...dados,
-            dia_semana: new Date(dados.data).getDay()
-        };
-        aulasSemanaisCache.push(novaAula);
-        window.mockData.aulasSemanais = [...aulasSemanaisCache];
-        showToast('Aula criada com sucesso!', 'success');
-    }
+    const dataHora = `${dados.data}T${dados.horario_inicio}:00`;
+    const duracaoMinutos = calcularDuracaoMinutos(dados.horario_inicio, dados.horario_fim);
     
-    renderAulasSemanais();
-    closeModalAula();
+    try {
+        if (aulaEditando && aulaEditando.id) {
+            const params = new URLSearchParams({
+                nome_aula: dados.tipo,
+                data_hora: dataHora,
+                duracao_minutos: duracaoMinutos.toString(),
+                limite_inscricoes: dados.capacidade.toString(),
+                recorrente: dados.recorrente.toString()
+            });
+            
+            const response = await fetch(`${API_BASE}/aulas/${aulaEditando.id}?${params}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            
+            if (response.ok) {
+                showToast('Aula atualizada com sucesso!', 'success');
+            } else {
+                const error = await response.json();
+                showToast(error.detail || 'Erro ao atualizar aula', 'error');
+                return;
+            }
+        } else {
+            const params = new URLSearchParams({
+                nome_aula: dados.tipo,
+                descricao: dados.modo || 'Aula',
+                instrutor_id: '1',
+                sala_id: '1',
+                data_hora: dataHora,
+                duracao_minutos: duracaoMinutos.toString(),
+                limite_inscricoes: dados.capacidade.toString(),
+                recorrente: dados.recorrente.toString()
+            });
+            
+            const response = await fetch(`${API_BASE}/aulas/criar?${params}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            
+            if (response.ok) {
+                showToast('Aula criada com sucesso!', 'success');
+            } else {
+                const error = await response.json();
+                showToast(error.detail || 'Erro ao criar aula', 'error');
+                return;
+            }
+        }
+        
+        await renderAulasSemanais();
+        await renderCalendarioSemanalAulas();
+        closeModalAula();
+    } catch (error) {
+        console.error('Erro ao salvar aula:', error);
+        showToast('Erro de conexão ao salvar aula', 'error');
+    }
 }
 
-// Deletar aula
-function deletarAula() {
+function calcularDuracaoMinutos(horaInicio, horaFim) {
+    if (!horaInicio || !horaFim) return 60;
+    const [hI, mI] = horaInicio.split(':').map(Number);
+    const [hF, mF] = horaFim.split(':').map(Number);
+    return ((hF * 60 + mF) - (hI * 60 + mI)) || 60;
+}
+
+// Deletar aula agendada (do calendário)
+async function deletarAulaAgendamento() {
     if (!aulaEditando) return;
     
-    if (confirm(`Tem certeza que deseja deletar a aula de ${aulaEditando.tipo}?`)) {
-        aulasSemanaisCache = aulasSemanaisCache.filter(a => a.id !== aulaEditando.id);
-        window.mockData.aulasSemanais = [...aulasSemanaisCache];
-        
-        showToast('Aula deletada com sucesso!', 'success');
-        renderAulasSemanais();
-        closeModalAula();
+    if (confirm(`Tem certeza que deseja deletar a aula "${aulaEditando.tipo}"?`)) {
+        try {
+            const response = await fetch(`${API_BASE}/aulas/${aulaEditando.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            
+            if (response.ok) {
+                showToast('Aula deletada com sucesso!', 'success');
+                await renderAulasSemanais();
+                await renderCalendarioSemanalAulas();
+                closeModalAula();
+            } else {
+                const error = await response.json();
+                showToast(error.detail || 'Erro ao deletar aula', 'error');
+            }
+        } catch (error) {
+            console.error('Erro ao deletar aula:', error);
+            showToast('Erro de conexão ao deletar aula', 'error');
+        }
     }
 }
 
@@ -5298,10 +5387,51 @@ function switchAulasTab(tab) {
     }
 }
 
+// Buscar aulas para a grade do backend
+async function carregarAulasParaGradeDoBackend() {
+    if (!authToken) return [];
+    
+    const inicio = getStartOfWeek(semanaAulasAndamento);
+    const fim = getEndOfWeek(semanaAulasAndamento);
+    
+    const inicioStr = formatarDataLocal(inicio);
+    const fimStr = formatarDataLocal(fim);
+    
+    try {
+        const response = await fetch(`${API_BASE}/aulas?data_inicio=${inicioStr}&data_fim=${fimStr}T23:59:59`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (response.ok) {
+            const aulas = await response.json();
+            return aulas.map(a => {
+                const dataHora = new Date(a.data_hora);
+                const horaInicio = `${String(dataHora.getHours()).padStart(2, '0')}:${String(dataHora.getMinutes()).padStart(2, '0')}`;
+                const horaFim = calcularHoraFim(dataHora, a.duracao_minutos || 60);
+                return {
+                    id: a.id,
+                    tipo: a.nome_aula,
+                    instrutor: a.instrutor || 'Instrutor',
+                    sala: a.sala || 'Sala',
+                    data: dataHora,
+                    horario_inicio: horaInicio,
+                    horario_fim: horaFim,
+                    capacidade: a.limite_inscricoes || 20,
+                    inscritos: a.total_reservas || 0,
+                    duracao: a.duracao_minutos || 60
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar aulas para grade:', error);
+    }
+    return [];
+}
+
 // Renderizar Grade VIVIO - Horários de 6h a 22h (hora em hora)
-function renderCalendarioSemanalAulas() {
-    // Obter aulas do mockData
-    const aulas = window.mockData?.aulasSemanais || [];
+async function renderCalendarioSemanalAulas() {
+    // Buscar aulas do backend
+    const aulas = await carregarAulasParaGradeDoBackend();
     
     // Calcular início da semana (domingo)
     const inicioSemana = getStartOfWeek(semanaAulasAndamento);

@@ -1700,6 +1700,54 @@ def listar_eventos_calendario(data_inicio: Optional[str] = None,
     } for e in eventos]
 
 
+@app.put("/calendario/eventos/{evento_id}")
+def atualizar_evento_calendario(evento_id: int,
+                                titulo: str = None,
+                                descricao: str = None,
+                                data_inicio: str = None,
+                                data_fim: str = None,
+                                tipo_evento: str = None,
+                                lembrete: bool = None,
+                                cor: str = None,
+                                usuario: Usuario = Depends(get_current_user),
+                                db: Session = Depends(get_db)):
+    evento = db.query(EventoCalendario).filter(
+        EventoCalendario.id == evento_id,
+        EventoCalendario.usuario_id == usuario.id).first()
+
+    if not evento:
+        raise HTTPException(status_code=404, detail="Evento não encontrado")
+
+    if titulo is not None:
+        evento.titulo = titulo
+    if descricao is not None:
+        evento.descricao = descricao
+    if data_inicio is not None:
+        evento.data_inicio = datetime.fromisoformat(data_inicio)
+    if data_fim is not None:
+        evento.data_fim = datetime.fromisoformat(data_fim)
+    if tipo_evento is not None:
+        evento.tipo_evento = tipo_evento
+    if lembrete is not None:
+        evento.lembrete = lembrete
+    if cor is not None:
+        evento.cor = cor
+
+    db.commit()
+    return {
+        "mensagem": "Evento atualizado com sucesso!",
+        "id": evento.id,
+        "titulo": evento.titulo,
+        "descricao": evento.descricao,
+        "data_inicio": evento.data_inicio.isoformat() if evento.data_inicio else None,
+        "data_fim": evento.data_fim.isoformat() if evento.data_fim else None,
+        "tipo_evento": evento.tipo_evento,
+        "status": evento.status,
+        "lembrete": evento.lembrete,
+        "cor": evento.cor
+    }
+
+
 @app.put("/calendario/eventos/{evento_id}/marcar-cumprida")
 def marcar_evento_cumprida(evento_id: int,
                            usuario: Usuario = Depends(get_current_user),
@@ -1867,6 +1915,63 @@ def listar_aulas(sala_id: Optional[int] = None,
         "total_reservas": len([r for r in a.reservas if not r.cancelada]),
         "foto_url": a.foto_url
     } for a in aulas]
+
+
+@app.put("/aulas/{aula_id}")
+def atualizar_aula(aula_id: int,
+                   nome_aula: str = None,
+                   descricao: str = None,
+                   instrutor_id: int = None,
+                   sala_id: int = None,
+                   data_hora: str = None,
+                   duracao_minutos: int = None,
+                   limite_inscricoes: int = None,
+                   recorrente: bool = None,
+                   usuario: Usuario = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+
+    if nome_aula is not None:
+        aula.nome_aula = nome_aula
+    if descricao is not None:
+        aula.descricao = descricao
+    if instrutor_id is not None:
+        aula.instrutor_id = instrutor_id
+    if sala_id is not None:
+        aula.sala_id = sala_id
+    if data_hora is not None:
+        aula.data_hora = datetime.fromisoformat(data_hora)
+    if duracao_minutos is not None:
+        aula.duracao_minutos = duracao_minutos
+    if limite_inscricoes is not None:
+        aula.limite_inscricoes = limite_inscricoes
+    if recorrente is not None:
+        aula.recorrente = recorrente
+
+    db.commit()
+    return {
+        "mensagem": "Aula atualizada com sucesso!",
+        "id": aula.id,
+        "nome_aula": aula.nome_aula,
+        "instrutor": aula.instrutor.nome if aula.instrutor else None,
+        "sala": aula.sala.nome if aula.sala else None,
+        "data_hora": aula.data_hora.isoformat() if aula.data_hora else None
+    }
+
+
+@app.delete("/aulas/{aula_id}")
+def deletar_aula(aula_id: int,
+                 usuario: Usuario = Depends(get_current_user),
+                 db: Session = Depends(get_db)):
+    aula = db.query(EventoAula).filter(EventoAula.id == aula_id).first()
+    if not aula:
+        raise HTTPException(status_code=404, detail="Aula não encontrada")
+
+    aula.ativa = False
+    db.commit()
+    return {"mensagem": "Aula removida com sucesso!"}
 
 
 # ============================================================
