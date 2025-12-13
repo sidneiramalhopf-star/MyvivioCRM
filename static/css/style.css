@@ -10957,6 +10957,130 @@ textarea.form-control {
 }
 
 /* ============================================
+   CONTATOS - ACTIONS MENU & MODAL
+   ============================================ */
+
+.contato-actions {
+    position: relative;
+}
+
+.contato-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.contato-menu.active {
+    display: block;
+}
+
+.contato-menu button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: var(--font-body);
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+
+.contato-menu button:hover {
+    background: var(--hover-bg);
+}
+
+.contato-menu button i {
+    width: 16px;
+    color: var(--text-secondary);
+}
+
+.contato-menu button:last-child:hover {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
+.contato-menu button:last-child:hover i {
+    color: #dc3545;
+}
+
+.modal-contato {
+    max-width: 480px;
+    width: 90%;
+}
+
+.modal-contato .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.modal-contato .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-contato .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.modal-contato .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: var(--font-body);
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.modal-contato .form-control:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+}
+
+.modal-contato .form-text {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.modal-contato .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.badge-medio {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.avatar.inativo {
+    opacity: 0.5;
+    background: #9ca3af;
+}
+
+/* ============================================
    PAINEL DE RELATÓRIOS
    ============================================ */
 

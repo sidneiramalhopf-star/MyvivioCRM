@@ -142,6 +142,8 @@ function navigateTo(event, page) {
             switchConfiguracaoView('loja');
         } else if (page === 'contratos') {
             loadContratos();
+        } else if (page === 'pessoas') {
+            carregarContatos();
         }
     }
 }
@@ -189,6 +191,8 @@ function navigateToPage(page) {
             switchConfiguracaoView('loja');
         } else if (page === 'contratos') {
             loadContratos();
+        } else if (page === 'pessoas') {
+            carregarContatos();
         }
     }
 }
@@ -5830,6 +5834,330 @@ function abrirPessoasTab(tabName, evt) {
     const targetTab = document.getElementById(`tab-${tabName}`);
     if (targetTab) {
         targetTab.classList.add('active');
+    }
+    
+    // Carregar dados quando tab Contatos for aberta
+    if (tabName === 'contatos') {
+        carregarContatos();
+    }
+}
+
+// ============================================
+// CONTATOS - CRUD OPERATIONS
+// ============================================
+
+let contatosCache = [];
+
+async function carregarContatos() {
+    const tbody = document.getElementById('contatos-table-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = `
+        <tr class="loading-row">
+            <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin"></i> Carregando contatos...
+            </td>
+        </tr>
+    `;
+    
+    try {
+        const response = await authFetch(`${API_BASE}/usuarios`);
+        if (response.ok) {
+            const usuarios = await response.json();
+            contatosCache = usuarios;
+            renderizarContatos(usuarios);
+            atualizarEstatisticasContatos(usuarios);
+        } else {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #dc3545;">
+                        Erro ao carregar contatos
+                    </td>
+                </tr>
+            `;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar contatos:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: #dc3545;">
+                    Erro de conexão
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function renderizarContatos(usuarios) {
+    const tbody = document.getElementById('contatos-table-body');
+    if (!tbody) return;
+    
+    if (usuarios.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    Nenhum contato cadastrado
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = usuarios.map(u => {
+        const iniciais = obterIniciais(u.nome);
+        const badgeRisco = obterBadgeRisco(u.risco_churn);
+        const tipoFormatado = formatarTipo(u.tipo);
+        const ultimoAcesso = formatarDataRelativa(u.ultima_atividade);
+        const dataCadastro = formatarData(u.data_cadastro);
+        
+        return `
+            <tr data-id="${u.id}">
+                <td>
+                    <div class="contato-info">
+                        <div class="avatar ${u.ativo ? '' : 'inativo'}">${iniciais}</div>
+                        <span>${u.nome}</span>
+                    </div>
+                </td>
+                <td>${badgeRisco}</td>
+                <td>0</td>
+                <td>${tipoFormatado}</td>
+                <td>${dataCadastro}</td>
+                <td>${ultimoAcesso}</td>
+                <td>
+                    <div class="contato-actions">
+                        <button class="btn-menu" onclick="toggleMenuContato(event, ${u.id})">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <div class="contato-menu" id="menu-contato-${u.id}">
+                            <button onclick="editarContato(${u.id})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button onclick="deletarContato(${u.id})">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function obterIniciais(nome) {
+    if (!nome) return '??';
+    const partes = nome.split(' ');
+    if (partes.length >= 2) {
+        return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+    }
+    return nome.substring(0, 2).toUpperCase();
+}
+
+function obterBadgeRisco(risco) {
+    if (risco === undefined || risco === null) risco = 0;
+    if (risco >= 0.7) {
+        return '<span class="badge badge-alto">ALTO</span>';
+    } else if (risco >= 0.4) {
+        return '<span class="badge badge-medio">MÉDIO</span>';
+    }
+    return '<span class="badge badge-baixo">BAIXO</span>';
+}
+
+function formatarTipo(tipo) {
+    const tipos = {
+        'aluno': 'Aluno',
+        'instrutor': 'Instrutor',
+        'gerente': 'Gerente',
+        'admin': 'Administrador'
+    };
+    return tipos[tipo] || tipo || 'Aluno';
+}
+
+function formatarDataRelativa(dataStr) {
+    if (!dataStr) return 'Nunca';
+    const data = new Date(dataStr);
+    const agora = new Date();
+    const diff = agora - data;
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (dias === 0) return 'Hoje';
+    if (dias === 1) return 'Ontem';
+    if (dias < 7) return `${dias} dias atrás`;
+    if (dias < 30) return `${Math.floor(dias / 7)} semanas atrás`;
+    if (dias < 365) return `${Math.floor(dias / 30)} meses atrás`;
+    return `${Math.floor(dias / 365)} anos atrás`;
+}
+
+function formatarData(dataStr) {
+    if (!dataStr) return '-';
+    const data = new Date(dataStr);
+    return data.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function atualizarEstatisticasContatos(usuarios) {
+    const total = usuarios.length;
+    const ativos = usuarios.filter(u => u.ativo).length;
+    const emRisco = usuarios.filter(u => u.risco_churn >= 0.7).length;
+    
+    const totalEl = document.getElementById('total-contatos');
+    const ativosEl = document.getElementById('contatos-ativos');
+    const riscoEl = document.getElementById('contatos-risco');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (ativosEl) ativosEl.textContent = ativos;
+    if (riscoEl) riscoEl.textContent = emRisco;
+}
+
+function filtrarContatos() {
+    const busca = document.getElementById('contatos-search')?.value.toLowerCase() || '';
+    const filtroTipo = document.getElementById('contatos-filter')?.value || '';
+    
+    let usuariosFiltrados = contatosCache;
+    
+    if (busca) {
+        usuariosFiltrados = usuariosFiltrados.filter(u => 
+            u.nome.toLowerCase().includes(busca) || 
+            u.email.toLowerCase().includes(busca)
+        );
+    }
+    
+    if (filtroTipo) {
+        usuariosFiltrados = usuariosFiltrados.filter(u => u.tipo === filtroTipo);
+    }
+    
+    renderizarContatos(usuariosFiltrados);
+}
+
+function toggleFiltrosAvancados() {
+    showToast('Filtros avançados em desenvolvimento', 'info');
+}
+
+function toggleMenuContato(event, id) {
+    event.stopPropagation();
+    
+    // Fechar todos os menus abertos
+    document.querySelectorAll('.contato-menu').forEach(m => m.classList.remove('active'));
+    
+    const menu = document.getElementById(`menu-contato-${id}`);
+    if (menu) {
+        menu.classList.toggle('active');
+    }
+    
+    // Fechar ao clicar fora
+    document.addEventListener('click', function closeMenu() {
+        document.querySelectorAll('.contato-menu').forEach(m => m.classList.remove('active'));
+        document.removeEventListener('click', closeMenu);
+    }, { once: true });
+}
+
+function abrirModalNovoContato() {
+    const modal = document.getElementById('modal-contato');
+    if (!modal) return;
+    
+    document.getElementById('modal-contato-titulo').textContent = 'Novo Contato';
+    document.getElementById('contato-id').value = '';
+    document.getElementById('contato-nome').value = '';
+    document.getElementById('contato-email').value = '';
+    document.getElementById('contato-tipo').value = 'aluno';
+    document.getElementById('contato-senha').value = '';
+    document.getElementById('contato-senha').required = true;
+    document.getElementById('senha-hint').textContent = 'Obrigatório para novos contatos';
+    
+    modal.style.display = 'flex';
+}
+
+function fecharModalContato() {
+    const modal = document.getElementById('modal-contato');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function editarContato(id) {
+    const usuario = contatosCache.find(u => u.id === id);
+    if (!usuario) return;
+    
+    const modal = document.getElementById('modal-contato');
+    if (!modal) return;
+    
+    document.getElementById('modal-contato-titulo').textContent = 'Editar Contato';
+    document.getElementById('contato-id').value = usuario.id;
+    document.getElementById('contato-nome').value = usuario.nome;
+    document.getElementById('contato-email').value = usuario.email;
+    document.getElementById('contato-tipo').value = usuario.tipo || 'aluno';
+    document.getElementById('contato-senha').value = '';
+    document.getElementById('contato-senha').required = false;
+    document.getElementById('senha-hint').textContent = 'Deixe em branco para manter a senha atual';
+    
+    modal.style.display = 'flex';
+}
+
+async function salvarContato(event) {
+    event.preventDefault();
+    
+    const id = document.getElementById('contato-id').value;
+    const nome = document.getElementById('contato-nome').value;
+    const email = document.getElementById('contato-email').value;
+    const tipo = document.getElementById('contato-tipo').value;
+    const senha = document.getElementById('contato-senha').value;
+    
+    try {
+        let response;
+        
+        if (id) {
+            // Editar
+            const params = new URLSearchParams({ nome, email, tipo });
+            response = await authFetch(`${API_BASE}/usuarios/${id}?${params}`, {
+                method: 'PUT'
+            });
+        } else {
+            // Criar
+            if (!senha) {
+                showToast('Senha é obrigatória para novos contatos', 'error');
+                return;
+            }
+            const params = new URLSearchParams({ nome, email, senha, tipo });
+            response = await authFetch(`${API_BASE}/usuarios?${params}`, {
+                method: 'POST'
+            });
+        }
+        
+        if (response.ok) {
+            showToast(id ? 'Contato atualizado com sucesso!' : 'Contato criado com sucesso!', 'success');
+            fecharModalContato();
+            carregarContatos();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao salvar contato', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar contato:', error);
+        showToast('Erro ao salvar contato', 'error');
+    }
+}
+
+async function deletarContato(id) {
+    const usuario = contatosCache.find(u => u.id === id);
+    if (!usuario) return;
+    
+    if (!confirm(`Tem certeza que deseja excluir o contato "${usuario.nome}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await authFetch(`${API_BASE}/usuarios/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            showToast('Contato excluído com sucesso!', 'success');
+            carregarContatos();
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao excluir contato', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir contato:', error);
+        showToast('Erro ao excluir contato', 'error');
     }
 }
 

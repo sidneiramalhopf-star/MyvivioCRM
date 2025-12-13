@@ -666,15 +666,18 @@
                                         <div class="contatos-actions">
                                             <div class="search-input">
                                                 <i class="fas fa-search"></i>
-                                                <input type="text" placeholder="Buscar">
+                                                <input type="text" placeholder="Buscar" id="contatos-search" oninput="filtrarContatos()">
                                             </div>
-                                            <select class="filter-select">
-                                                <option>Filtros rápidos</option>
+                                            <select class="filter-select" id="contatos-filter" onchange="filtrarContatos()">
+                                                <option value="">Filtros rápidos</option>
+                                                <option value="aluno">Alunos</option>
+                                                <option value="admin">Administradores</option>
+                                                <option value="instrutor">Instrutores</option>
                                             </select>
-                                            <button class="btn-filter">
+                                            <button class="btn-filter" onclick="toggleFiltrosAvancados()">
                                                 <i class="fas fa-filter"></i> TODOS OS FILTROS
                                             </button>
-                                            <button class="btn-primary">
+                                            <button class="btn-primary" onclick="abrirModalNovoContato()">
                                                 <i class="fas fa-plus"></i> CONTATO
                                             </button>
                                         </div>
@@ -682,14 +685,16 @@
 
                                     <div class="contatos-stats">
                                         <div class="stat-item active">
-                                            <span class="stat-number">1242</span>
+                                            <span class="stat-number" id="total-contatos">0</span>
                                             <span class="stat-label">contatos</span>
                                         </div>
                                         <div class="stat-item">
-                                            <span class="stat-label">Todos os clientes presentes</span>
+                                            <span class="stat-number" id="contatos-ativos">0</span>
+                                            <span class="stat-label">ativos</span>
                                         </div>
                                         <div class="stat-item">
-                                            <span class="stat-label">Meus contatos</span>
+                                            <span class="stat-number" id="contatos-risco">0</span>
+                                            <span class="stat-label">em risco</span>
                                         </div>
                                     </div>
 
@@ -726,94 +731,9 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="contatos-table-body">
-                                                <tr>
-                                                    <td>
-                                                        <div class="contato-info">
-                                                            <div class="avatar">FR</div>
-                                                            <span>Ferreira Rogério</span>
-                                                        </div>
-                                                    </td>
-                                                    <td><span class="badge badge-baixo">BAIXO</span></td>
-                                                    <td>1</td>
-                                                    <td>Aluno</td>
-                                                    <td>17 de out de 2025</td>
-                                                    <td>4 semanas atrás</td>
-                                                    <td>
-                                                        <button class="btn-menu">
-                                                            <i class="fas fa-ellipsis-h"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="contato-info">
-                                                            <div class="avatar">PA</div>
-                                                            <span>Pereira Ana</span>
-                                                        </div>
-                                                    </td>
-                                                    <td><span class="badge badge-alto">ALTO</span></td>
-                                                    <td>1</td>
-                                                    <td>Aluno</td>
-                                                    <td>17 de out de 2025</td>
-                                                    <td>11 meses atrás</td>
-                                                    <td>
-                                                        <button class="btn-menu">
-                                                            <i class="fas fa-ellipsis-h"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="contato-info">
-                                                            <div class="avatar badge-avatar">LM</div>
-                                                            <span>Lincho Marta</span>
-                                                        </div>
-                                                    </td>
-                                                    <td><span class="badge badge-alto">ALTO</span></td>
-                                                    <td>1</td>
-                                                    <td>Aluno</td>
-                                                    <td>17 de out de 2025</td>
-                                                    <td>ontem</td>
-                                                    <td>
-                                                        <button class="btn-menu">
-                                                            <i class="fas fa-ellipsis-h"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="contato-info">
-                                                            <div class="avatar">SA</div>
-                                                            <span>Silva Dos Anjos Miguel</span>
-                                                        </div>
-                                                    </td>
-                                                    <td><span class="badge badge-baixo">BAIXO</span></td>
-                                                    <td>0</td>
-                                                    <td>Ex-membro</td>
-                                                    <td>17 de out de 2025</td>
-                                                    <td>4 dias atrás</td>
-                                                    <td>
-                                                        <button class="btn-menu">
-                                                            <i class="fas fa-ellipsis-h"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="contato-info">
-                                                            <div class="avatar">SD</div>
-                                                            <span>Silva Duarte</span>
-                                                        </div>
-                                                    </td>
-                                                    <td><span class="badge badge-alto">ALTO</span></td>
-                                                    <td>0</td>
-                                                    <td>Aluno</td>
-                                                    <td>17 de out de 2025</td>
-                                                    <td>21 semanas atrás</td>
-                                                    <td>
-                                                        <button class="btn-menu">
-                                                            <i class="fas fa-ellipsis-h"></i>
-                                                        </button>
+                                                <tr class="loading-row">
+                                                    <td colspan="7" style="text-align: center; padding: 40px;">
+                                                        <i class="fas fa-spinner fa-spin"></i> Carregando contatos...
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -3596,6 +3516,57 @@
         </div>
     </div>
     
+    <!-- Modal de Criação/Edição de Contato -->
+    <div id="modal-contato" class="modal-overlay" style="display: none;">
+        <div class="modal-container modal-contato">
+            <div class="modal-header">
+                <h2 id="modal-contato-titulo">Novo Contato</h2>
+                <button class="btn-close-modal" onclick="fecharModalContato()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-contato" onsubmit="salvarContato(event)">
+                    <input type="hidden" id="contato-id">
+                    
+                    <div class="form-group">
+                        <label for="contato-nome">Nome Completo *</label>
+                        <input type="text" id="contato-nome" class="form-control" placeholder="Nome do contato" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contato-email">Email *</label>
+                        <input type="email" id="contato-email" class="form-control" placeholder="email@exemplo.com" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contato-tipo">Tipo *</label>
+                            <select id="contato-tipo" class="form-control" required>
+                                <option value="aluno">Aluno</option>
+                                <option value="instrutor">Instrutor</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contato-senha">Senha</label>
+                            <input type="password" id="contato-senha" class="form-control" placeholder="Senha do usuário">
+                            <small class="form-text" id="senha-hint">Obrigatório para novos contatos</small>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="fecharModalContato()">Cancelar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Salvar Contato
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Botão Fixo Lateral -->
     <button id="toggle-global-planner" class="planner-toggle-btn" onclick="toggleGlobalPlanner()">
         <i class="fas fa-calendar-days"></i>

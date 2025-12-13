@@ -1339,6 +1339,250 @@ def registrar_visitante(nome: str,
     return {"mensagem": "Visitante registrado com sucesso!"}
 
 
+@app.get("/visitantes")
+def listar_visitantes(usuario: Usuario = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    visitantes = db.query(Visitante).all()
+    return [{
+        "id": v.id,
+        "nome": v.nome,
+        "email": v.email,
+        "telefone": v.telefone,
+        "unidade_id": v.unidade_id,
+        "data_visita": v.data_visita.isoformat() if v.data_visita else None,
+        "convertido": v.convertido,
+        "lead_score": v.lead_score,
+        "tipo_lead": v.tipo_lead,
+        "empresa": v.empresa
+    } for v in visitantes]
+
+
+@app.get("/visitantes/{visitante_id}")
+def obter_visitante(visitante_id: int,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    visitante = db.query(Visitante).filter(Visitante.id == visitante_id).first()
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    return {
+        "id": visitante.id,
+        "nome": visitante.nome,
+        "email": visitante.email,
+        "telefone": visitante.telefone,
+        "unidade_id": visitante.unidade_id,
+        "data_visita": visitante.data_visita.isoformat() if visitante.data_visita else None,
+        "convertido": visitante.convertido,
+        "lead_score": visitante.lead_score,
+        "tipo_lead": visitante.tipo_lead,
+        "empresa": visitante.empresa
+    }
+
+
+@app.post("/visitantes")
+def criar_visitante(nome: str,
+                    email: str,
+                    telefone: str = "",
+                    unidade_id: int = 1,
+                    tipo_lead: str = "Individual",
+                    empresa: str = None,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    visitante = Visitante(
+        nome=nome,
+        email=email,
+        telefone=telefone,
+        unidade_id=unidade_id,
+        tipo_lead=tipo_lead,
+        empresa=empresa
+    )
+    db.add(visitante)
+    db.commit()
+    db.refresh(visitante)
+    return {
+        "mensagem": "Visitante criado com sucesso!",
+        "id": visitante.id,
+        "visitante": {
+            "id": visitante.id,
+            "nome": visitante.nome,
+            "email": visitante.email,
+            "telefone": visitante.telefone,
+            "tipo_lead": visitante.tipo_lead,
+            "empresa": visitante.empresa
+        }
+    }
+
+
+@app.put("/visitantes/{visitante_id}")
+def atualizar_visitante(visitante_id: int,
+                        nome: str = None,
+                        email: str = None,
+                        telefone: str = None,
+                        convertido: bool = None,
+                        lead_score: int = None,
+                        tipo_lead: str = None,
+                        empresa: str = None,
+                        usuario: Usuario = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    visitante = db.query(Visitante).filter(Visitante.id == visitante_id).first()
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    
+    if nome is not None:
+        visitante.nome = nome
+    if email is not None:
+        visitante.email = email
+    if telefone is not None:
+        visitante.telefone = telefone
+    if convertido is not None:
+        visitante.convertido = convertido
+    if lead_score is not None:
+        visitante.lead_score = lead_score
+    if tipo_lead is not None:
+        visitante.tipo_lead = tipo_lead
+    if empresa is not None:
+        visitante.empresa = empresa
+    
+    db.commit()
+    return {"mensagem": "Visitante atualizado com sucesso!"}
+
+
+@app.delete("/visitantes/{visitante_id}")
+def deletar_visitante(visitante_id: int,
+                      usuario: Usuario = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    visitante = db.query(Visitante).filter(Visitante.id == visitante_id).first()
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    
+    db.delete(visitante)
+    db.commit()
+    return {"mensagem": "Visitante deletado com sucesso!"}
+
+
+# ============================================================
+# Endpoints de Usuários (Contatos/Membros)
+# ============================================================
+
+
+@app.get("/usuarios")
+def listar_usuarios(usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    usuarios = db.query(Usuario).all()
+    return [{
+        "id": u.id,
+        "nome": u.nome,
+        "email": u.email,
+        "tipo": u.tipo,
+        "unidade_id": u.unidade_id,
+        "ativo": u.ativo,
+        "data_cadastro": u.data_cadastro.isoformat() if u.data_cadastro else None,
+        "ultima_atividade": u.ultima_atividade.isoformat() if u.ultima_atividade else None,
+        "risco_churn": u.risco_churn
+    } for u in usuarios]
+
+
+@app.get("/usuarios/{usuario_id}")
+def obter_usuario(usuario_id: int,
+                  usuario: Usuario = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    user = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    return {
+        "id": user.id,
+        "nome": user.nome,
+        "email": user.email,
+        "tipo": user.tipo,
+        "unidade_id": user.unidade_id,
+        "ativo": user.ativo,
+        "data_cadastro": user.data_cadastro.isoformat() if user.data_cadastro else None,
+        "ultima_atividade": user.ultima_atividade.isoformat() if user.ultima_atividade else None,
+        "risco_churn": user.risco_churn
+    }
+
+
+@app.post("/usuarios")
+def criar_usuario(nome: str,
+                  email: str,
+                  senha: str,
+                  tipo: str = "aluno",
+                  unidade_id: int = 1,
+                  usuario: Usuario = Depends(get_current_user),
+                  db: Session = Depends(get_db)):
+    existing = db.query(Usuario).filter(Usuario.email == email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email já cadastrado")
+    
+    novo_usuario = Usuario(
+        nome=nome,
+        email=email,
+        senha=pwd_context.hash(senha),
+        tipo=tipo,
+        unidade_id=unidade_id
+    )
+    db.add(novo_usuario)
+    db.commit()
+    db.refresh(novo_usuario)
+    return {
+        "mensagem": "Usuário criado com sucesso!",
+        "id": novo_usuario.id,
+        "usuario": {
+            "id": novo_usuario.id,
+            "nome": novo_usuario.nome,
+            "email": novo_usuario.email,
+            "tipo": novo_usuario.tipo
+        }
+    }
+
+
+@app.put("/usuarios/{usuario_id}")
+def atualizar_usuario(usuario_id: int,
+                      nome: str = None,
+                      email: str = None,
+                      tipo: str = None,
+                      ativo: bool = None,
+                      risco_churn: float = None,
+                      usuario: Usuario = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    user = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    if nome is not None:
+        user.nome = nome
+    if email is not None:
+        existing = db.query(Usuario).filter(Usuario.email == email, Usuario.id != usuario_id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email já cadastrado por outro usuário")
+        user.email = email
+    if tipo is not None:
+        user.tipo = tipo
+    if ativo is not None:
+        user.ativo = ativo
+    if risco_churn is not None:
+        user.risco_churn = risco_churn
+    
+    user.ultima_atividade = datetime.utcnow()
+    db.commit()
+    return {"mensagem": "Usuário atualizado com sucesso!"}
+
+
+@app.delete("/usuarios/{usuario_id}")
+def deletar_usuario(usuario_id: int,
+                    usuario: Usuario = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    user = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    if user.id == usuario.id:
+        raise HTTPException(status_code=400, detail="Não é possível deletar seu próprio usuário")
+    
+    db.delete(user)
+    db.commit()
+    return {"mensagem": "Usuário deletado com sucesso!"}
+
+
 # ============================================================
 # Endpoints de Unidades
 # ============================================================
