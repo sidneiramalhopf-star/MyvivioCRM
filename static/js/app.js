@@ -831,75 +831,92 @@ async function downloadRelatorio(tipo, formato) {
 }
 
 async function loadJornadas() {
-    // Carregar jornadas (mock data por enquanto)
     const jornadasGrid = document.getElementById('jornadas-grid');
     
     if (!jornadasGrid) return;
     
-    // Inicializar window.mockJornadas com dados mockData se ainda não existir
-    if (!window.mockJornadas) {
-        window.mockJornadas = [...mockData.jornadas];
-    }
-    
-    // Usar window.mockJornadas que contém tanto jornadas mockadas quanto criadas
-    const jornadas = window.mockJornadas;
-    
-    // Mapear ícone e cor baseado no tipo
-    const getIcone = (tipo) => {
-        const tipoNorm = tipo.toLowerCase();
-        if (tipoNorm.includes('experiências')) return 'users';
-        if (tipoNorm.includes('retenção')) return 'user-clock';
-        if (tipoNorm === 'padrão') return 'envelope';
-        return 'code';
-    };
-    
-    const getCorClasse = (tipo) => {
-        const tipoNorm = tipo.toLowerCase();
-        if (tipoNorm.includes('experiências')) return 'experiências-em-destaque';
-        if (tipoNorm.includes('retenção')) return 'retenção';
-        return 'rascunho';
-    };
-    
-    // Agrupar jornadas por categoria
-    const categorias = {
-        'padrão': [],
-        'experiências de treinamento': [],
-        'retenção': []
-    };
-    
-    jornadas.forEach(jornada => {
-        const tipoNorm = jornada.tipo.toLowerCase();
-        if (tipoNorm.includes('experiências')) {
-            categorias['experiências de treinamento'].push(jornada);
-        } else if (tipoNorm.includes('retenção')) {
-            categorias['retenção'].push(jornada);
-        } else {
-            categorias['padrão'].push(jornada);
+    try {
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+            jornadasGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-route fa-3x"></i>
+                    <p>Faça login para ver suas jornadas</p>
+                </div>
+            `;
+            return;
         }
-    });
-    
-    // Renderizar cards agrupados por categoria
-    let html = '';
-    
-    Object.keys(categorias).forEach(categoria => {
-        if (categorias[categoria].length > 0) {
+        
+        const response = await fetch('/automacao/jornadas', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar jornadas');
+        }
+        
+        const jornadas = await response.json();
+        
+        if (jornadas.length === 0) {
+            jornadasGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-route fa-3x"></i>
+                    <h3>Nenhuma jornada criada</h3>
+                    <p>Crie sua primeira jornada para automatizar processos</p>
+                    <button class="btn-nova-jornada" onclick="abrirNovaJornada()">
+                        <i class="fas fa-plus"></i> CRIAR JORNADA
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Mapear ícone e cor baseado no gatilho
+        const getIcone = (gatilho) => {
+            if (!gatilho) return 'code';
+            const gatilhoNorm = gatilho.toLowerCase();
+            if (gatilhoNorm.includes('usuario')) return 'users';
+            if (gatilhoNorm.includes('reserva')) return 'calendar';
+            if (gatilhoNorm.includes('churn')) return 'user-clock';
+            if (gatilhoNorm.includes('contrato')) return 'file-contract';
+            return 'envelope';
+        };
+        
+        const getCorClasse = (gatilho) => {
+            if (!gatilho) return 'rascunho';
+            const gatilhoNorm = gatilho.toLowerCase();
+            if (gatilhoNorm.includes('usuario')) return 'experiências-em-destaque';
+            if (gatilhoNorm.includes('churn')) return 'retenção';
+            return 'rascunho';
+        };
+        
+        // Agrupar jornadas por status
+        const ativas = jornadas.filter(j => j.ativa);
+        const inativas = jornadas.filter(j => !j.ativa);
+        
+        let html = '';
+        
+        // Renderizar ativas
+        if (ativas.length > 0) {
             html += `
                 <div class="jornadas-categoria-section">
-                    <h3 class="jornadas-categoria-titulo">${categoria.toUpperCase()}</h3>
+                    <h3 class="jornadas-categoria-titulo">ATIVAS</h3>
                     <div class="jornadas-categoria-grid">
-                        ${categorias[categoria].map(jornada => `
+                        ${ativas.map(jornada => `
                             <div class="jornada-card" data-id="${jornada.id}">
-                                <div class="jornada-card-header ${getCorClasse(jornada.tipo)}">
-                                    <span class="jornada-tipo">${jornada.tipo.toUpperCase()}</span>
-                                    ${jornada.status === 'ATIVO' ? '<span class="jornada-badge-ativo">ATIVO</span>' : ''}
-                                    ${jornada.status === 'RASCUNHO' ? '<span class="jornada-badge-rascunho">RASCUNHO</span>' : ''}
+                                <div class="jornada-card-header ${getCorClasse(jornada.gatilho_evento)}">
+                                    <span class="jornada-tipo">${jornada.gatilho_evento || 'PADRÃO'}</span>
+                                    <span class="jornada-badge-ativo">ATIVO</span>
                                 </div>
                                 <div class="jornada-card-body">
                                     <div class="jornada-icone">
-                                        <i class="fas fa-${getIcone(jornada.tipo)}"></i>
+                                        <i class="fas fa-${getIcone(jornada.gatilho_evento)}"></i>
                                     </div>
                                     <h3>${jornada.nome}</h3>
-                                    <p>${jornada.descricao}</p>
+                                    <p>${jornada.descricao || 'Sem descrição'}</p>
                                 </div>
                                 <div class="jornada-card-footer">
                                     <button class="btn-card-action" onclick="abrirJornada(${jornada.id})">
@@ -912,9 +929,49 @@ async function loadJornadas() {
                 </div>
             `;
         }
-    });
-    
-    jornadasGrid.innerHTML = html;
+        
+        // Renderizar inativas
+        if (inativas.length > 0) {
+            html += `
+                <div class="jornadas-categoria-section">
+                    <h3 class="jornadas-categoria-titulo">INATIVAS</h3>
+                    <div class="jornadas-categoria-grid">
+                        ${inativas.map(jornada => `
+                            <div class="jornada-card" data-id="${jornada.id}">
+                                <div class="jornada-card-header ${getCorClasse(jornada.gatilho_evento)}">
+                                    <span class="jornada-tipo">${jornada.gatilho_evento || 'PADRÃO'}</span>
+                                    <span class="jornada-badge-rascunho">INATIVO</span>
+                                </div>
+                                <div class="jornada-card-body">
+                                    <div class="jornada-icone">
+                                        <i class="fas fa-${getIcone(jornada.gatilho_evento)}"></i>
+                                    </div>
+                                    <h3>${jornada.nome}</h3>
+                                    <p>${jornada.descricao || 'Sem descrição'}</p>
+                                </div>
+                                <div class="jornada-card-footer">
+                                    <button class="btn-card-action" onclick="abrirJornada(${jornada.id})">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        jornadasGrid.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Erro ao carregar jornadas:', error);
+        jornadasGrid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <p>Erro ao carregar jornadas. Tente novamente.</p>
+            </div>
+        `;
+    }
 }
 
 async function loadQuestionarios() {
@@ -1430,53 +1487,55 @@ function previewImagemJornada(event) {
     }
 }
 
-function criarJornada() {
+async function criarJornada() {
     const grupo = document.getElementById('jornada-grupo').value;
     const categoria = document.getElementById('jornada-categoria').value;
     const nome = document.getElementById('jornada-nome').value;
     const descricao = document.getElementById('jornada-descricao').value;
-    const imagem = document.getElementById('jornada-upload-imagem').files[0];
     
-    if (!grupo || !categoria || !nome) {
+    if (!categoria || !nome) {
         showToast('Preencha os campos obrigatórios', 'error');
         return;
     }
     
-    // Criar objeto da jornada
-    const novaJornada = {
-        id: Date.now(),
-        nome: nome,
-        descricao: descricao,
-        grupo: grupo,
-        tipo: categoria,
-        status: 'ATIVO',
-        imagem: imagem ? URL.createObjectURL(imagem) : null,
-        contatos: 0,
-        atividades: [
-            {
-                id: 1,
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            showToast('Faça login para criar jornadas', 'error');
+            return;
+        }
+        
+        const response = await fetch('/automacao/jornadas', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 nome: nome,
-                icon: 'fa-envelope',
-                status: 'ATIVO'
-            }
-        ]
-    };
-    
-    // Inicializar window.mockJornadas com dados mockData se ainda não existir
-    if (!window.mockJornadas) {
-        window.mockJornadas = [...mockData.jornadas];
+                descricao: descricao || '',
+                gatilho_evento: categoria.toUpperCase().replace(/ /g, '_'),
+                ativa: true
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Erro ao criar jornada');
+        }
+        
+        // Fechar modal
+        fecharModalNovaJornada();
+        
+        // Recarregar jornadas
+        await loadJornadas();
+        
+        showToast('Jornada criada com sucesso!', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao criar jornada:', error);
+        showToast(error.message || 'Erro ao criar jornada', 'error');
     }
-    
-    // Adicionar ao mock data
-    window.mockJornadas.push(novaJornada);
-    
-    // Fechar modal
-    fecharModalNovaJornada();
-    
-    // Recarregar jornadas
-    loadJornadas();
-    
-    showToast('Jornada criada com sucesso!', 'success');
 }
 
 // ============================================================
