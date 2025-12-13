@@ -50,6 +50,29 @@ The Myvivio CRM employs a full-stack architecture, featuring a FastAPI backend a
 
 - **B2B Corporate Contracts System (Nov 23, 2025)**: Hybrid B2C/B2B platform expansion for managing corporate wellness contracts. Backend: Expanded `Unidade` model with `tipo_unidade` field (B2C/B2B), `Visitante` with `tipo_lead` (Individual/Corporativo) and `empresa` fields, new `Contrato` model with unidade_id, nome, data_inicio, data_fim, valor_mensal, limite_usuarios, status. Seven CRUD endpoints: GET/POST/PUT/DELETE `/contratos`, POST `/contratos/{id}/renovar` (automatic renewal with months parameter), GET `/contratos/expirados/lista` (contracts expiring within 30 days with dias_restantes and status_alerta). Event integration: CONTRATO_CRIADO and CONTRATO_RENOVADO events automatically registered. IA endpoint: GET `/admin/ia/riscos_renovacao` calculates non-renewal risk based on days remaining (CRITICO <15 days, ALTO <30 days, MEDIO), returns receita_mensal_em_risco, taxa_uso (active users/limit), aggregated metrics. Automation: "Renovação de Contrato Corporativo" journey with 4 steps (alerts at 60, 30, 15 days + commercial task). Frontend: "Contratos" menu item (fa-file-contract icon), responsive card grid with color-coded badges (green >30 days, yellow 15-30, red <15), modal for create/edit with validations, B2B dashboard with 4 KPIs (active contracts, total monthly revenue, expiring contracts, average renewal rate), functions: loadContratos(), salvarContrato(), deletarContrato(), renovarContrato(). Migration: `migrar_schema_b2b_startup()` function automatically adds tipo_unidade/tipo_lead/empresa columns at startup, ensuring backward compatibility. Data population: `popular_contratos_exemplo.py` creates 3 sample corporate contracts with varying expiration dates. Security: Admin-only access (get_admin_user) for contract management, JWT protection on all endpoints, multi-tenant isolation via unidade_id. Designed for corporate wellness programs with user limits, revenue tracking, and automated renewal workflows.
 
+## Backend Integration Status (Dec 13, 2025)
+
+### Fully Connected to Backend (Real Data)
+- **Authentication**: Login/register with JWT, session management
+- **Dashboard Home**: Stats overview, IA metrics, day-to-day timeline
+- **Pessoas (Contacts)**: Full CRUD for visitantes
+- **Contratos**: Full CRUD for B2B contracts with renewal workflow
+- **Programas de Treinamento**: Create/list programs via POST/GET /programas
+- **Automação - Jornadas**: Full CRUD for customer journeys
+- **Automação - Questionários**: Full CRUD for questionnaires
+- **Automação - Grupos**: Full CRUD for user groups
+- **Reports Panel**: 7 report endpoints for aulas, automacao, loja, equipe, contratos, visitantes, financeiro
+
+### Still Using Mock Data (Future Enhancement)
+- **Weekly Class Planner**: Uses mockData.aulasSemanais for class grid display
+- **Class Details with Attendance**: Uses mockData.aulasDetalhes for inscritos list
+- **Penalties System**: Uses mockData.penalidades for user faults
+- **Configuration Section**: Loja, Aparelhos, Dispositivos, Customização, Unidade, Assinaturas (UI cards only, no backend endpoints)
+- **Form Dropdowns**: Types, instructors, modes for class creation
+
+### Access Credentials
+- **Admin**: admin@vivio.com / admin123
+
 ## External Dependencies
 - **Backend Framework**: FastAPI
 - **ASGI Server**: Uvicorn

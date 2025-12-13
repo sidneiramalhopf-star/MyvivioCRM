@@ -4409,20 +4409,20 @@ def relatorio_aulas(data_inicio: str = None, data_fim: str = None,
     query = db.query(EventoAula).filter(EventoAula.unidade_id == usuario.unidade_id)
     
     if data_inicio:
-        query = query.filter(EventoAula.data >= data_inicio)
+        query = query.filter(EventoAula.data_hora >= data_inicio)
     if data_fim:
-        query = query.filter(EventoAula.data <= data_fim)
+        query = query.filter(EventoAula.data_hora <= data_fim)
     
     aulas = query.all()
     
     total_aulas = len(aulas)
-    total_reservas = sum([db.query(ReservaAula).filter(ReservaAula.aula_id == a.id).count() for a in aulas])
+    total_reservas = sum([db.query(ReservaAula).filter(ReservaAula.evento_aula_id == a.id).count() for a in aulas])
     total_presencas = db.query(Attendance).filter(Attendance.status == 'presente').count()
-    cancelamentos = db.query(ReservaAula).filter(ReservaAula.status == 'cancelado').count()
+    cancelamentos = db.query(ReservaAula).filter(ReservaAula.cancelada == True).count()
     
     taxa_ocupacao = 0
     if aulas:
-        capacidade_total = sum([a.capacidade_maxima or 0 for a in aulas])
+        capacidade_total = sum([a.limite_inscricoes or 0 for a in aulas])
         if capacidade_total > 0:
             taxa_ocupacao = round((total_reservas / capacidade_total) * 100, 1)
     
@@ -4430,16 +4430,16 @@ def relatorio_aulas(data_inicio: str = None, data_fim: str = None,
     for a in aulas[:50]:
         instrutor = db.query(Instrutor).filter(Instrutor.id == a.instrutor_id).first()
         sala = db.query(Sala).filter(Sala.id == a.sala_id).first()
-        reservas = db.query(ReservaAula).filter(ReservaAula.aula_id == a.id).count()
+        reservas = db.query(ReservaAula).filter(ReservaAula.evento_aula_id == a.id).count()
         presencas = db.query(Attendance).join(ReservaAula).filter(
-            ReservaAula.aula_id == a.id,
+            ReservaAula.evento_aula_id == a.id,
             Attendance.status == 'presente'
         ).count()
         taxa = round((presencas / reservas * 100), 1) if reservas > 0 else 0
         
         aulas_dados.append({
-            "data": a.data.strftime("%d/%m/%Y") if a.data else "",
-            "nome": a.nome,
+            "data": a.data_hora.strftime("%d/%m/%Y") if a.data_hora else "",
+            "nome": a.nome_aula,
             "instrutor": instrutor.nome if instrutor else "-",
             "sala": sala.nome if sala else "-",
             "reservas": reservas,
@@ -4534,17 +4534,15 @@ def relatorio_contratos(usuario: Usuario = Depends(get_current_user),
     ).all()
     
     ativos = [c for c in contratos if c.status == "ativo"]
-    receita_mensal = sum([c.valor_mensal for c in ativos])
+    receita_mensal = sum([c.valor_mensal or 0 for c in ativos])
     
     hoje = datetime.utcnow()
     em_risco = len([c for c in ativos if c.data_fim and (c.data_fim - hoje).days <= 30])
     
-    renovacoes = len([c for c in contratos if c.renovacoes and c.renovacoes > 0])
-    
     return {
         "contratos_ativos": len(ativos),
         "receita_mensal": receita_mensal,
-        "renovacoes": renovacoes,
+        "renovacoes": 0,
         "em_risco": em_risco
     }
 
@@ -4561,18 +4559,18 @@ def relatorio_visitantes(usuario: Usuario = Depends(get_current_user),
     conversoes = len([v for v in visitantes if v.convertido])
     taxa_conversao = round((conversoes / total_leads * 100), 1) if total_leads > 0 else 0
     
-    origens = {}
+    tipos = {}
     for v in visitantes:
-        origem = v.origem or "Direto"
-        origens[origem] = origens.get(origem, 0) + 1
+        tipo = v.tipo_lead or "Individual"
+        tipos[tipo] = tipos.get(tipo, 0) + 1
     
-    origem_principal = max(origens, key=origens.get) if origens else "-"
+    tipo_principal = max(tipos, key=tipos.get) if tipos else "-"
     
     return {
         "total_leads": total_leads,
         "conversoes": conversoes,
         "taxa_conversao": taxa_conversao,
-        "origem_principal": origem_principal
+        "origem_principal": tipo_principal
     }
 
 
@@ -4585,7 +4583,7 @@ def relatorio_financeiro(usuario: Usuario = Depends(get_current_user),
         Contrato.status == "ativo"
     ).all()
     
-    receita_b2b = sum([c.valor_mensal for c in contratos])
+    receita_b2b = sum([c.valor_mensal or 0 for c in contratos])
     receita_b2c = 0
     receita_total = receita_b2b + receita_b2c
     
