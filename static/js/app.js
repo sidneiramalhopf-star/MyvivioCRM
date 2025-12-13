@@ -6739,7 +6739,7 @@ function removerExercicioDaSessao(sessaoId, index) {
 }
 
 // Salvar programa
-function salvarPrograma() {
+async function salvarPrograma() {
     // Validar se há pelo menos 1 exercício em alguma sessão
     const totalExercicios = sessoes.reduce((sum, s) => sum + s.exercicios.length, 0);
     if (totalExercicios === 0) {
@@ -6753,22 +6753,38 @@ function salvarPrograma() {
         exercicios: [...s.exercicios]
     }));
     programaData.dataCriacao = new Date().toISOString();
-    programaData.id = programaData.id || Date.now();
     
-    // Salvar em localStorage (futuramente será API)
-    const programas = JSON.parse(localStorage.getItem('programas') || '[]');
-    programas.push(programaData);
-    localStorage.setItem('programas', JSON.stringify(programas));
-    
-    showToast('Programa salvo com sucesso!', 'success');
-    
-    // Limpar dados temporários
-    localStorage.removeItem('programaEmCriacao');
-    
-    // Voltar para lista de programas
-    setTimeout(() => {
-        fecharProgramaBuilder();
-    }, 1000);
+    try {
+        const response = await authFetch(`${API_BASE}/programas/criar`, {
+            method: 'POST',
+            body: JSON.stringify({
+                nome: programaData.nome || 'Programa sem nome',
+                descricao: programaData.descricao || '',
+                status: 'ativo',
+                unidade_id: currentUser?.unidade_id || 1,
+                sessoes: programaData.sessoes
+            })
+        });
+        
+        if (response.ok) {
+            showToast('Programa salvo com sucesso!', 'success');
+            
+            // Limpar dados temporários
+            localStorage.removeItem('programaEmCriacao');
+            
+            // Voltar para lista de programas
+            setTimeout(() => {
+                fecharProgramaBuilder();
+                loadProgramas();
+            }, 1000);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao salvar programa', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar programa:', error);
+        showToast('Erro ao salvar programa', 'error');
+    }
 }
 
 // Alias para compatibilidade

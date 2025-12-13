@@ -1292,23 +1292,54 @@ def concluir_agenda(agenda_id: int,
 def listar_programas(usuario: Usuario = Depends(get_current_user),
                      db: Session = Depends(get_db)):
     programas = db.query(Programa).all()
-    return [{
-        "id": p.id,
-        "nome": p.nome,
-        "status": p.status,
-        "usuarios_matriculados": p.usuarios_matriculados
-    } for p in programas]
+    result = []
+    for p in programas:
+        prog_data = {
+            "id": p.id,
+            "nome": p.nome,
+            "status": p.status,
+            "usuarios_matriculados": p.usuarios_matriculados,
+            "data_inicio": p.data_inicio.isoformat() if p.data_inicio else None,
+            "data_fim": p.data_fim.isoformat() if p.data_fim else None
+        }
+        # Parse descricao if it contains JSON with sessions
+        try:
+            desc_data = json.loads(p.descricao) if p.descricao else {}
+            if isinstance(desc_data, dict) and "sessoes" in desc_data:
+                prog_data["descricao"] = desc_data.get("texto", "")
+                prog_data["sessoes"] = desc_data.get("sessoes", [])
+            else:
+                prog_data["descricao"] = p.descricao or ""
+                prog_data["sessoes"] = []
+        except (json.JSONDecodeError, TypeError):
+            prog_data["descricao"] = p.descricao or ""
+            prog_data["sessoes"] = []
+        result.append(prog_data)
+    return result
 
 
 @app.post("/programas/criar")
-def criar_programa(nome: str,
-                   descricao: str,
-                   status: str,
-                   unidade_id: int,
+async def criar_programa(request: Request,
                    usuario: Usuario = Depends(get_current_user),
                    db: Session = Depends(get_db)):
+    data = await request.json()
+    nome = data.get("nome", "Programa sem nome")
+    descricao = data.get("descricao", "")
+    status = data.get("status", "ativo")
+    unidade_id = data.get("unidade_id", usuario.unidade_id or 1)
+    sessoes = data.get("sessoes", [])
+    
+    # Store sessions as JSON in descricao if provided
+    if sessoes:
+        descricao_json = json.dumps({
+            "texto": descricao,
+            "sessoes": sessoes
+        })
+    else:
+        descricao_json = descricao
+    
     programa = Programa(nome=nome,
-                        descricao=descricao,
+                        descricao=descricao_json,
                         status=status,
                         unidade_id=unidade_id,
                         data_inicio=datetime.utcnow())
