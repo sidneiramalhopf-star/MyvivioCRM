@@ -3155,6 +3155,9 @@ async function handleAgendaSubmit(e) {
             showToast('Atividade adicionada com sucesso!', 'success');
             closeAgendaModal();
             await loadAgendas();
+            if (currentPage === 'home') {
+                await loadDayToDayData();
+            }
         } else {
             showToast('Erro ao adicionar atividade', 'error');
         }
@@ -6056,6 +6059,7 @@ async function carregarContatos() {
             contatosCache = usuarios;
             renderizarContatos(usuarios);
             atualizarEstatisticasContatos(usuarios);
+            aplicarFiltroAltoRiscoSeAtivo();
         } else {
             tbody.innerHTML = `
                 <tr>
@@ -6259,6 +6263,31 @@ function fecharModalContato() {
     if (modal) {
         modal.style.display = 'none';
     }
+}
+
+// Flag to filter high-risk contacts after loading
+let filtroAltoRiscoAtivo = false;
+
+// Navigate to Pessoas page filtered by high-risk contacts
+function gerenciarContatosAltoRisco() {
+    filtroAltoRiscoAtivo = true;
+    navigateToPage('pessoas');
+}
+
+// Apply high-risk filter after contacts are loaded
+function aplicarFiltroAltoRiscoSeAtivo() {
+    if (filtroAltoRiscoAtivo) {
+        filtroAltoRiscoAtivo = false;
+        const contatosAltoRisco = contatosCache.filter(c => c.risco_churn >= 0.7);
+        renderizarContatos(contatosAltoRisco);
+        showToast(`Exibindo ${contatosAltoRisco.length} contatos de alto risco`, 'info');
+    }
+}
+
+// Open modal to create a new lead/visitor
+function abrirModalNovoLead() {
+    abrirModalNovoContato();
+    showToast('Adicione um novo lead', 'info');
 }
 
 function editarContato(id) {
