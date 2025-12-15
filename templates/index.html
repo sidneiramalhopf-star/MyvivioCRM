@@ -257,8 +257,8 @@
                                                 </div>
                                             </div>
                                             <div class="program-actions">
-                                                <button class="btn-text">RENOVAR</button>
-                                                <button class="btn-text">ATRIBUIR</button>
+                                                <button class="btn-text" onclick="renovarProgramasExpirados()">RENOVAR</button>
+                                                <button class="btn-text" onclick="atribuirProgramas()">ATRIBUIR</button>
                                             </div>
                                         </div>
                                     </div>
@@ -270,8 +270,8 @@
                                             <h2>Contatos</h2>
                                         </div>
                                         <div class="contacts-widget">
-                                            <div class="contacts-filter">
-                                                <span>Todos os clientes presentes</span>
+                                            <div class="contacts-filter" onclick="toggleFiltroClientesPresentes()" style="cursor: pointer;">
+                                                <span id="filtro-clientes-label">Todos os clientes presentes</span>
                                                 <i class="fas fa-filter"></i>
                                             </div>
                                             <div class="contacts-card">
@@ -335,7 +335,7 @@
                                             </div>
                                             <p class="stat-label">Risco de desistência da unidade</p>
                                             <p class="stat-meta">Usuários ativos de alto risco</p>
-                                            <button class="btn-outline">VER MAIS</button>
+                                            <button class="btn-outline" onclick="verUsuariosRisco()">VER MAIS</button>
                                         </div>
                                     </div>
                                 </div>
@@ -379,7 +379,7 @@
 
                                 <h2>Métricas de Performance</h2>
                                 <div class="metrics-grid">
-                                    <div class="metric-card">
+                                    <div class="metric-card" onclick="verDetalhesMetrica('engajamento')" style="cursor: pointer;">
                                         <h3><i class="fas fa-chart-line"></i> Engajamento</h3>
                                         <div class="metric-display">
                                             <span class="metric-value" id="metric-engajamento">0%</span>
@@ -387,7 +387,7 @@
                                         <p class="metric-label">Taxa de engajamento</p>
                                     </div>
 
-                                    <div class="metric-card">
+                                    <div class="metric-card" onclick="verDetalhesMetrica('roi')" style="cursor: pointer;">
                                         <h3><i class="fas fa-dollar-sign"></i> ROI</h3>
                                         <div class="metric-display">
                                             <span class="metric-value" id="metric-roi">0%</span>
@@ -395,7 +395,7 @@
                                         <p class="metric-label">Retorno sobre investimento</p>
                                     </div>
 
-                                    <div class="metric-card">
+                                    <div class="metric-card" onclick="verDetalhesMetrica('produtividade')" style="cursor: pointer;">
                                         <h3><i class="fas fa-bolt"></i> Produtividade</h3>
                                         <div class="metric-display">
                                             <span class="metric-value" id="metric-produtividade">0%</span>
@@ -403,7 +403,7 @@
                                         <p class="metric-label">Índice de produtividade</p>
                                     </div>
 
-                                    <div class="metric-card">
+                                    <div class="metric-card" onclick="verDetalhesMetrica('membros')" style="cursor: pointer;">
                                         <h3><i class="fas fa-user-check"></i> Membros Ativos</h3>
                                         <div class="metric-display">
                                             <span class="metric-value" id="metric-membros">0</span>

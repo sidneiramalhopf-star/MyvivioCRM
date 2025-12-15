@@ -341,8 +341,8 @@ async function loadDayToDayData() {
             document.getElementById('contacts-risk').textContent = stats.risco_desistencia || '0';
             document.getElementById('contacts-total').textContent = stats.usuarios_totais || '0';
             document.getElementById('leads-count').textContent = stats.visitantes || '0';
-            document.getElementById('programs-expired').textContent = stats.programas?.expirado || '0';
-            document.getElementById('programs-unassigned').textContent = stats.programas?.['não-atribuído'] || '0';
+            document.getElementById('programs-expired').textContent = stats.programas?.expirados || '0';
+            document.getElementById('programs-unassigned').textContent = stats.programas?.nao_atribuidos || '0';
         }
     } catch (error) {
         console.error('Erro ao carregar dados do dia a dia', error);
@@ -385,9 +385,15 @@ function updateStats(stats) {
     document.getElementById('stat-usuarios-ativos').textContent = stats.usuarios_ativos || '0';
     document.getElementById('stat-visitantes').textContent = stats.visitantes || '0';
     
-    document.getElementById('prog-expirados').textContent = stats.programas.expirado;
-    document.getElementById('prog-nao-atribuidos').textContent = stats.programas['não-atribuído'];
-    document.getElementById('prog-atribuidos').textContent = stats.programas.atribuído;
+    if (stats.programas) {
+        const progExpirados = document.getElementById('prog-expirados');
+        const progNaoAtribuidos = document.getElementById('prog-nao-atribuidos');
+        const progAtribuidos = document.getElementById('prog-atribuidos');
+        
+        if (progExpirados) progExpirados.textContent = stats.programas.expirados || 0;
+        if (progNaoAtribuidos) progNaoAtribuidos.textContent = stats.programas.nao_atribuidos || 0;
+        if (progAtribuidos) progAtribuidos.textContent = stats.programas.atribuidos || 0;
+    }
 }
 
 function updateMetrics(metricas) {
@@ -397,6 +403,100 @@ function updateMetrics(metricas) {
     document.getElementById('metric-roi').textContent = metricas.roi + '%';
     document.getElementById('metric-produtividade').textContent = metricas.produtividade + '%';
     document.getElementById('metric-membros').textContent = metricas.usuarios_ativos;
+}
+
+// ============================================
+// HOME PAGE - Button Functions
+// ============================================
+
+// Navigate to Training page to renew expired programs
+function renovarProgramasExpirados() {
+    navigateToPage('treinamento');
+    setTimeout(() => {
+        switchTreinamentoView('programas');
+        showToast('Selecione os programas expirados para renovar', 'info');
+    }, 300);
+}
+
+// Navigate to Training page to assign programs
+function atribuirProgramas() {
+    navigateToPage('treinamento');
+    setTimeout(() => {
+        switchTreinamentoView('programas');
+        showToast('Selecione os programas para atribuir aos contatos', 'info');
+    }, 300);
+}
+
+// Toggle filter for present clients
+let filtroClientesPresentesAtivo = false;
+let homeContactsCache = [];
+
+async function toggleFiltroClientesPresentes() {
+    filtroClientesPresentesAtivo = !filtroClientesPresentesAtivo;
+    const label = document.getElementById('filtro-clientes-label');
+    
+    if (filtroClientesPresentesAtivo) {
+        label.textContent = 'Clientes ativos apenas';
+        label.style.fontWeight = 'bold';
+        
+        // Fetch contacts if not cached
+        if (homeContactsCache.length === 0) {
+            try {
+                const response = await authFetch(`${API_BASE}/usuarios`);
+                if (response.ok) {
+                    homeContactsCache = await response.json();
+                }
+            } catch (e) {
+                console.error('Erro ao carregar contatos:', e);
+            }
+        }
+        
+        // Filter to show only active contacts
+        const ativos = homeContactsCache.filter(c => c.ativo);
+        document.getElementById('contacts-total').textContent = ativos.length;
+        showToast(`Filtro ativado: ${ativos.length} clientes ativos`, 'info');
+    } else {
+        label.textContent = 'Todos os clientes presentes';
+        label.style.fontWeight = 'normal';
+        // Reload all data
+        await loadDayToDayData();
+        showToast('Filtro desativado: mostrando todos os clientes', 'info');
+    }
+}
+
+// Navigate to Pessoas page filtered by high-risk users
+function verUsuariosRisco() {
+    gerenciarContatosAltoRisco();
+}
+
+// Show metric details in Reports panel
+function verDetalhesMetrica(tipo) {
+    const metricas = {
+        'engajamento': { 
+            titulo: 'Taxa de Engajamento',
+            descricao: 'Mede a participação ativa dos usuários nas atividades'
+        },
+        'roi': { 
+            titulo: 'Retorno sobre Investimento',
+            descricao: 'Avalia o retorno financeiro das operações'
+        },
+        'produtividade': { 
+            titulo: 'Índice de Produtividade',
+            descricao: 'Mede a eficiência das operações diárias'
+        },
+        'membros': { 
+            titulo: 'Membros Ativos',
+            descricao: 'Usuários que realizaram atividades hoje'
+        }
+    };
+    
+    const info = metricas[tipo];
+    if (info) {
+        navigateToPage('painel');
+        setTimeout(() => {
+            showToast(`${info.titulo}: ${info.descricao}`, 'info');
+        }, 300);
+    }
 }
 
 async function loadAgendas() {
