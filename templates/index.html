@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251215v2">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251215v3">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -464,25 +464,22 @@
                                     </div>
                                     
                                     <div class="team-timeline-container">
-                                        <div class="team-sidebar">
-                                            <div class="team-sidebar-header">
-                                                <span>Membros Da Equipe</span>
-                                                <button class="btn-collapse-sidebar" onclick="toggleTeamSidebar()">
-                                                    <i class="fas fa-chevron-left"></i>
-                                                </button>
-                                            </div>
-                                            <div class="team-members-list" id="team-members-list">
-                                                <!-- Team members will be rendered here -->
-                                            </div>
-                                        </div>
-                                        <div class="team-timeline" id="team-timeline-scroll">
-                                            <div class="timeline-scroll-wrapper" id="timeline-scroll-wrapper">
-                                                <div class="timeline-content-wrapper">
+                                        <div class="team-timeline-scroll" id="team-timeline-scroll">
+                                            <div class="team-timeline-inner">
+                                                <div class="team-sidebar">
+                                                    <div class="team-sidebar-header">
+                                                        <span>Membros Da Equipe</span>
+                                                        <button class="btn-collapse-sidebar" onclick="toggleTeamSidebar()">
+                                                            <i class="fas fa-chevron-left"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="team-members-list" id="team-members-list">
+                                                    </div>
+                                                </div>
+                                                <div class="team-timeline-area">
                                                     <div class="timeline-hours-header" id="timeline-hours-header">
-                                                        <!-- Hours 00-23 will be rendered -->
                                                     </div>
                                                     <div class="timeline-grid" id="timeline-grid">
-                                                        <!-- Timeline rows for each team member -->
                                                     </div>
                                                 </div>
                                             </div>
@@ -3621,6 +3618,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251115v8"></script>
-    <script src="/static/js/app.js?v=20251215v2"></script>
+    <script src="/static/js/app.js?v=20251215v3"></script>
 </body>
 </html>

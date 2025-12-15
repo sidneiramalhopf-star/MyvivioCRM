@@ -3837,31 +3837,19 @@ function renderTeamTimeline() {
     renderTimelineHours();
     renderTimelineGrid();
     updateTeamDateDisplay();
-    setupTimelineScrollSync();
+    scrollToCurrentTime();
 }
 
-function setupTimelineScrollSync() {
-    const membersList = document.getElementById('team-members-list');
-    const timelineGrid = document.getElementById('timeline-grid');
+function scrollToCurrentTime() {
+    const scrollContainer = document.getElementById('team-timeline-scroll');
+    if (!scrollContainer) return;
     
-    if (!membersList || !timelineGrid) return;
+    const now = new Date();
+    const currentHour = now.getHours();
+    const hourWidth = 60;
+    const scrollPosition = Math.max(0, (currentHour - 2) * hourWidth);
     
-    let isScrollingMembers = false;
-    let isScrollingGrid = false;
-    
-    timelineGrid.addEventListener('scroll', () => {
-        if (isScrollingMembers) return;
-        isScrollingGrid = true;
-        membersList.scrollTop = timelineGrid.scrollTop;
-        requestAnimationFrame(() => { isScrollingGrid = false; });
-    });
-    
-    membersList.addEventListener('scroll', () => {
-        if (isScrollingGrid) return;
-        isScrollingMembers = true;
-        timelineGrid.scrollTop = membersList.scrollTop;
-        requestAnimationFrame(() => { isScrollingMembers = false; });
-    });
+    scrollContainer.scrollLeft = scrollPosition;
 }
 
 function renderTeamMembers() {
