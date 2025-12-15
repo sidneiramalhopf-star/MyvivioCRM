@@ -3872,15 +3872,12 @@ function renderTimelineGrid() {
     const container = document.getElementById('timeline-grid');
     if (!container) return;
     
-    const currentHour = new Date().getHours();
-    
     let html = '';
     teamMembersData.forEach(member => {
         html += `<div class="timeline-row" data-member-id="${member.id}">`;
         
         for (let hour = 0; hour <= 23; hour++) {
-            const isCurrent = hour === currentHour;
-            html += `<div class="timeline-cell ${isCurrent ? 'current-time' : ''}" data-hour="${hour}"></div>`;
+            html += `<div class="timeline-cell" data-hour="${hour}"></div>`;
         }
         
         html += '</div>';
@@ -3893,6 +3890,9 @@ function renderTimelineGrid() {
     
     // Add current time indicator
     renderCurrentTimeIndicator();
+    
+    // Start real-time updates for the current time indicator
+    startTimelineRealTimeUpdates();
 }
 
 function renderTimelineEvents() {
@@ -3914,13 +3914,21 @@ function renderTimelineEvents() {
     });
 }
 
+let timelineUpdateInterval = null;
+
 function renderCurrentTimeIndicator() {
+    const container = document.getElementById('timeline-grid');
+    if (!container) return;
+    
+    // Remove existing time line if any
+    const existingLine = container.querySelector('.current-time-line');
+    if (existingLine) {
+        existingLine.remove();
+    }
+    
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinutes = now.getMinutes();
-    
-    const container = document.getElementById('timeline-grid');
-    if (!container) return;
     
     const offset = currentHour * 60 + currentMinutes;
     
@@ -3928,6 +3936,18 @@ function renderCurrentTimeIndicator() {
     line.className = 'current-time-line';
     line.style.left = `${offset}px`;
     container.appendChild(line);
+}
+
+function startTimelineRealTimeUpdates() {
+    // Clear any existing interval
+    if (timelineUpdateInterval) {
+        clearInterval(timelineUpdateInterval);
+    }
+    
+    // Update every minute
+    timelineUpdateInterval = setInterval(() => {
+        renderCurrentTimeIndicator();
+    }, 60000);
 }
 
 function updateTeamDateDisplay() {
