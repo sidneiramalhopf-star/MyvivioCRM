@@ -444,6 +444,27 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="calendar-filters">
+                                        <span class="filter-label">Filtrar por:</span>
+                                        <button class="filter-btn active" data-filter="todos" onclick="filterCalendarEvents('todos')">
+                                            <i class="fas fa-th"></i> Todos
+                                        </button>
+                                        <button class="filter-btn" data-filter="reuniao" onclick="filterCalendarEvents('reuniao')">
+                                            <i class="fas fa-users"></i> Reuniões
+                                        </button>
+                                        <button class="filter-btn" data-filter="tarefa" onclick="filterCalendarEvents('tarefa')">
+                                            <i class="fas fa-tasks"></i> Tarefas
+                                        </button>
+                                        <button class="filter-btn" data-filter="treino" onclick="filterCalendarEvents('treino')">
+                                            <i class="fas fa-dumbbell"></i> Treinos
+                                        </button>
+                                        <button class="filter-btn" data-filter="aula" onclick="filterCalendarEvents('aula')">
+                                            <i class="fas fa-chalkboard-teacher"></i> Aulas
+                                        </button>
+                                        <button class="filter-btn" data-filter="lembrete" onclick="filterCalendarEvents('lembrete')">
+                                            <i class="fas fa-bell"></i> Lembretes
+                                        </button>
+                                    </div>
                                     <div class="calendar-display">
                                         <div class="calendar-header" id="calendar-header"></div>
                                         <div class="calendar-body" id="calendar-body"></div>

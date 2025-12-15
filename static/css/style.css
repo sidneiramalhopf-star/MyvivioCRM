@@ -1473,8 +1473,8 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 }
 
 .stat-icon-circle.green {
-    background: rgba(39, 174, 96, 0.1);
-    color: var(--success-color);
+    background: rgba(31, 39, 70, 0.1);
+    color: var(--dark-bg);
 }
 
 .stat-number {
@@ -1686,8 +1686,8 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 }
 
 .contact-icon.green {
-    background: rgba(98, 177, 202, 0.1);
-    color: var(--accent-blue);
+    background: rgba(31, 39, 70, 0.1);
+    color: var(--dark-bg);
 }
 
 .contact-info {
@@ -2041,6 +2041,124 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     background: var(--accent-blue);
     display: inline-block;
     margin-right: 2px;
+}
+
+/* Filtros do Calendário */
+.calendar-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+}
+
+.calendar-filters .filter-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+.calendar-filters .filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-primary);
+}
+
+.calendar-filters .filter-btn:hover {
+    background: var(--light-bg);
+    border-color: var(--dark-bg);
+}
+
+.calendar-filters .filter-btn.active {
+    background: var(--dark-bg);
+    color: white;
+    border-color: var(--dark-bg);
+}
+
+.calendar-filters .filter-btn i {
+    font-size: 0.75rem;
+}
+
+/* Cards de Eventos no Calendário */
+.calendar-event-card {
+    background: var(--dark-bg);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    margin-bottom: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.calendar-event-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-event-card i {
+    font-size: 0.6rem;
+    flex-shrink: 0;
+}
+
+.calendar-event-card.event-reuniao {
+    background: #3498db;
+}
+
+.calendar-event-card.event-tarefa {
+    background: #9b59b6;
+}
+
+.calendar-event-card.event-treino {
+    background: var(--dark-bg);
+}
+
+.calendar-event-card.event-aula {
+    background: #e67e22;
+}
+
+.calendar-event-card.event-lembrete {
+    background: #f39c12;
+}
+
+.calendar-event-card.event-outro {
+    background: #7f8c8d;
+}
+
+.calendar-events {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 60px;
+    overflow: hidden;
+}
+
+.calendar-events-more {
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 2px;
 }
 
 /* Navegador de Semana */

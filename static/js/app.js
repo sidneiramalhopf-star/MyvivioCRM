@@ -3997,11 +3997,66 @@ function updateMonthYearDisplay() {
     monthYearElement.textContent = `${mes} ${ano}`;
 }
 
-// Atualizar renderMonthView para incluir clique nas datas e atualizar display
-const originalRenderMonthView = renderMonthView;
-renderMonthView = function() {
+// Cache de eventos do calendário
+let calendarEventsCache = [];
+let currentCalendarFilter = 'todos';
+
+// Carregar eventos do backend e renderizar no calendário
+async function loadAndRenderCalendarEvents() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const dataInicio = new Date(year, month, 1).toISOString();
+    const dataFim = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+    
+    try {
+        const response = await fetch(`/calendario/eventos?data_inicio=${dataInicio}&data_fim=${dataFim}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            calendarEventsCache = await response.json();
+            renderCalendarWithEvents();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar eventos:', error);
+        renderCalendarWithEvents();
+    }
+}
+
+// Filtrar eventos do calendário
+function filterCalendarEvents(filterType) {
+    currentCalendarFilter = filterType;
+    
+    document.querySelectorAll('.calendar-filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`.calendar-filters .filter-btn[data-filter="${filterType}"]`).classList.add('active');
+    
+    renderCalendarWithEvents();
+}
+
+// Obter ícone por tipo de evento
+function getEventIcon(tipo) {
+    const icons = {
+        'reuniao': 'fa-users',
+        'tarefa': 'fa-tasks',
+        'treino': 'fa-dumbbell',
+        'aula': 'fa-chalkboard-teacher',
+        'lembrete': 'fa-bell',
+        'outro': 'fa-circle'
+    };
+    return icons[tipo] || 'fa-circle';
+}
+
+// Renderizar calendário com eventos
+function renderCalendarWithEvents() {
     const header = document.getElementById('calendar-header');
     const body = document.getElementById('calendar-body');
+    
+    if (!header || !body) return;
     
     const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     header.innerHTML = weekDays.map(day => `<div>${day}</div>`).join('');
@@ -4012,6 +4067,10 @@ renderMonthView = function() {
     const lastDay = new Date(year, month + 1, 0);
     const startDay = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
+    
+    const filteredEvents = currentCalendarFilter === 'todos' 
+        ? calendarEventsCache 
+        : calendarEventsCache.filter(e => e.tipo_evento === currentCalendarFilter);
     
     let html = '';
     let day = 1;
@@ -4027,12 +4086,36 @@ renderMonthView = function() {
                                month === new Date().getMonth() && 
                                year === new Date().getFullYear();
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayEvents = filteredEvents.filter(e => {
+                    const eventDate = new Date(e.data_inicio);
+                    return eventDate.getDate() === day && 
+                           eventDate.getMonth() === month && 
+                           eventDate.getFullYear() === year;
+                });
+                
+                let eventsHtml = '';
+                const maxEventsToShow = 3;
+                dayEvents.slice(0, maxEventsToShow).forEach(event => {
+                    const icon = getEventIcon(event.tipo_evento);
+                    const horaStr = event.data_inicio ? new Date(event.data_inicio).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : '';
+                    eventsHtml += `
+                        <div class="calendar-event-card event-${event.tipo_evento}" onclick="event.stopPropagation(); viewCalendarEvent(${event.id})" title="${event.titulo}">
+                            <i class="fas ${icon}"></i>
+                            <span>${horaStr ? horaStr + ' ' : ''}${event.titulo}</span>
+                        </div>
+                    `;
+                });
+                
+                if (dayEvents.length > maxEventsToShow) {
+                    eventsHtml += `<div class="calendar-events-more">+${dayEvents.length - maxEventsToShow} mais</div>`;
+                }
+                
                 html += `
                     <div class="calendar-day ${isToday ? 'today' : ''}" onclick="onCalendarDayClick('${dateStr}')">
                         <div class="calendar-day-number">${day}</div>
-                        <div class="calendar-events">
-                            ${day % 3 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
-                            ${day % 5 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
+                        <div class="calendar-events" data-date="${dateStr}">
+                            ${eventsHtml}
                         </div>
                     </div>
                 `;
@@ -4044,6 +4127,50 @@ renderMonthView = function() {
     
     body.innerHTML = html;
     updateMonthYearDisplay();
+}
+
+// Visualizar detalhes de um evento
+async function viewCalendarEvent(eventId) {
+    const event = calendarEventsCache.find(e => e.id === eventId);
+    if (!event) return;
+    
+    const dataInicio = new Date(event.data_inicio);
+    const dataFim = event.data_fim ? new Date(event.data_fim) : null;
+    
+    const tiposLabel = {
+        'reuniao': 'Reunião',
+        'tarefa': 'Tarefa',
+        'treino': 'Treino',
+        'aula': 'Aula',
+        'lembrete': 'Lembrete',
+        'outro': 'Outro'
+    };
+    
+    let detalhes = `
+        <strong>${event.titulo}</strong><br>
+        <small>Tipo: ${tiposLabel[event.tipo_evento] || event.tipo_evento}</small><br>
+        <small>Data: ${dataInicio.toLocaleDateString('pt-BR')}</small>
+    `;
+    
+    if (dataInicio.getHours() > 0 || dataInicio.getMinutes() > 0) {
+        detalhes += `<br><small>Horário: ${dataInicio.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}`;
+        if (dataFim) {
+            detalhes += ` - ${dataFim.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}`;
+        }
+        detalhes += `</small>`;
+    }
+    
+    if (event.descricao) {
+        detalhes += `<br><small>${event.descricao}</small>`;
+    }
+    
+    showToast(detalhes, 'info');
+}
+
+// Atualizar renderMonthView para carregar eventos do backend
+const originalRenderMonthView = renderMonthView;
+renderMonthView = function() {
+    loadAndRenderCalendarEvents();
 };
 
 // Atualizar previousMonth e nextMonth para atualizar o display
@@ -4102,36 +4229,36 @@ async function handleEventFormSubmit(e) {
     
     const titulo = document.getElementById('event-titulo').value;
     const data = document.getElementById('event-data').value;
-    const horaInicio = document.getElementById('event-hora-inicio').value;
-    const horaFim = document.getElementById('event-hora-fim').value;
+    const horaInicio = document.getElementById('event-hora-inicio').value || '09:00';
+    const horaFim = document.getElementById('event-hora-fim').value || '10:00';
     const tipo = document.getElementById('event-tipo').value;
     const descricao = document.getElementById('event-descricao').value;
     const temLembrete = document.getElementById('event-lembrete').checked;
     
-    const eventData = {
+    const dataInicioStr = `${data}T${horaInicio}:00`;
+    const dataFimStr = `${data}T${horaFim}:00`;
+    
+    const params = new URLSearchParams({
         titulo: titulo,
-        data_evento: data,
-        hora_inicio: horaInicio || null,
-        hora_fim: horaFim || null,
-        tipo_evento: tipo,
         descricao: descricao || '',
-        tem_lembrete: temLembrete
-    };
+        data_inicio: dataInicioStr,
+        data_fim: dataFimStr,
+        tipo_evento: tipo,
+        lembrete: temLembrete.toString()
+    });
     
     try {
-        const response = await fetch('/calendario/eventos/criar', {
+        const response = await fetch(`/calendario/eventos/criar?${params.toString()}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(eventData)
+            }
         });
         
         if (response.ok) {
             showToast('Evento criado com sucesso!', 'success');
             closeEventModal();
-            renderCalendar();
+            loadAndRenderCalendarEvents();
         } else {
             const error = await response.json();
             showToast(error.detail || 'Erro ao criar evento', 'error');
