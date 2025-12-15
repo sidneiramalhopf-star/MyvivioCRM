@@ -3837,6 +3837,22 @@ function renderTeamTimeline() {
     renderTimelineHours();
     renderTimelineGrid();
     updateTeamDateDisplay();
+    setupTimelineScrollSync();
+}
+
+function setupTimelineScrollSync() {
+    const membersList = document.getElementById('team-members-list');
+    const timelineGrid = document.getElementById('timeline-grid');
+    
+    if (!membersList || !timelineGrid) return;
+    
+    timelineGrid.addEventListener('scroll', () => {
+        membersList.scrollTop = timelineGrid.scrollTop;
+    });
+    
+    membersList.addEventListener('scroll', () => {
+        timelineGrid.scrollTop = membersList.scrollTop;
+    });
 }
 
 function renderTeamMembers() {

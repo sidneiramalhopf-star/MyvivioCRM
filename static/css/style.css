@@ -11675,7 +11675,11 @@ textarea.form-control {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    padding: 0 1rem;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    box-sizing: border-box;
     background: #f8f9fa;
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
@@ -11697,7 +11701,7 @@ textarea.form-control {
 
 .team-members-list {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .team-member-row {
@@ -11758,36 +11762,41 @@ textarea.form-control {
 
 .team-timeline {
     flex: 1;
-    overflow-x: auto;
+    overflow-x: scroll;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
     scrollbar-width: thin;
-    scrollbar-color: rgba(150, 150, 150, 0.3) transparent;
+    scrollbar-color: rgba(120, 120, 120, 0.4) rgba(240, 240, 240, 0.3);
 }
 
 .team-timeline::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
 }
 
 .team-timeline::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(240, 240, 240, 0.5);
+    border-radius: 4px;
 }
 
 .team-timeline::-webkit-scrollbar-thumb {
-    background: rgba(150, 150, 150, 0.3);
-    border-radius: 3px;
+    background: rgba(120, 120, 120, 0.4);
+    border-radius: 4px;
 }
 
 .team-timeline::-webkit-scrollbar-thumb:hover {
-    background: rgba(150, 150, 150, 0.5);
+    background: rgba(100, 100, 100, 0.6);
 }
 
 .timeline-hours-header {
     display: flex;
     background: #f8f9fa;
     border-bottom: 1px solid var(--border-color);
+    height: 40px;
     min-height: 40px;
+    max-height: 40px;
+    min-width: 1440px;
+    box-sizing: border-box;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -11806,8 +11815,9 @@ textarea.form-control {
 
 .timeline-grid {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: hidden;
     position: relative;
+    min-width: 1440px;
 }
 
 .timeline-row {
