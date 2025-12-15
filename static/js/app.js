@@ -3846,12 +3846,21 @@ function setupTimelineScrollSync() {
     
     if (!membersList || !timelineGrid) return;
     
+    let isScrollingMembers = false;
+    let isScrollingGrid = false;
+    
     timelineGrid.addEventListener('scroll', () => {
+        if (isScrollingMembers) return;
+        isScrollingGrid = true;
         membersList.scrollTop = timelineGrid.scrollTop;
+        requestAnimationFrame(() => { isScrollingGrid = false; });
     });
     
     membersList.addEventListener('scroll', () => {
+        if (isScrollingGrid) return;
+        isScrollingMembers = true;
         timelineGrid.scrollTop = membersList.scrollTop;
+        requestAnimationFrame(() => { isScrollingMembers = false; });
     });
 }
 
@@ -3930,40 +3939,53 @@ function renderTimelineEvents() {
     });
 }
 
-let timelineUpdateInterval = null;
+let timelineAnimationFrame = null;
+let timelineIndicatorLine = null;
 
 function renderCurrentTimeIndicator() {
     const container = document.getElementById('timeline-grid');
     if (!container) return;
     
-    // Remove existing time line if any
-    const existingLine = container.querySelector('.current-time-line');
-    if (existingLine) {
-        existingLine.remove();
+    // Create line element once if not exists
+    if (!timelineIndicatorLine || !container.contains(timelineIndicatorLine)) {
+        timelineIndicatorLine = document.createElement('div');
+        timelineIndicatorLine.className = 'current-time-line';
+        container.appendChild(timelineIndicatorLine);
     }
     
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinutes = now.getMinutes();
+    const currentSeconds = now.getSeconds();
+    const currentMilliseconds = now.getMilliseconds();
     
-    const offset = currentHour * 60 + currentMinutes;
+    // Calculate precise offset including milliseconds for super smooth movement
+    const offset = (currentHour * 60) + currentMinutes + (currentSeconds / 60) + (currentMilliseconds / 60000);
     
-    const line = document.createElement('div');
-    line.className = 'current-time-line';
-    line.style.left = `${offset}px`;
-    container.appendChild(line);
+    // Use transform for better performance
+    timelineIndicatorLine.style.transform = `translateX(${offset}px)`;
 }
 
 function startTimelineRealTimeUpdates() {
-    // Clear any existing interval
-    if (timelineUpdateInterval) {
-        clearInterval(timelineUpdateInterval);
+    // Clear any existing animation frame
+    if (timelineAnimationFrame) {
+        cancelAnimationFrame(timelineAnimationFrame);
     }
     
-    // Update every minute
-    timelineUpdateInterval = setInterval(() => {
+    // Use requestAnimationFrame for continuous smooth updates
+    function updateTimeIndicator() {
         renderCurrentTimeIndicator();
-    }, 60000);
+        timelineAnimationFrame = requestAnimationFrame(updateTimeIndicator);
+    }
+    
+    updateTimeIndicator();
+}
+
+function stopTimelineRealTimeUpdates() {
+    if (timelineAnimationFrame) {
+        cancelAnimationFrame(timelineAnimationFrame);
+        timelineAnimationFrame = null;
+    }
 }
 
 function updateTeamDateDisplay() {

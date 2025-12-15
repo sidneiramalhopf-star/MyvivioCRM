@@ -11660,6 +11660,7 @@ textarea.form-control {
     flex: 1;
     overflow: hidden;
     background: white;
+    min-height: 400px;
 }
 
 .team-sidebar {
@@ -11669,6 +11670,7 @@ textarea.form-control {
     background: white;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .team-sidebar-header {
@@ -11701,7 +11703,27 @@ textarea.form-control {
 
 .team-members-list {
     flex: 1;
-    overflow-y: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 120, 120, 0.3) transparent;
+}
+
+.team-members-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.team-members-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.team-members-list::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 120, 0.3);
+    border-radius: 3px;
+}
+
+.team-members-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(120, 120, 120, 0.5);
 }
 
 .team-member-row {
@@ -11762,30 +11784,44 @@ textarea.form-control {
 
 .team-timeline {
     flex: 1;
-    overflow-x: scroll;
-    overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.timeline-scroll-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: thin;
-    scrollbar-color: rgba(120, 120, 120, 0.4) rgba(240, 240, 240, 0.3);
+    scrollbar-color: rgba(120, 120, 120, 0.5) rgba(220, 220, 220, 0.5);
 }
 
-.team-timeline::-webkit-scrollbar {
-    height: 8px;
+.timeline-scroll-wrapper::-webkit-scrollbar {
+    height: 10px;
 }
 
-.team-timeline::-webkit-scrollbar-track {
-    background: rgba(240, 240, 240, 0.5);
-    border-radius: 4px;
+.timeline-scroll-wrapper::-webkit-scrollbar-track {
+    background: rgba(220, 220, 220, 0.5);
+    border-radius: 5px;
+    margin: 0 5px;
 }
 
-.team-timeline::-webkit-scrollbar-thumb {
-    background: rgba(120, 120, 120, 0.4);
-    border-radius: 4px;
+.timeline-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 120, 0.5);
+    border-radius: 5px;
 }
 
-.team-timeline::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 100, 100, 0.6);
+.timeline-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.7);
+}
+
+.timeline-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-width: 1440px;
 }
 
 .timeline-hours-header {
@@ -11815,9 +11851,29 @@ textarea.form-control {
 
 .timeline-grid {
     flex: 1;
-    overflow-y: hidden;
+    overflow-y: auto;
     position: relative;
     min-width: 1440px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 120, 120, 0.4) rgba(220, 220, 220, 0.3);
+}
+
+.timeline-grid::-webkit-scrollbar {
+    width: 10px;
+}
+
+.timeline-grid::-webkit-scrollbar-track {
+    background: rgba(220, 220, 220, 0.3);
+    border-radius: 5px;
+}
+
+.timeline-grid::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 120, 0.4);
+    border-radius: 5px;
+}
+
+.timeline-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.6);
 }
 
 .timeline-row {
@@ -11884,15 +11940,18 @@ textarea.form-control {
     position: absolute;
     top: 0;
     bottom: 0;
+    left: 0;
     width: 2px;
     background: #8B008B;
     z-index: 20;
+    will-change: transform;
+    pointer-events: none;
 }
 
 .current-time-line::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: -3px;
     left: -4px;
     width: 10px;
     height: 10px;
