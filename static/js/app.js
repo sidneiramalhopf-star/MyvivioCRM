@@ -410,22 +410,109 @@ function updateMetrics(metricas) {
 // HOME PAGE - Button Functions
 // ============================================
 
+// Flag to filter programs after loading
+let filtroProgramasAtivo = null; // 'expirado', 'nao_atribuido', 'atribuido', null
+
 // Navigate to Training page to renew expired programs
 function renovarProgramasExpirados() {
+    filtroProgramasAtivo = 'expirado';
     navigateToPage('treinamento');
     setTimeout(() => {
         switchTreinamentoView('programas');
-        showToast('Selecione os programas expirados para renovar', 'info');
+        aplicarFiltroProgramas();
     }, 300);
 }
 
 // Navigate to Training page to assign programs
 function atribuirProgramas() {
+    filtroProgramasAtivo = 'nao_atribuido';
     navigateToPage('treinamento');
     setTimeout(() => {
         switchTreinamentoView('programas');
-        showToast('Selecione os programas para atribuir aos contatos', 'info');
+        aplicarFiltroProgramas();
     }, 300);
+}
+
+// Apply program filter after navigation
+function aplicarFiltroProgramas() {
+    if (!filtroProgramasAtivo) return;
+    
+    const programsGrid = document.getElementById('programs-grid');
+    if (!programsGrid) return;
+    
+    const cards = programsGrid.querySelectorAll('.program-card, .programa-card');
+    let count = 0;
+    
+    cards.forEach(card => {
+        const status = card.dataset.status || '';
+        let shouldShow = false;
+        
+        if (filtroProgramasAtivo === 'expirado') {
+            shouldShow = status === 'expirado' || status === 'inativo';
+        } else if (filtroProgramasAtivo === 'nao_atribuido') {
+            shouldShow = card.dataset.matriculados === '0' || !card.dataset.matriculados;
+        } else if (filtroProgramasAtivo === 'atribuido') {
+            shouldShow = parseInt(card.dataset.matriculados || 0) > 0;
+        }
+        
+        card.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) count++;
+    });
+    
+    const mensagens = {
+        'expirado': `Exibindo ${count} programa(s) expirado(s) para renovar`,
+        'nao_atribuido': `Exibindo ${count} programa(s) não atribuído(s)`,
+        'atribuido': `Exibindo ${count} programa(s) atribuído(s)`
+    };
+    
+    showToast(mensagens[filtroProgramasAtivo] || 'Filtro aplicado', 'info');
+    filtroProgramasAtivo = null;
+}
+
+// Navigate to view all assigned programs
+function verProgramasAtribuidos() {
+    filtroProgramasAtivo = 'atribuido';
+    navigateToPage('treinamento');
+    setTimeout(() => {
+        switchTreinamentoView('programas');
+        aplicarFiltroProgramas();
+    }, 300);
+}
+
+// Assign a program to contacts - opens modal
+function atribuirProgramaAContato(programaId) {
+    showToast('Selecione os contatos para atribuir este programa', 'info');
+    // Navigate to Pessoas with program context
+    sessionStorage.setItem('programa_para_atribuir', programaId);
+    navigateToPage('pessoas');
+}
+
+// Assign local program to contacts
+function atribuirProgramaLocal(programaId) {
+    showToast('Selecione os contatos para atribuir este programa', 'info');
+    sessionStorage.setItem('programa_para_atribuir', programaId);
+    navigateToPage('pessoas');
+}
+
+// Renew an expired program
+async function renovarPrograma(programaId) {
+    try {
+        const response = await authFetch(`${API_BASE}/programas/${programaId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'ativo' })
+        });
+        
+        if (response.ok) {
+            showToast('Programa renovado com sucesso!', 'success');
+            loadProgramas();
+        } else {
+            showToast('Erro ao renovar programa', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showToast('Erro ao renovar programa', 'error');
+    }
 }
 
 // Toggle filter for present clients
@@ -3188,11 +3275,22 @@ function displayProgramas(programas) {
     container.innerHTML = programas.map(prog => {
         // Programa da API (tem status e usuarios_matriculados)
         if (prog.status) {
+            const matriculados = prog.usuarios_matriculados || 0;
             return `
-                <div class="program-card status-${prog.status}">
+                <div class="program-card status-${prog.status}" data-status="${prog.status}" data-matriculados="${matriculados}" data-id="${prog.id || ''}">
                     <h4>${prog.nome}</h4>
                     <p class="program-status">Status: ${prog.status}</p>
-                    <p class="program-usuarios">👥 ${prog.usuarios_matriculados || 0} matriculados</p>
+                    <p class="program-usuarios">👥 ${matriculados} matriculados</p>
+                    <div class="program-actions">
+                        <button class="btn-small" onclick="atribuirProgramaAContato(${prog.id})">
+                            <i class="fas fa-user-plus"></i> Atribuir
+                        </button>
+                        ${prog.status === 'expirado' || prog.status === 'inativo' ? `
+                        <button class="btn-small btn-renovar" onclick="renovarPrograma(${prog.id})">
+                            <i class="fas fa-sync"></i> Renovar
+                        </button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -3200,9 +3298,10 @@ function displayProgramas(programas) {
         // Programa local (tem exercicios e dataCriacao)
         const numExercicios = prog.exercicios?.length || 0;
         const data = prog.dataCriacao ? new Date(prog.dataCriacao).toLocaleDateString('pt-BR') : 'Sem data';
+        const localId = prog.id || prog.nome.replace(/\s/g, '_');
         
         return `
-            <div class="programa-card">
+            <div class="programa-card" data-status="ativo" data-matriculados="0" data-id="${localId}">
                 <div class="programa-header">
                     <h3>${prog.nome}</h3>
                     <button class="btn-menu"><i class="fas fa-ellipsis-vertical"></i></button>
@@ -3214,6 +3313,11 @@ function displayProgramas(programas) {
                 <div class="programa-tags">
                     <span class="tag">${prog.tipoObjetivo || 'Sem categoria'}</span>
                     <span class="tag">${prog.objetivo || 'Geral'}</span>
+                </div>
+                <div class="program-actions">
+                    <button class="btn-small" onclick="atribuirProgramaLocal('${localId}')">
+                        <i class="fas fa-user-plus"></i> Atribuir
+                    </button>
                 </div>
             </div>
         `;
@@ -6288,6 +6392,7 @@ async function carregarContatos() {
             renderizarContatos(usuarios);
             atualizarEstatisticasContatos(usuarios);
             aplicarFiltroAltoRiscoSeAtivo();
+            verificarProgramaParaAtribuir();
         } else {
             tbody.innerHTML = `
                 <tr>
@@ -6442,10 +6547,31 @@ function filtrarContatos() {
     }
     
     if (filtroTipo) {
-        usuariosFiltrados = usuariosFiltrados.filter(u => u.tipo === filtroTipo);
+        if (filtroTipo === 'alto_risco') {
+            usuariosFiltrados = usuariosFiltrados.filter(u => u.risco_churn >= 0.7);
+        } else if (filtroTipo === 'lead') {
+            usuariosFiltrados = usuariosFiltrados.filter(u => !u.convertido || u.tipo === 'lead');
+        } else if (filtroTipo === 'sem_programa') {
+            usuariosFiltrados = usuariosFiltrados.filter(u => !u.programa_id);
+        } else {
+            usuariosFiltrados = usuariosFiltrados.filter(u => u.tipo === filtroTipo);
+        }
     }
     
     renderizarContatos(usuariosFiltrados);
+    
+    // Show filter feedback
+    if (filtroTipo) {
+        const labels = {
+            'alto_risco': 'alto risco',
+            'lead': 'leads',
+            'sem_programa': 'sem programa',
+            'aluno': 'alunos',
+            'admin': 'administradores',
+            'instrutor': 'instrutores'
+        };
+        showToast(`Exibindo ${usuariosFiltrados.length} ${labels[filtroTipo] || filtroTipo}`, 'info');
+    }
 }
 
 function toggleFiltrosAvancados() {
@@ -6510,6 +6636,107 @@ function aplicarFiltroAltoRiscoSeAtivo() {
         renderizarContatos(contatosAltoRisco);
         showToast(`Exibindo ${contatosAltoRisco.length} contatos de alto risco`, 'info');
     }
+}
+
+// Check if there's a program to assign to contacts
+function verificarProgramaParaAtribuir() {
+    const programaId = sessionStorage.getItem('programa_para_atribuir');
+    if (!programaId) return;
+    
+    // Show assignment UI
+    const container = document.querySelector('.pessoas-container') || document.querySelector('.contatos-section');
+    if (!container) return;
+    
+    // Check if banner already exists
+    if (document.getElementById('banner-atribuir-programa')) return;
+    
+    const banner = document.createElement('div');
+    banner.id = 'banner-atribuir-programa';
+    banner.className = 'alert-banner';
+    banner.innerHTML = `
+        <div class="banner-content">
+            <i class="fas fa-user-plus"></i>
+            <span>Selecione os contatos para atribuir ao programa #${programaId}</span>
+            <button class="btn-banner" onclick="confirmarAtribuicaoPrograma()">Confirmar Seleção</button>
+            <button class="btn-banner btn-cancel" onclick="cancelarAtribuicaoPrograma()">Cancelar</button>
+        </div>
+    `;
+    banner.style.cssText = 'background: #1f2746; color: white; padding: 12px 20px; margin-bottom: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px;';
+    
+    const content = container.querySelector('.tab-contatos, .contatos-content') || container.firstChild;
+    if (content) {
+        container.insertBefore(banner, content);
+    } else {
+        container.prepend(banner);
+    }
+    
+    // Add checkboxes to contact rows
+    adicionarCheckboxesContatos();
+}
+
+// Add checkboxes to contact rows for selection
+function adicionarCheckboxesContatos() {
+    const rows = document.querySelectorAll('#contatos-table-body tr[data-id]');
+    rows.forEach(row => {
+        const firstTd = row.querySelector('td');
+        if (firstTd && !firstTd.querySelector('input[type="checkbox"]')) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'contato-checkbox';
+            checkbox.style.cssText = 'margin-right: 10px; width: 18px; height: 18px; cursor: pointer;';
+            firstTd.prepend(checkbox);
+        }
+    });
+}
+
+// Confirm program assignment
+async function confirmarAtribuicaoPrograma() {
+    const programaId = sessionStorage.getItem('programa_para_atribuir');
+    if (!programaId) return;
+    
+    const checkboxes = document.querySelectorAll('.contato-checkbox:checked');
+    if (checkboxes.length === 0) {
+        showToast('Selecione pelo menos um contato', 'warning');
+        return;
+    }
+    
+    const usuarioIds = Array.from(checkboxes).map(cb => {
+        const row = cb.closest('tr');
+        return row ? parseInt(row.dataset.id) : null;
+    }).filter(id => id);
+    
+    try {
+        const response = await authFetch(`${API_BASE}/programas/${programaId}/atribuir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_ids: usuarioIds })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showToast(result.mensagem || `${usuarioIds.length} contato(s) atribuídos com sucesso!`, 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Erro ao atribuir contatos', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao atribuir programa:', error);
+        showToast('Erro de conexão ao atribuir contatos', 'error');
+    }
+    
+    cancelarAtribuicaoPrograma();
+}
+
+// Cancel program assignment
+function cancelarAtribuicaoPrograma() {
+    sessionStorage.removeItem('programa_para_atribuir');
+    
+    const banner = document.getElementById('banner-atribuir-programa');
+    if (banner) banner.remove();
+    
+    // Remove checkboxes
+    const checkboxes = document.querySelectorAll('.contato-checkbox');
+    checkboxes.forEach(cb => cb.remove());
 }
 
 // Open modal to create a new lead/visitor

@@ -11446,3 +11446,39 @@ textarea.form-control {
     }
 }
 
+
+/* Program Card Action Buttons */
+.program-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--btn-primary);
+    color: white;
+    transition: all 0.2s;
+}
+
+.btn-small:hover {
+    background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-small.btn-renovar {
+    background: var(--warning-color);
+}
+
+.btn-small.btn-renovar:hover {
+    background: #e67e22;
+}

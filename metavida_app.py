@@ -1349,6 +1349,55 @@ async def criar_programa(request: Request,
     return {"mensagem": "Programa criado com sucesso!", "id": programa.id}
 
 
+@app.put("/programas/{programa_id}")
+async def atualizar_programa(programa_id: int,
+                             request: Request,
+                             usuario: Usuario = Depends(get_current_user),
+                             db: Session = Depends(get_db)):
+    programa = db.query(Programa).filter(Programa.id == programa_id).first()
+    if not programa:
+        raise HTTPException(status_code=404, detail="Programa não encontrado")
+    
+    data = await request.json()
+    
+    if "nome" in data:
+        programa.nome = data["nome"]
+    if "descricao" in data:
+        programa.descricao = data["descricao"]
+    if "status" in data:
+        programa.status = data["status"]
+    if "usuarios_matriculados" in data:
+        programa.usuarios_matriculados = data["usuarios_matriculados"]
+    if "data_fim" in data and data["data_fim"]:
+        programa.data_fim = datetime.fromisoformat(data["data_fim"].replace("Z", "+00:00"))
+    
+    db.commit()
+    return {"mensagem": "Programa atualizado com sucesso!", "id": programa.id}
+
+
+@app.post("/programas/{programa_id}/atribuir")
+async def atribuir_usuarios_programa(programa_id: int,
+                                     request: Request,
+                                     usuario: Usuario = Depends(get_current_user),
+                                     db: Session = Depends(get_db)):
+    programa = db.query(Programa).filter(Programa.id == programa_id).first()
+    if not programa:
+        raise HTTPException(status_code=404, detail="Programa não encontrado")
+    
+    data = await request.json()
+    usuario_ids = data.get("usuario_ids", [])
+    
+    # Update usuarios_matriculados count
+    programa.usuarios_matriculados = (programa.usuarios_matriculados or 0) + len(usuario_ids)
+    db.commit()
+    
+    return {
+        "mensagem": f"{len(usuario_ids)} usuário(s) atribuído(s) ao programa",
+        "programa_id": programa.id,
+        "total_matriculados": programa.usuarios_matriculados
+    }
+
+
 # ============================================================
 # Endpoints de Visitantes
 # ============================================================
