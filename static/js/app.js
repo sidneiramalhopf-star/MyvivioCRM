@@ -3802,112 +3802,208 @@ function initPlanner() {
     }
 }
 
-// ===== CALENDÁRIO =====
+// ===== CALENDÁRIO TEAM TIMELINE =====
+
+// Fictional team members data
+const teamMembersData = [
+    { id: 1, nome: 'João Moreira', role: 'Instrutor da classe', initials: 'JM', color: '#667eea' },
+    { id: 2, nome: 'Lima Bernardo', role: 'Instrutor de Fitness', initials: 'LB', color: '#764ba2' },
+    { id: 3, nome: 'Patrício Susana', role: 'Instrutor de Fitness', initials: 'PS', color: '#e67e22' },
+    { id: 4, nome: 'Ramalho Sidnei', role: 'Personal Trainer, Treinador,...', initials: 'RS', color: '#27ae60' },
+    { id: 5, nome: 'Silva Mariana', role: 'Treinador, Instrutor da classe', initials: 'SM', color: '#3498db' },
+    { id: 6, nome: 'Souza Vinicius', role: 'Instrutor de Fitness, Treina...', initials: 'SV', color: '#e74c3c' }
+];
+
+// Sample events for team members
+const teamEventsData = [
+    { memberId: 1, startHour: 17, duration: 1, title: 'GINÁSIO', type: 'aula' },
+    { memberId: 2, startHour: 8, duration: 1.5, title: 'TREINO', type: 'treino' },
+    { memberId: 3, startHour: 12, duration: 2, title: 'AULA YOGA', type: 'aula' },
+    { memberId: 4, startHour: 9, duration: 2, title: 'GINÁSIO', type: 'treino' },
+    { memberId: 4, startHour: 14, duration: 1, title: 'GINÁSIO', type: 'aula' },
+    { memberId: 5, startHour: 13, duration: 1.5, title: 'GINÁSIO', type: 'treino' },
+    { memberId: 6, startHour: 18, duration: 2, title: 'GINÁSIO', type: 'aula' }
+];
+
+let currentCalendarioTab = 'pessoal';
+let teamTimelineDate = new Date();
 
 function renderCalendar() {
-    const mode = document.getElementById('view-mode').value;
-    if (mode === 'week') {
-        renderWeekView();
-    } else {
-        renderMonthView();
-    }
+    renderTeamTimeline();
 }
 
-function renderMonthView() {
-    const header = document.getElementById('calendar-header');
-    const body = document.getElementById('calendar-body');
-    
-    // Dias da semana
-    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    header.innerHTML = weekDays.map(day => `<div>${day}</div>`).join('');
-    
-    // Obter primeiro e último dia do mês
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
-    
-    // Construir calendário
-    let html = '';
-    let day = 1;
-    
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 7; j++) {
-            if (i === 0 && j < startDay) {
-                html += '<div class="calendar-day other-month"></div>';
-            } else if (day > daysInMonth) {
-                html += '<div class="calendar-day other-month"></div>';
-            } else {
-                const isToday = day === new Date().getDate() && 
-                               month === new Date().getMonth() && 
-                               year === new Date().getFullYear();
-                html += `
-                    <div class="calendar-day ${isToday ? 'today' : ''}">
-                        <div class="calendar-day-number">${day}</div>
-                        <div class="calendar-events">
-                            ${day % 3 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
-                            ${day % 5 === 0 ? '<span class="calendar-event-dot"></span>' : ''}
-                        </div>
-                    </div>
-                `;
-                day++;
-            }
-        }
-        if (day > daysInMonth) break;
-    }
-    
-    body.innerHTML = html;
+function renderTeamTimeline() {
+    renderTeamMembers();
+    renderTimelineHours();
+    renderTimelineGrid();
+    updateTeamDateDisplay();
 }
 
-function renderWeekView() {
-    const header = document.getElementById('calendar-header');
-    const body = document.getElementById('calendar-body');
+function renderTeamMembers() {
+    const container = document.getElementById('team-members-list');
+    if (!container) return;
     
-    // Obter início da semana
-    const today = new Date(currentDate);
-    const dayOfWeek = today.getDay();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek);
-    
-    // Dias da semana com datas
-    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    let headerHTML = '';
-    
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        const isToday = date.toDateString() === new Date().toDateString();
-        headerHTML += `
-            <div class="${isToday ? 'today' : ''}">
-                ${weekDays[i]}<br>
-                <small>${date.getDate()}</small>
+    container.innerHTML = teamMembersData.map(member => `
+        <div class="team-member-row" data-member-id="${member.id}">
+            <div class="team-member-avatar" style="background: ${member.color};">
+                ${member.initials}
             </div>
-        `;
-    }
-    
-    header.innerHTML = headerHTML;
-    body.innerHTML = '<div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: var(--text-secondary);">Selecione uma data para ver as atividades</div>';
+            <div class="team-member-info">
+                <div class="team-member-name">${member.nome}</div>
+                <div class="team-member-role">${member.role}</div>
+            </div>
+        </div>
+    `).join('');
 }
 
+function renderTimelineHours() {
+    const container = document.getElementById('timeline-hours-header');
+    if (!container) return;
+    
+    let html = '';
+    for (let hour = 0; hour <= 23; hour++) {
+        const displayHour = hour.toString().padStart(2, '0');
+        html += `<div class="timeline-hour">${displayHour}</div>`;
+    }
+    container.innerHTML = html;
+}
+
+function renderTimelineGrid() {
+    const container = document.getElementById('timeline-grid');
+    if (!container) return;
+    
+    const currentHour = new Date().getHours();
+    
+    let html = '';
+    teamMembersData.forEach(member => {
+        html += `<div class="timeline-row" data-member-id="${member.id}">`;
+        
+        for (let hour = 0; hour <= 23; hour++) {
+            const isCurrent = hour === currentHour;
+            html += `<div class="timeline-cell ${isCurrent ? 'current-time' : ''}" data-hour="${hour}"></div>`;
+        }
+        
+        html += '</div>';
+    });
+    
+    container.innerHTML = html;
+    
+    // Add events to timeline
+    renderTimelineEvents();
+    
+    // Add current time indicator
+    renderCurrentTimeIndicator();
+}
+
+function renderTimelineEvents() {
+    teamEventsData.forEach(event => {
+        const row = document.querySelector(`.timeline-row[data-member-id="${event.memberId}"]`);
+        if (!row) return;
+        
+        const startCell = row.querySelector(`[data-hour="${event.startHour}"]`);
+        if (!startCell) return;
+        
+        const eventEl = document.createElement('div');
+        eventEl.className = `timeline-event type-${event.type}`;
+        eventEl.style.width = `${event.duration * 60 - 8}px`;
+        eventEl.style.left = '4px';
+        eventEl.innerHTML = event.title;
+        eventEl.onclick = () => showToast(`Evento: ${event.title}`, 'info');
+        
+        startCell.appendChild(eventEl);
+    });
+}
+
+function renderCurrentTimeIndicator() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    const container = document.getElementById('timeline-grid');
+    if (!container) return;
+    
+    const offset = currentHour * 60 + currentMinutes;
+    
+    const line = document.createElement('div');
+    line.className = 'current-time-line';
+    line.style.left = `${offset}px`;
+    container.appendChild(line);
+}
+
+function updateTeamDateDisplay() {
+    const display = document.getElementById('team-date-display');
+    if (!display) return;
+    
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    const dateStr = teamTimelineDate.toLocaleDateString('pt-BR', options);
+    display.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+}
+
+function switchCalendarioTab(tab) {
+    currentCalendarioTab = tab;
+    
+    document.querySelectorAll('.calendario-tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    // Could filter events based on personal vs unit
+    showToast(tab === 'pessoal' ? 'Agenda Pessoal' : 'Agenda da Unidade', 'info');
+    renderTeamTimeline();
+}
+
+function previousWeekTeam() {
+    teamTimelineDate.setDate(teamTimelineDate.getDate() - 7);
+    updateTeamDateDisplay();
+    showToast('Semana anterior', 'info');
+}
+
+function nextWeekTeam() {
+    teamTimelineDate.setDate(teamTimelineDate.getDate() + 7);
+    updateTeamDateDisplay();
+    showToast('Próxima semana', 'info');
+}
+
+function goToTodayTeam() {
+    teamTimelineDate = new Date();
+    updateTeamDateDisplay();
+    renderTeamTimeline();
+    showToast('Voltando para hoje', 'info');
+}
+
+function openDatePicker() {
+    showToast('Seletor de data', 'info');
+}
+
+function changeViewPeriodo() {
+    const periodo = document.getElementById('view-periodo').value;
+    showToast(`Visualização: ${periodo}`, 'info');
+}
+
+function toggleTeamSidebar() {
+    const sidebar = document.querySelector('.team-sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+function mostrarPresenca() {
+    showToast('Mostrando presença dos membros', 'info');
+}
+
+// Legacy calendar functions for compatibility
 function changeViewMode() {
     renderCalendar();
 }
 
 function previousMonth() {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar();
+    previousWeekTeam();
 }
 
 function nextMonth() {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar();
+    nextWeekTeam();
 }
 
 function goToToday() {
-    currentDate = new Date();
-    renderCalendar();
+    goToTodayTeam();
 }
 
 // ===== FUNÇÕES ANTIGAS REMOVIDAS =====
@@ -4271,33 +4367,7 @@ async function viewCalendarEvent(eventId) {
     showToast(detalhes, 'info');
 }
 
-// Atualizar renderMonthView para carregar eventos do backend
-const originalRenderMonthView = renderMonthView;
-renderMonthView = function() {
-    loadAndRenderCalendarEvents();
-};
-
-// Atualizar previousMonth e nextMonth para atualizar o display
-const originalPreviousMonth = previousMonth;
-previousMonth = function() {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar();
-    updateMonthYearDisplay();
-};
-
-const originalNextMonth = nextMonth;
-nextMonth = function() {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar();
-    updateMonthYearDisplay();
-};
-
-const originalGoToToday = goToToday;
-goToToday = function() {
-    currentDate = new Date();
-    renderCalendar();
-    updateMonthYearDisplay();
-};
+// Legacy calendar overrides removed - now using team timeline
 
 // Função chamada ao clicar em uma data do calendário
 function onCalendarDayClick(dateStr) {

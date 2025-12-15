@@ -424,50 +424,65 @@
                         <div class="planner-container">
                             <!-- Área Principal -->
                             <div class="planner-main">
-                                <!-- Seção Calendário -->
+                                <!-- Seção Calendário - Team Timeline View -->
                                 <div id="planner-calendario" class="planner-view active">
-                                    <div class="planner-header">
-                                        <div class="page-title-wrapper">
-                                            <h1><i class="fas fa-calendar"></i> Calendário</h1>
-                                            <button id="quick-add-event" class="btn-icon-accent" onclick="openEventModal()" title="Adicionar Atividade">
+                                    <div class="calendario-team-header">
+                                        <div class="calendario-title-section">
+                                            <h1>Calendário</h1>
+                                            <button class="btn-add-circle" onclick="openEventModal()" title="Adicionar Atividade">
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                         </div>
-                                        <div class="calendar-controls">
-                                            <button class="btn-icon" onclick="previousMonth()"><i class="fas fa-chevron-left"></i></button>
-                                            <h2 id="month-year" class="month-year-display">Janeiro 2025</h2>
-                                            <button class="btn-icon" onclick="nextMonth()"><i class="fas fa-chevron-right"></i></button>
-                                            <button class="btn-outline" onclick="goToToday()">HOJE</button>
-                                            <select id="view-mode" onchange="changeViewMode()" class="view-select">
-                                                <option value="month">Mês</option>
-                                                <option value="week">Semana</option>
+                                        <div class="calendario-tabs">
+                                            <button class="calendario-tab active" onclick="switchCalendarioTab('pessoal')">Pessoal</button>
+                                            <button class="calendario-tab" onclick="switchCalendarioTab('unidade')">Unidade</button>
+                                        </div>
+                                        <button class="btn-mostrar-presenca" onclick="mostrarPresenca()">
+                                            MOSTRAR PRESENÇA
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="calendario-controls">
+                                        <div class="calendario-nav">
+                                            <button class="btn-icon-nav" onclick="previousWeekTeam()"><i class="fas fa-chevron-left"></i></button>
+                                            <button class="btn-icon-nav" onclick="openDatePicker()"><i class="fas fa-calendar-alt"></i></button>
+                                            <button class="btn-icon-nav" onclick="nextWeekTeam()"><i class="fas fa-chevron-right"></i></button>
+                                            <button class="btn-hoje" onclick="goToTodayTeam()">HOJE</button>
+                                        </div>
+                                        <div class="calendario-right-controls">
+                                            <span class="filter-icon"><i class="fas fa-filter"></i> MOSTRA</span>
+                                            <select id="view-periodo" class="view-select-team" onchange="changeViewPeriodo()">
+                                                <option value="semana">Semana</option>
+                                                <option value="dia">Dia</option>
+                                                <option value="mes">Mês</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="calendar-filters">
-                                        <span class="filter-label">Filtrar por:</span>
-                                        <button class="filter-btn active" data-filter="todos" onclick="filterCalendarEvents('todos')">
-                                            <i class="fas fa-th"></i> Todos
-                                        </button>
-                                        <button class="filter-btn" data-filter="reuniao" onclick="filterCalendarEvents('reuniao')">
-                                            <i class="fas fa-users"></i> Reuniões
-                                        </button>
-                                        <button class="filter-btn" data-filter="tarefa" onclick="filterCalendarEvents('tarefa')">
-                                            <i class="fas fa-tasks"></i> Tarefas
-                                        </button>
-                                        <button class="filter-btn" data-filter="treino" onclick="filterCalendarEvents('treino')">
-                                            <i class="fas fa-dumbbell"></i> Treinos
-                                        </button>
-                                        <button class="filter-btn" data-filter="aula" onclick="filterCalendarEvents('aula')">
-                                            <i class="fas fa-chalkboard-teacher"></i> Aulas
-                                        </button>
-                                        <button class="filter-btn" data-filter="lembrete" onclick="filterCalendarEvents('lembrete')">
-                                            <i class="fas fa-bell"></i> Lembretes
-                                        </button>
+                                    
+                                    <div class="calendario-date-display" id="team-date-display">
+                                        Segunda-Feira, 15 De Dezembro
                                     </div>
-                                    <div class="calendar-display">
-                                        <div class="calendar-header" id="calendar-header"></div>
-                                        <div class="calendar-body" id="calendar-body"></div>
+                                    
+                                    <div class="team-timeline-container">
+                                        <div class="team-sidebar">
+                                            <div class="team-sidebar-header">
+                                                <span>Membros Da Equipe</span>
+                                                <button class="btn-collapse-sidebar" onclick="toggleTeamSidebar()">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                            </div>
+                                            <div class="team-members-list" id="team-members-list">
+                                                <!-- Team members will be rendered here -->
+                                            </div>
+                                        </div>
+                                        <div class="team-timeline">
+                                            <div class="timeline-hours-header" id="timeline-hours-header">
+                                                <!-- Hours 07-21 will be rendered -->
+                                            </div>
+                                            <div class="timeline-grid" id="timeline-grid">
+                                                <!-- Timeline rows for each team member -->
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
