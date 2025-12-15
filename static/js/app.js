@@ -343,6 +343,7 @@ async function loadDayToDayData() {
             document.getElementById('leads-count').textContent = stats.visitantes || '0';
             document.getElementById('programs-expired').textContent = stats.programas?.expirados || '0';
             document.getElementById('programs-unassigned').textContent = stats.programas?.nao_atribuidos || '0';
+            document.getElementById('programs-assigned').textContent = stats.programas?.atribuidos || '0';
         }
     } catch (error) {
         console.error('Erro ao carregar dados do dia a dia', error);
