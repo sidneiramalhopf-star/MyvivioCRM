@@ -1914,7 +1914,16 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
 }
 
 .planner-view.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#planner-calendario.active {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    min-height: 500px;
 }
 
 .planner-header {
@@ -11660,7 +11669,10 @@ textarea.form-control {
     flex: 1;
     overflow: hidden;
     background: white;
-    min-height: 400px;
+    min-height: 350px;
+    max-height: calc(100vh - 320px);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
 }
 
 .team-sidebar {
