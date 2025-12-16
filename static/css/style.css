@@ -11670,7 +11670,7 @@ textarea.form-control {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    height: 360px;
+    height: 310px;
     overflow: hidden;
     width: 100%;
     max-width: calc(100vw - 280px);
