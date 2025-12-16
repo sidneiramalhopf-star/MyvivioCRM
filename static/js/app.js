@@ -4059,8 +4059,11 @@ function renderCurrentTimeIndicator() {
     const currentSeconds = now.getSeconds();
     const currentMilliseconds = now.getMilliseconds();
     
-    // Calculate precise offset including milliseconds for super smooth movement
-    const offset = (currentHour * 60) + currentMinutes + (currentSeconds / 60) + (currentMilliseconds / 60000);
+    // Each hour column is 80px wide
+    const hourWidth = 80;
+    // Calculate precise offset: hours * 80px + minutes fraction of 80px
+    const minuteFraction = (currentMinutes + (currentSeconds / 60) + (currentMilliseconds / 60000)) / 60;
+    const offset = (currentHour * hourWidth) + (minuteFraction * hourWidth);
     
     // Use transform for better performance
     timelineIndicatorLine.style.transform = `translateX(${offset}px)`;

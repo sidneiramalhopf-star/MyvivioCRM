@@ -11674,7 +11674,8 @@ textarea.form-control {
     min-height: 400px;
     max-height: 550px;
     overflow: hidden;
-    width: 100%;
+    width: calc(220px + 12 * 80px + 20px);
+    max-width: 100%;
     box-sizing: border-box;
 }
 
