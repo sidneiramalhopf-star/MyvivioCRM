@@ -11959,3 +11959,49 @@ textarea.form-control {
         display: none;
     }
 }
+
+/* ============================================================
+   Calendar Container Fixes (FullCalendar Compatibility)
+   ============================================================ */
+
+.calendar-container {
+    width: 100%;
+    overflow-x: hidden;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.fc-view-container, .fc-view {
+    width: 100% !important;
+}
+
+.fc-scroller {
+    overflow-x: hidden !important;
+}
+
+.fc-timegrid-slot {
+    height: 40px !important;
+}
+
+.fc-event {
+    border-radius: 4px;
+    border: none;
+    padding: 2px 4px;
+}
+
+.fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+    }
+}
