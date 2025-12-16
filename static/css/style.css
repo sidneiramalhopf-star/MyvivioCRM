@@ -11974,13 +11974,14 @@ textarea.form-control {
 
 .calendario-view-section {
     display: none;
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
 }
 
 .calendario-view-section.active {
     display: block;
+}
+
+#calendario-pessoal-view {
+    width: 100%;
 }
 
 #calendario-unidade-view {
