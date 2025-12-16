@@ -3958,7 +3958,7 @@ function scrollToCurrentTime() {
     
     const now = new Date();
     const currentHour = now.getHours();
-    const hourWidth = 60;
+    const hourWidth = 80;
     const scrollPosition = Math.max(0, (currentHour - 2) * hourWidth);
     
     scrollContainer.scrollLeft = scrollPosition;

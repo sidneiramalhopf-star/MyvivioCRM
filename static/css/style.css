@@ -11821,8 +11821,8 @@ textarea.form-control {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 1500px;
-    width: max-content;
+    min-width: 1920px;
+    width: 1920px;
 }
 
 .timeline-hours-header {
@@ -11838,8 +11838,8 @@ textarea.form-control {
 }
 
 .timeline-hour {
-    min-width: 60px;
-    width: 60px;
+    min-width: 80px;
+    width: 80px;
     text-align: center;
     padding: 0.5rem 0;
     font-size: 0.8rem;
@@ -11863,8 +11863,8 @@ textarea.form-control {
 }
 
 .timeline-cell {
-    min-width: 60px;
-    width: 60px;
+    min-width: 80px;
+    width: 80px;
     border-right: 1px solid var(--border-color);
     position: relative;
     background: white;
