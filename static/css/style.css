@@ -11674,6 +11674,8 @@ textarea.form-control {
     min-height: 350px;
     max-height: 500px;
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 
 .team-timeline-scroll {
@@ -11713,7 +11715,7 @@ textarea.form-control {
 
 .team-timeline-inner {
     display: flex;
-    min-width: fit-content;
+    width: max-content;
 }
 
 .team-sidebar {
@@ -11821,7 +11823,6 @@ textarea.form-control {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 1920px;
     width: 1920px;
 }
 
@@ -11973,10 +11974,19 @@ textarea.form-control {
 
 .calendario-view-section {
     display: none;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendario-view-section.active {
     display: block;
+}
+
+#calendario-unidade-view {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* ============================================================
