@@ -11680,7 +11680,7 @@ textarea.form-control {
 .team-timeline-scroll {
     flex: 1;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
     position: relative;
     scrollbar-width: thin;
     scrollbar-color: rgba(120, 120, 120, 0.6) #f0f0f0;
