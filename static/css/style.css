@@ -11685,30 +11685,30 @@ textarea.form-control {
     overflow-y: auto;
     position: relative;
     scrollbar-width: thin;
-    scrollbar-color: #888 #f1f1f1;
+    scrollbar-color: rgba(180, 180, 180, 0.5) transparent;
 }
 
 .team-timeline-scroll::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 6px;
+    height: 6px;
 }
 
 .team-timeline-scroll::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 6px;
+    background: transparent;
+    border-radius: 3px;
 }
 
 .team-timeline-scroll::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 6px;
+    background: rgba(180, 180, 180, 0.5);
+    border-radius: 3px;
 }
 
 .team-timeline-scroll::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: rgba(150, 150, 150, 0.7);
 }
 
 .team-timeline-scroll::-webkit-scrollbar-corner {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 .team-timeline-inner {
