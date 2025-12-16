@@ -11670,21 +11670,22 @@ textarea.form-control {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    height: auto;
-    max-height: calc(40px + 5 * 60px + 10px);
+    height: 360px;
     overflow: hidden;
-    width: calc(220px + 12 * 80px + 20px);
-    max-width: 100%;
+    width: 100%;
+    max-width: calc(100vw - 280px);
     box-sizing: border-box;
 }
 
 .team-timeline-scroll {
     flex: 1;
     overflow-x: auto;
-    overflow-y: auto;
+    overflow-y: hidden;
     position: relative;
     scrollbar-width: thin;
-    scrollbar-color: rgba(180, 180, 180, 0.5) transparent;
+    scrollbar-color: rgba(120, 120, 120, 0.6) #f0f0f0;
+    margin: 0;
+    padding: 0;
 }
 
 .team-timeline-scroll::-webkit-scrollbar {
