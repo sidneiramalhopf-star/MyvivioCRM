@@ -11670,23 +11670,20 @@ textarea.form-control {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    height: calc(100vh - 350px);
-    min-height: 350px;
-    max-height: 500px;
+    height: calc(100vh - 320px);
+    min-height: 400px;
+    max-height: 550px;
     overflow: hidden;
     width: 100%;
-    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .team-timeline-scroll {
     flex: 1;
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: auto;
     position: relative;
-}
-
-.team-timeline-scroll {
-    scrollbar-width: auto;
+    scrollbar-width: thin;
     scrollbar-color: #888 #f1f1f1;
 }
 
@@ -11820,10 +11817,10 @@ textarea.form-control {
 }
 
 .team-timeline-area {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    width: 1920px;
+    width: calc(24 * 80px);
 }
 
 .timeline-hours-header {
@@ -11986,8 +11983,9 @@ textarea.form-control {
 
 #calendario-unidade-view {
     width: 100%;
-    max-width: 100%;
+    max-width: calc(100vw - 250px);
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 /* ============================================================
