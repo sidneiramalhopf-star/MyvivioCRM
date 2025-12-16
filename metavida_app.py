@@ -1287,6 +1287,26 @@ def concluir_agenda(agenda_id: int,
 # Endpoints de Calendário (Agenda da Unidade e Pessoal)
 # ============================================================
 
+@app.get("/unidades/{unidade_id}/membros_equipe")
+def get_membros_equipe(unidade_id: int, db: Session = Depends(get_db)):
+    """
+    Retorna a lista de membros da equipe (instrutores/gestores) de uma unidade
+    no formato esperado pelo FullCalendar (Resources).
+    """
+    membros = db.query(Usuario).filter(
+        Usuario.unidade_id == unidade_id,
+        Usuario.tipo.in_(["instrutor", "admin", "gestor"])
+    ).all()
+    
+    return [{
+        "id": str(m.id),
+        "title": m.nome,
+        "extendedProps": {
+            "tipo": m.tipo,
+            "email": m.email
+        }
+    } for m in membros]
+
 @app.get("/calendario/unidade/{unidade_id}")
 def get_calendario_unidade(
     unidade_id: int,
@@ -1302,10 +1322,10 @@ def get_calendario_unidade(
     for aula in aulas:
         eventos_unidade.append({
             "id": aula.id,
-            "title": f"{aula.nome_aula} ({aula.instrutor.nome if aula.instrutor else 'Sem Instrutor'})",
+            "title": aula.nome_aula,
             "start": aula.data_hora.isoformat() if aula.data_hora else None,
             "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat() if aula.data_hora else None,
-            "resourceId": aula.sala_id,
+            "resourceId": str(aula.instrutor_id) if aula.instrutor_id else None,
             "extendedProps": {
                 "instrutor": aula.instrutor.nome if aula.instrutor else "N/A",
                 "sala": aula.sala.nome if aula.sala else "N/A",

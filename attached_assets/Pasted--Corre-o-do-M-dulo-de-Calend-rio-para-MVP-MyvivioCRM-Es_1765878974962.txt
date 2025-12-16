@@ -1,0 +1,211 @@
+# Correção do Módulo de Calendário para MVP (MyvivioCRM)
+
+Este documento consolida os ajustes de código necessários para corrigir os problemas de layout e garantir a funcionalidade em tempo real do módulo de Planejador/Calendário, tornando-o pronto para testes de Produto Mínimo Viável (MVP).
+
+---
+
+## 1. Backend (FastAPI) - Lógica de Dados
+
+Estes endpoints são cruciais para que o frontend possa carregar os dados da agenda da Unidade e da agenda Pessoal.
+
+### A. Novo Endpoint: Listar Membros da Equipe (Recursos)
+
+Este endpoint é necessário para a visualização da **UNIDADE** (Resource Timeline View), onde os membros da equipe são as "linhas" do calendário.
+
+**Ação:** Adicione este bloco de código ao seu arquivo `main.py` (na seção de Endpoints de Calendário):
+
+```python
+@app.get("/unidades/{unidade_id}/membros_equipe")
+def get_membros_equipe(unidade_id: int, db: Session = Depends(get_db)):
+    """
+    Retorna a lista de membros da equipe (instrutores/gestores) de uma unidade
+    no formato esperado pelo FullCalendar (Resources).
+    """
+    # Busca todos os usuários que são instrutores ou membros da equipe na unidade
+    membros = db.query(Usuario).filter(
+        Usuario.unidade_id == unidade_id,
+        Usuario.tipo.in_(["instrutor", "admin", "gestor"]) # Filtre pelos tipos relevantes
+    ).all()
+    
+    return [{
+        "id": m.id,
+        "title": m.nome,
+        "extendedProps": {
+            "tipo": m.tipo,
+            "email": m.email
+        }
+    } for m in membros]
+```
+
+### B. Endpoints de Eventos (Agenda da Unidade e Pessoal)
+
+Estes endpoints foram ajustados para garantir a formatação correta dos dados e a filtragem por usuário logado (Agenda Pessoal).
+
+**Ação:** Certifique-se de que estes blocos de código estejam presentes no seu `main.py` (na seção de Endpoints de Calendário):
+
+```python
+@app.get("/calendario/unidade/{unidade_id}")
+def get_calendario_unidade(
+    unidade_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    # ... (código para buscar EventoAula e formatar para o calendário)
+    # O código anterior já estava correto, apenas certifique-se de que ele existe.
+    # A chave é que o EventoAula deve ter o campo 'resourceId' (instrutor_id ou sala_id)
+    # para ser mapeado corretamente na visualização de recursos.
+    pass # O código completo foi fornecido na resposta anterior.
+
+@app.get("/calendario/pessoal")
+def get_calendario_pessoal(
+    db: Session = Depends(get_db),
+    gestor: Usuario = Depends(get_current_user) # O gestor logado
+):
+    # ... (código para buscar EventoCalendario e ReservaAula do gestor logado)
+    # O código anterior já estava correto, apenas certifique-se de que ele existe.
+    pass # O código completo foi fornecido na resposta anterior.
+```
+
+---
+
+## 2. Frontend (HTML/CSS/JavaScript) - Layout e Usabilidade
+
+Estes ajustes corrigem o layout, a rolagem horizontal e configuram o calendário para 24 horas.
+
+### A. Correção de Layout (CSS)
+
+**Ação:** Adicione este bloco de CSS ao seu arquivo de estilos principal (`style.css` ou similar).
+
+```css
+/* CORREÇÃO DE LAYOUT E ROLAGEM HORIZONTAL */
+
+/* 1. Garante que o contêiner principal não force a rolagem */
+.calendar-wrapper {
+    width: 100%;
+    overflow-x: hidden; /* Remove a rolagem horizontal do contêiner */
+    padding: 0 15px; /* Adiciona um pequeno respiro lateral se necessário */
+}
+
+/* 2. Força o FullCalendar a se ajustar à largura do contêiner */
+.fc-view-container, .fc-view, .fc-scroller {
+    width: 100% !important;
+    overflow-x: hidden !important; /* Remove a rolagem horizontal do scroller */
+}
+
+/* 3. Ajuste específico para a visualização de recursos (Timeline/TimeGrid) */
+/* Isso fará com que as colunas de tempo se ajustem à largura disponível */
+.fc-resourceTimeGridDay-view .fc-body,
+.fc-resourceTimeGridWeek-view .fc-body,
+.fc-timeline-view .fc-body {
+    width: 100% !important;
+    table-layout: fixed; /* Garante que as colunas tenham largura igual */
+}
+```
+
+### B. Lógica de Inicialização (JavaScript/FullCalendar)
+
+**Ação:** Substitua a lógica de inicialização do seu calendário por estas duas funções.
+
+```javascript
+// Assumindo que você está usando FullCalendar
+
+// ============================================================
+// FUNÇÃO 1: CALENDÁRIO DA UNIDADE (Membros da Equipe/Recursos)
+// ============================================================
+function initializeUnitCalendar(calendarId, unidadeId) {
+    var calendarEl = document.getElementById(calendarId);
+    
+    // URLs da API
+    let eventsUrl = `/calendario/unidade/${unidadeId}`;
+    let resourcesUrl = `/unidades/${unidadeId}/membros_equipe`; 
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        // 1. VISUALIZAÇÃO DE RECURSOS (Resource TimeGrid Day - como na sua imagem)
+        initialView: 'resourceTimeGridDay', 
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source', // Necessário para visualizações de recursos
+        
+        // 2. CORREÇÃO DE HORÁRIO (24 HORAS)
+        slotMinTime: '00:00:00', // Começa à meia-noite
+        slotMaxTime: '24:00:00', // Termina à meia-noite do dia seguinte
+        
+        // 3. CONFIGURAÇÃO DE RECURSOS (Membros da Equipe)
+        resourceAreaHeaderContent: 'Membros Da Equipe',
+        resources: {
+            url: resourcesUrl, 
+            method: 'GET',
+            failure: function() { console.error('Erro ao carregar membros da equipe.'); }
+        },
+        
+        // 4. CARREGAMENTO DE EVENTOS (Aulas)
+        events: {
+            url: eventsUrl,
+            method: 'GET',
+            extraParams: function() {
+                return { token: localStorage.getItem('auth_token') };
+            }
+        },
+        
+        // 5. AJUSTES DE LAYOUT
+        height: 'auto', 
+        contentHeight: 'auto',
+        expandRows: true,
+        
+        // Outras configurações de cabeçalho, etc.
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'resourceTimeGridDay,timeGridWeek,dayGridMonth'
+        }
+    });
+
+    calendar.render();
+}
+
+// ============================================================
+// FUNÇÃO 2: CALENDÁRIO PESSOAL (Agenda do Gestor Logado)
+// ============================================================
+function initializePersonalCalendar(calendarId) {
+    var calendarEl = document.getElementById(calendarId);
+    
+    let eventsUrl = `/calendario/pessoal`; 
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        // 1. VISUALIZAÇÃO PADRÃO (TimeGrid Week/Day)
+        initialView: 'timeGridWeek', 
+        
+        // 2. CORREÇÃO DE HORÁRIO (24 HORAS)
+        slotMinTime: '00:00:00', 
+        slotMaxTime: '24:00:00', 
+        
+        // 3. CARREGAMENTO DE EVENTOS (Agenda Pessoal e Reservas)
+        events: {
+            url: eventsUrl,
+            method: 'GET',
+            extraParams: function() {
+                return { token: localStorage.getItem('auth_token') };
+            }
+        },
+        
+        // 4. AJUSTES DE LAYOUT
+        height: 'auto', 
+        contentHeight: 'auto',
+        expandRows: true,
+        
+        // Outras configurações de cabeçalho, etc.
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'timeGridWeek,dayGridMonth'
+        }
+    });
+
+    calendar.render();
+}
+
+// EXEMPLO DE USO (Chame estas funções quando a respectiva TAB for ativada)
+// // Para a aba UNIDADE (substitua 1 pelo ID da unidade logada)
+// initializeUnitCalendar('calendar-unidade-div', 1); 
+//
+// // Para a aba PESSOAL
+// initializePersonalCalendar('calendar-pessoal-div');
+```

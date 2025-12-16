@@ -3831,10 +3831,11 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
             week: 'Semana',
             day: 'Dia'
         },
-        slotMinTime: '06:00:00',
-        slotMaxTime: '22:00:00',
+        slotMinTime: '00:00:00',
+        slotMaxTime: '24:00:00',
         expandRows: true,
         height: 'auto',
+        contentHeight: 'auto',
         allDaySlot: false,
         nowIndicator: true,
         slotDuration: '00:30:00',

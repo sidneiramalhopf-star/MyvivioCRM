@@ -12047,6 +12047,20 @@ textarea.form-control {
     overflow-x: hidden !important;
 }
 
+/* Layout e rolagem horizontal - correções MVP */
+.calendar-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    padding: 0 15px;
+}
+
+.fc-resourceTimeGridDay-view .fc-body,
+.fc-resourceTimeGridWeek-view .fc-body,
+.fc-timeline-view .fc-body {
+    width: 100% !important;
+    table-layout: fixed;
+}
+
 .fc-timegrid-slot {
     height: 40px !important;
 }
