@@ -3802,6 +3802,113 @@ function initPlanner() {
     }
 }
 
+// ===== FULLCALENDAR INTEGRATION =====
+
+let fullCalendarUnidade = null;
+let fullCalendarPessoal = null;
+
+function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
+    const calendarEl = document.getElementById(calendarId);
+    if (!calendarEl) return null;
+    
+    const apiUrl = isPersonal 
+        ? `/calendario/pessoal` 
+        : `/calendario/unidade/${unidadeId}`;
+    
+    const token = localStorage.getItem('auth_token');
+    
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        locale: 'pt-br',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hoje',
+            month: 'Mês',
+            week: 'Semana',
+            day: 'Dia'
+        },
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        expandRows: true,
+        height: 'auto',
+        allDaySlot: false,
+        nowIndicator: true,
+        slotDuration: '00:30:00',
+        
+        events: async function(fetchInfo, successCallback, failureCallback) {
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar eventos');
+                }
+                
+                const data = await response.json();
+                successCallback(data);
+            } catch (error) {
+                console.error('Erro ao carregar calendário:', error);
+                failureCallback(error);
+                showToast('Erro ao carregar eventos do calendário', 'error');
+            }
+        },
+        
+        eventDidMount: function(info) {
+            if (isPersonal && info.event.title.startsWith('RESERVADO:')) {
+                info.el.classList.add('personal-reserved-event');
+            }
+        },
+        
+        eventClick: function(info) {
+            showToast(`Evento: ${info.event.title}`, 'info');
+        }
+    });
+    
+    calendar.render();
+    return calendar;
+}
+
+function initializeCalendarioPessoal() {
+    const container = document.getElementById('fullcalendar-pessoal');
+    if (!container) return;
+    
+    if (fullCalendarPessoal) {
+        fullCalendarPessoal.destroy();
+    }
+    
+    fullCalendarPessoal = initializeFullCalendar('fullcalendar-pessoal', true, null);
+}
+
+function initializeCalendarioUnidade() {
+    const container = document.getElementById('fullcalendar-unidade');
+    if (!container) return;
+    
+    if (fullCalendarUnidade) {
+        fullCalendarUnidade.destroy();
+    }
+    
+    const unidadeId = currentUser?.unidade_id || 1;
+    fullCalendarUnidade = initializeFullCalendar('fullcalendar-unidade', false, unidadeId);
+}
+
+function refreshFullCalendars() {
+    if (fullCalendarPessoal) {
+        fullCalendarPessoal.refetchEvents();
+    }
+    if (fullCalendarUnidade) {
+        fullCalendarUnidade.refetchEvents();
+    }
+}
+
 // ===== CALENDÁRIO TEAM TIMELINE =====
 
 // Fictional team members data
@@ -3829,7 +3936,11 @@ let currentCalendarioTab = 'pessoal';
 let teamTimelineDate = new Date();
 
 function renderCalendar() {
-    renderTeamTimeline();
+    if (currentCalendarioTab === 'unidade') {
+        renderTeamTimeline();
+    } else {
+        initializeCalendarioPessoal();
+    }
 }
 
 function renderTeamTimeline() {
@@ -3989,11 +4100,24 @@ function switchCalendarioTab(tab) {
     currentCalendarioTab = tab;
     
     document.querySelectorAll('.calendario-tab').forEach(t => t.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    } else {
+        document.querySelector(`.calendario-tab:${tab === 'pessoal' ? 'first-child' : 'last-child'}`)?.classList.add('active');
+    }
     
-    // Could filter events based on personal vs unit
-    showToast(tab === 'pessoal' ? 'Agenda Pessoal' : 'Agenda da Unidade', 'info');
-    renderTeamTimeline();
+    const pessoalView = document.getElementById('calendario-pessoal-view');
+    const unidadeView = document.getElementById('calendario-unidade-view');
+    
+    if (tab === 'pessoal') {
+        if (pessoalView) pessoalView.style.display = 'block';
+        if (unidadeView) unidadeView.style.display = 'none';
+        initializeCalendarioPessoal();
+    } else {
+        if (pessoalView) pessoalView.style.display = 'none';
+        if (unidadeView) unidadeView.style.display = 'block';
+        renderTeamTimeline();
+    }
 }
 
 function previousWeekTeam() {

@@ -11961,6 +11961,18 @@ textarea.form-control {
 }
 
 /* ============================================================
+   Calendar View Sections
+   ============================================================ */
+
+.calendario-view-section {
+    display: none;
+}
+
+.calendario-view-section.active {
+    display: block;
+}
+
+/* ============================================================
    Calendar Container Fixes (FullCalendar Compatibility)
    ============================================================ */
 
@@ -11969,6 +11981,62 @@ textarea.form-control {
     overflow-x: hidden;
     padding: 15px;
     box-sizing: border-box;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+#fullcalendar-pessoal {
+    min-height: 500px;
+}
+
+.fc {
+    font-family: inherit;
+}
+
+.fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fc-button {
+    background: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+    font-weight: 500 !important;
+}
+
+.fc-button:hover {
+    background: #4a9ab5 !important;
+    border-color: #4a9ab5 !important;
+}
+
+.fc-button-active {
+    background: var(--dark-blue) !important;
+    border-color: var(--dark-blue) !important;
+}
+
+.fc-today-button {
+    background: var(--medium-blue) !important;
+    border-color: var(--medium-blue) !important;
+}
+
+.fc-daygrid-day.fc-day-today,
+.fc-timegrid-col.fc-day-today {
+    background: rgba(98, 177, 202, 0.1) !important;
+}
+
+.fc-timegrid-now-indicator-line {
+    border-color: #8B008B !important;
+    border-width: 2px !important;
+}
+
+.fc-timegrid-now-indicator-arrow {
+    border-color: #8B008B !important;
+}
+
+.personal-reserved-event {
+    border-left: 3px solid #123058 !important;
 }
 
 .fc-view-container, .fc-view {

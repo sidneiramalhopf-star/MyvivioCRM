@@ -1,0 +1,60 @@
+// Assumindo que você está usando FullCalendar
+
+function initializeCalendar(calendarId, isPersonal, unidadeId, gestorId) {
+    var calendarEl = document.getElementById(calendarId);
+    
+    // Define a URL da API com base na TAB (UNIDADE ou PESSOAL)
+    let apiUrl = isPersonal 
+        ? `/calendario/pessoal` 
+        : `/calendario/unidade/${unidadeId}`;
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        // 1. CORREÇÃO DE LAYOUT E USABILIDADE (ROLAGEM HORIZONTAL)
+        // Usar timeGridWeek ou timeGridDay é melhor para agendas
+        initialView: 'timeGridWeek', 
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay' // Opções de visualização
+        },
+        
+        // 2. CONFIGURAÇÃO DE HORÁRIOS
+        slotMinTime: '06:00:00', // Começa às 6h
+        slotMaxTime: '22:00:00', // Termina às 22h
+        expandRows: true, // Garante que o calendário preencha a altura
+        height: 'auto', // Ajusta a altura automaticamente
+        
+        // 3. CARREGAMENTO DE DADOS EM TEMPO REAL (AJAX)
+        events: {
+            url: apiUrl,
+            method: 'GET',
+            failure: function() {
+                alert('Houve um erro ao carregar os eventos do calendário.');
+            },
+            // Adicione o token de autenticação aqui
+            extraParams: function() {
+                return {
+                    token: localStorage.getItem('auth_token') // Assumindo que o token está no localStorage
+                };
+            }
+        },
+        
+        // 4. LÓGICA PESSOAL/UNIDADE
+        // Para a agenda pessoal, você pode adicionar um filtro visual
+        eventDidMount: function(info) {
+            if (isPersonal) {
+                // Adiciona uma classe para destacar eventos pessoais
+                info.el.classList.add('personal-event');
+            }
+        }
+    });
+
+    calendar.render();
+}
+
+// Exemplo de como chamar a função na sua página:
+// // Agenda da UNIDADE (substitua 1 pelo ID da unidade logada)
+// initializeCalendar('calendar-unidade', false, 1, null); 
+//
+// // Agenda PESSOAL (substitua 1 pelo ID do gestor logado)
+// initializeCalendar('calendar-pessoal', true, null, 1); 

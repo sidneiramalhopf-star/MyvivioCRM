@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym & Corporate Wellness CRM</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=20251216v1">
+    <link rel="stylesheet" href="/static/css/style.css?v=20251216v2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -459,27 +461,37 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="calendario-date-display" id="team-date-display">
-                                        Segunda-Feira, 15 De Dezembro
+                                    <!-- Calendário Pessoal (FullCalendar) -->
+                                    <div id="calendario-pessoal-view" class="calendario-view-section active">
+                                        <div class="calendar-container">
+                                            <div id="fullcalendar-pessoal"></div>
+                                        </div>
                                     </div>
                                     
-                                    <div class="team-timeline-container">
-                                        <div class="team-timeline-scroll" id="team-timeline-scroll">
-                                            <div class="team-timeline-inner">
-                                                <div class="team-sidebar">
-                                                    <div class="team-sidebar-header">
-                                                        <span>Membros Da Equipe</span>
-                                                        <button class="btn-collapse-sidebar" onclick="toggleTeamSidebar()">
-                                                            <i class="fas fa-chevron-left"></i>
-                                                        </button>
+                                    <!-- Calendário Unidade (Team Timeline) -->
+                                    <div id="calendario-unidade-view" class="calendario-view-section" style="display: none;">
+                                        <div class="calendario-date-display" id="team-date-display">
+                                            Segunda-Feira, 15 De Dezembro
+                                        </div>
+                                        
+                                        <div class="team-timeline-container">
+                                            <div class="team-timeline-scroll" id="team-timeline-scroll">
+                                                <div class="team-timeline-inner">
+                                                    <div class="team-sidebar">
+                                                        <div class="team-sidebar-header">
+                                                            <span>Membros Da Equipe</span>
+                                                            <button class="btn-collapse-sidebar" onclick="toggleTeamSidebar()">
+                                                                <i class="fas fa-chevron-left"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="team-members-list" id="team-members-list">
+                                                        </div>
                                                     </div>
-                                                    <div class="team-members-list" id="team-members-list">
-                                                    </div>
-                                                </div>
-                                                <div class="team-timeline-area">
-                                                    <div class="timeline-hours-header" id="timeline-hours-header">
-                                                    </div>
-                                                    <div class="timeline-grid" id="timeline-grid">
+                                                    <div class="team-timeline-area">
+                                                        <div class="timeline-hours-header" id="timeline-hours-header">
+                                                        </div>
+                                                        <div class="timeline-grid" id="timeline-grid">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -3618,6 +3630,6 @@
     </button>
 
     <script src="/static/js/mockData.js?v=20251115v8"></script>
-    <script src="/static/js/app.js?v=20251215v3"></script>
+    <script src="/static/js/app.js?v=20251216v2"></script>
 </body>
 </html>
