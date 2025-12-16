@@ -1,0 +1,73 @@
+# ============================================================
+# Endpoints de Calendário (Agenda da Unidade e Pessoal)
+# ============================================================
+
+@app.get("/calendario/unidade/{unidade_id}")
+def get_calendario_unidade(
+    unidade_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user) # Apenas para autenticação
+):
+    # Busca todas as aulas/eventos da unidade
+    aulas = db.query(EventoAula).filter(
+        EventoAula.unidade_id == unidade_id,
+        EventoAula.ativa == True
+    ).all()
+
+    eventos_unidade = []
+    for aula in aulas:
+        # Formato FullCalendar (ou similar)
+        eventos_unidade.append({
+            "id": aula.id,
+            "title": f"{aula.nome_aula} ({aula.instrutor.nome if aula.instrutor else 'Sem Instrutor'})",
+            "start": aula.data_hora.isoformat(),
+            "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat(),
+            "resourceId": aula.sala_id, # Se estiver usando visualização de recursos (salas)
+            "extendedProps": {
+                "instrutor": aula.instrutor.nome if aula.instrutor else "N/A",
+                "sala": aula.sala.nome if aula.sala else "N/A",
+                "reservas": len([r for r in aula.reservas if not r.cancelada])
+            },
+            "color": "#62b1ca" # Cor padrão para aulas
+        })
+    
+    return eventos_unidade
+
+@app.get("/calendario/pessoal")
+def get_calendario_pessoal(
+    db: Session = Depends(get_db),
+    gestor: Usuario = Depends(get_current_user) # O gestor logado
+):
+    # 1. Eventos Pessoais do Gestor
+    eventos_pessoais = db.query(EventoCalendario).filter(
+        EventoCalendario.usuario_id == gestor.id
+    ).all()
+
+    eventos = []
+    for ev in eventos_pessoais:
+        eventos.append({
+            "id": ev.id,
+            "title": ev.titulo,
+            "start": ev.data_inicio.isoformat(),
+            "end": ev.data_fim.isoformat(),
+            "color": ev.cor # Cor definida no evento
+        })
+
+    # 2. Aulas Reservadas pelo Gestor
+    reservas = db.query(ReservaAula).filter(
+        ReservaAula.usuario_id == gestor.id,
+        ReservaAula.cancelada == False
+    ).all()
+
+    for res in reservas:
+        aula = res.evento_aula
+        if aula:
+            eventos.append({
+                "id": aula.id,
+                "title": f"RESERVADO: {aula.nome_aula}",
+                "start": aula.data_hora.isoformat(),
+                "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat(),
+                "color": "#123058" # Cor para reservas
+            })
+            
+    return eventos

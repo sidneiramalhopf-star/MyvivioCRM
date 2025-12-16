@@ -1284,6 +1284,78 @@ def concluir_agenda(agenda_id: int,
 
 
 # ============================================================
+# Endpoints de Calendário (Agenda da Unidade e Pessoal)
+# ============================================================
+
+@app.get("/calendario/unidade/{unidade_id}")
+def get_calendario_unidade(
+    unidade_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    aulas = db.query(EventoAula).filter(
+        EventoAula.unidade_id == unidade_id,
+        EventoAula.ativa == True
+    ).all()
+
+    eventos_unidade = []
+    for aula in aulas:
+        eventos_unidade.append({
+            "id": aula.id,
+            "title": f"{aula.nome_aula} ({aula.instrutor.nome if aula.instrutor else 'Sem Instrutor'})",
+            "start": aula.data_hora.isoformat() if aula.data_hora else None,
+            "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat() if aula.data_hora else None,
+            "resourceId": aula.sala_id,
+            "extendedProps": {
+                "instrutor": aula.instrutor.nome if aula.instrutor else "N/A",
+                "sala": aula.sala.nome if aula.sala else "N/A",
+                "reservas": len([r for r in aula.reservas if not r.cancelada])
+            },
+            "color": "#62b1ca"
+        })
+    
+    return eventos_unidade
+
+
+@app.get("/calendario/pessoal")
+def get_calendario_pessoal(
+    db: Session = Depends(get_db),
+    gestor: Usuario = Depends(get_current_user)
+):
+    eventos_pessoais = db.query(EventoCalendario).filter(
+        EventoCalendario.usuario_id == gestor.id
+    ).all()
+
+    eventos = []
+    for ev in eventos_pessoais:
+        eventos.append({
+            "id": ev.id,
+            "title": ev.titulo,
+            "start": ev.data_inicio.isoformat() if ev.data_inicio else None,
+            "end": ev.data_fim.isoformat() if ev.data_fim else None,
+            "color": ev.cor
+        })
+
+    reservas = db.query(ReservaAula).filter(
+        ReservaAula.usuario_id == gestor.id,
+        ReservaAula.cancelada == False
+    ).all()
+
+    for res in reservas:
+        aula = res.evento_aula
+        if aula:
+            eventos.append({
+                "id": aula.id,
+                "title": f"RESERVADO: {aula.nome_aula}",
+                "start": aula.data_hora.isoformat() if aula.data_hora else None,
+                "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat() if aula.data_hora else None,
+                "color": "#123058"
+            })
+            
+    return eventos
+
+
+# ============================================================
 # Endpoints de Programas
 # ============================================================
 
