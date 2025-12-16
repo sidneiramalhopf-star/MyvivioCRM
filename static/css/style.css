@@ -11670,9 +11670,8 @@ textarea.form-control {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    height: calc(100vh - 320px);
-    min-height: 400px;
-    max-height: 550px;
+    height: auto;
+    max-height: calc(40px + 5 * 60px + 10px);
     overflow: hidden;
     width: calc(220px + 12 * 80px + 20px);
     max-width: 100%;
