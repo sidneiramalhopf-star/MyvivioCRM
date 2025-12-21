@@ -4053,10 +4053,12 @@ function renderCurrentTimeIndicator() {
         container.appendChild(timelineIndicatorLine);
     }
     
+    // Get current time in Lisbon timezone
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinutes = now.getMinutes();
-    const currentSeconds = now.getSeconds();
+    const lisbonTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Lisbon' }));
+    const currentHour = lisbonTime.getHours();
+    const currentMinutes = lisbonTime.getMinutes();
+    const currentSeconds = lisbonTime.getSeconds();
     const currentMilliseconds = now.getMilliseconds();
     
     // Each hour column is 80px wide
