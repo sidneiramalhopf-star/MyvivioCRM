@@ -11673,6 +11673,7 @@ textarea.form-control {
     height: 310px;
     overflow: hidden;
     width: 100%;
+    max-width: calc(100vw - 280px);
     box-sizing: border-box;
 }
 
@@ -11983,6 +11984,7 @@ textarea.form-control {
 
 #calendario-unidade-view {
     width: 100%;
+    max-width: calc(100vw - 250px);
     overflow: hidden;
     box-sizing: border-box;
 }
