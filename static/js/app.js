@@ -4127,41 +4127,150 @@ function switchCalendarioTab(tab) {
     const unidadeView = document.getElementById('calendario-unidade-view');
     
     if (tab === 'pessoal') {
-        if (pessoalView) pessoalView.style.display = 'block';
-        if (unidadeView) unidadeView.style.display = 'none';
+        if (pessoalView) {
+            pessoalView.style.display = 'block';
+            pessoalView.classList.add('active');
+        }
+        if (unidadeView) {
+            unidadeView.style.display = 'none';
+            unidadeView.classList.remove('active');
+        }
         initializeCalendarioPessoal();
     } else {
-        if (pessoalView) pessoalView.style.display = 'none';
-        if (unidadeView) unidadeView.style.display = 'block';
-        renderTeamTimeline();
+        if (pessoalView) {
+            pessoalView.style.display = 'none';
+            pessoalView.classList.remove('active');
+        }
+        if (unidadeView) {
+            unidadeView.style.display = 'block';
+            unidadeView.classList.add('active');
+        }
+        initializeCalendarioUnidade();
     }
 }
 
 function previousWeekTeam() {
-    teamTimelineDate.setDate(teamTimelineDate.getDate() - 7);
-    updateTeamDateDisplay();
-    showToast('Semana anterior', 'info');
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    if (isPessoalActive && fullCalendarPessoal) {
+        fullCalendarPessoal.prev();
+    } else if (fullCalendarUnidade) {
+        fullCalendarUnidade.prev();
+    }
 }
 
 function nextWeekTeam() {
-    teamTimelineDate.setDate(teamTimelineDate.getDate() + 7);
-    updateTeamDateDisplay();
-    showToast('Próxima semana', 'info');
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    if (isPessoalActive && fullCalendarPessoal) {
+        fullCalendarPessoal.next();
+    } else if (fullCalendarUnidade) {
+        fullCalendarUnidade.next();
+    }
 }
 
 function goToTodayTeam() {
-    teamTimelineDate = new Date();
-    updateTeamDateDisplay();
-    renderTeamTimeline();
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    if (isPessoalActive && fullCalendarPessoal) {
+        fullCalendarPessoal.today();
+    } else if (fullCalendarUnidade) {
+        fullCalendarUnidade.today();
+    }
     showToast('Voltando para hoje', 'info');
 }
 
 function openDatePicker() {
-    showToast('Seletor de data', 'info');
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const calendarioUnidadeView = document.getElementById('calendario-unidade-view');
+    
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    const existingPicker = document.getElementById('calendario-date-picker-popup');
+    if (existingPicker) {
+        existingPicker.remove();
+        return;
+    }
+    
+    let currentDate = new Date();
+    if (isPessoalActive && fullCalendarPessoal) {
+        currentDate = fullCalendarPessoal.getDate();
+    } else if (fullCalendarUnidade) {
+        currentDate = fullCalendarUnidade.getDate();
+    }
+    
+    const popup = document.createElement('div');
+    popup.id = 'calendario-date-picker-popup';
+    popup.className = 'date-picker-popup';
+    popup.innerHTML = `
+        <div class="date-picker-content">
+            <input type="date" id="calendario-date-input" value="${currentDate.toISOString().split('T')[0]}">
+            <div class="date-picker-buttons">
+                <button class="btn-cancel" onclick="closeDatePickerPopup()">Cancelar</button>
+                <button class="btn-apply" onclick="applyDatePickerDate()">Ir</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    setTimeout(() => {
+        document.getElementById('calendario-date-input').focus();
+    }, 100);
+}
+
+function closeDatePickerPopup() {
+    const popup = document.getElementById('calendario-date-picker-popup');
+    if (popup) popup.remove();
+}
+
+function applyDatePickerDate() {
+    const input = document.getElementById('calendario-date-input');
+    if (!input || !input.value) return;
+    
+    const selectedDate = new Date(input.value + 'T12:00:00');
+    
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    if (isPessoalActive && fullCalendarPessoal) {
+        fullCalendarPessoal.gotoDate(selectedDate);
+    } else if (fullCalendarUnidade) {
+        fullCalendarUnidade.gotoDate(selectedDate);
+    }
+    
+    closeDatePickerPopup();
+    showToast(`Navegando para ${input.value}`, 'success');
 }
 
 function changeViewPeriodo() {
     const periodo = document.getElementById('view-periodo').value;
+    
+    const calendarioPessoalView = document.getElementById('calendario-pessoal-view');
+    const isPessoalActive = calendarioPessoalView && calendarioPessoalView.classList.contains('active');
+    
+    let viewName = 'timeGridWeek';
+    switch (periodo) {
+        case 'dia':
+            viewName = 'timeGridDay';
+            break;
+        case 'semana':
+            viewName = 'timeGridWeek';
+            break;
+        case 'mes':
+            viewName = 'dayGridMonth';
+            break;
+    }
+    
+    if (isPessoalActive && fullCalendarPessoal) {
+        fullCalendarPessoal.changeView(viewName);
+    } else if (fullCalendarUnidade) {
+        fullCalendarUnidade.changeView(viewName);
+    }
+    
     showToast(`Visualização: ${periodo}`, 'info');
 }
 

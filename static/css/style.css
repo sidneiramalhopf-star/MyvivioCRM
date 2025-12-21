@@ -12354,6 +12354,71 @@ textarea.form-control {
     cursor: pointer;
 }
 
+.date-picker-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.date-picker-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    min-width: 280px;
+}
+
+.date-picker-content input[type="date"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+
+.date-picker-content input[type="date"]:focus {
+    border-color: var(--btn-primary);
+    outline: none;
+}
+
+.date-picker-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.date-picker-buttons .btn-cancel {
+    padding: 0.5rem 1rem;
+    background: #f1f1f1;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.date-picker-buttons .btn-apply {
+    padding: 0.5rem 1.5rem;
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.date-picker-buttons .btn-apply:hover {
+    background: var(--btn-primary-hover);
+}
+
 .calendario-date-display {
     padding: 0.75rem 1.5rem;
     background: #f8f9fa;
