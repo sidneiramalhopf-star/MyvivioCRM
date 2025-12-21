@@ -1346,6 +1346,14 @@ body:has(.unified-sidebar.hidden) .unified-sidebar-toggle-circle {
     color: var(--text-primary);
 }
 
+#event-modal .modal-content {
+    padding-bottom: calc(2rem + 15px);
+}
+
+#event-modal .btn-primary {
+    margin-top: 10px;
+}
+
 /* Toast */
 .toast {
     position: fixed;
