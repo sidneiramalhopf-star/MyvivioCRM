@@ -6176,6 +6176,124 @@ async function renderCalendarioSemanalAulas() {
     }
     
     bodyContainer.innerHTML = bodyHtml;
+    
+    // Inicializar timer em tempo real
+    initAulasRealTimeTimer();
+}
+
+// Timer em tempo real para Aulas em Andamento
+let aulasTimerInterval = null;
+
+function initAulasRealTimeTimer() {
+    // Limpar interval anterior
+    if (aulasTimerInterval) {
+        clearInterval(aulasTimerInterval);
+    }
+    
+    // Atualizar imediatamente
+    updateAulasTimerPosition();
+    
+    // Atualizar a cada segundo
+    aulasTimerInterval = setInterval(updateAulasTimerPosition, 1000);
+}
+
+function updateAulasTimerPosition() {
+    const gridContainer = document.querySelector('.grade-technogym-body');
+    if (!gridContainer) return;
+    
+    // Obter hora local do usuário
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentSecond = now.getSeconds();
+    
+    // Verificar se está dentro do horário visível (6h-22h)
+    const horaInicio = 6;
+    const horaFim = 22;
+    
+    // Criar ou atualizar o indicador de tempo
+    let timerLine = document.getElementById('aulas-timer-line');
+    let timerDisplay = document.getElementById('aulas-timer-display');
+    
+    if (!timerLine) {
+        timerLine = document.createElement('div');
+        timerLine.id = 'aulas-timer-line';
+        timerLine.className = 'aulas-timer-indicator';
+        
+        timerDisplay = document.createElement('div');
+        timerDisplay.id = 'aulas-timer-display';
+        timerDisplay.className = 'aulas-timer-display';
+        timerLine.appendChild(timerDisplay);
+        
+        // Adicionar ao container do scroll
+        const scrollContainer = document.querySelector('.grade-technogym-scroll');
+        if (scrollContainer) {
+            scrollContainer.appendChild(timerLine);
+        }
+    }
+    
+    // Atualizar display do horário
+    const horaFormatada = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}:${String(currentSecond).padStart(2, '0')}`;
+    if (timerDisplay) {
+        timerDisplay.textContent = horaFormatada;
+    }
+    
+    // Verificar se está fora do horário visível
+    if (currentHour < horaInicio || currentHour > horaFim) {
+        timerLine.style.display = 'none';
+        return;
+    }
+    
+    timerLine.style.display = 'block';
+    
+    // Calcular posição vertical
+    // Cada linha de hora tem 60px de altura
+    const pixelsPerHour = 60;
+    const hoursFromStart = currentHour - horaInicio;
+    const minuteFraction = (currentMinute + currentSecond / 60) / 60;
+    const topPosition = (hoursFromStart + minuteFraction) * pixelsPerHour;
+    
+    timerLine.style.top = `${topPosition}px`;
+    
+    // Encontrar qual coluna é o dia atual
+    const inicioSemana = getStartOfWeek(semanaAulasAndamento);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let diaAtualIndex = -1;
+    for (let i = 0; i < 7; i++) {
+        const dia = new Date(inicioSemana);
+        dia.setDate(dia.getDate() + i);
+        dia.setHours(0, 0, 0, 0);
+        
+        if (dia.getTime() === hoje.getTime()) {
+            diaAtualIndex = i;
+            break;
+        }
+    }
+    
+    // Posicionar horizontalmente na coluna do dia atual
+    // Grid: 60px (hora) + 7 colunas de dias
+    const colunaHora = 60;
+    const larguraColunasDia = (gridContainer.offsetWidth - colunaHora) / 7;
+    
+    if (diaAtualIndex >= 0) {
+        const leftPosition = colunaHora + (diaAtualIndex * larguraColunasDia);
+        timerLine.style.left = `${leftPosition}px`;
+        timerLine.style.width = `${larguraColunasDia}px`;
+        timerLine.style.opacity = '1';
+    } else {
+        // Dia atual não está na semana visível
+        timerLine.style.opacity = '0';
+    }
+}
+
+// Limpar timer ao mudar de view
+function cleanupAulasTimer() {
+    if (aulasTimerInterval) {
+        clearInterval(aulasTimerInterval);
+        aulasTimerInterval = null;
+    }
 }
 
 // Obter ícone da aula por tipo
