@@ -5973,31 +5973,49 @@ function ajustarParticipantes(tipo, delta) {
 // Ir para calendário pessoal
 function irParaCalendarioPessoal() {
     closeModalAula();
-    showSection('planejador');
+    navegarParaSecao('planejador');
     setTimeout(() => {
-        const btnPessoal = document.querySelector('[onclick*="switchCalendarView"][onclick*="pessoal"]');
-        if (btnPessoal) btnPessoal.click();
-    }, 100);
+        switchCalendarView('pessoal');
+    }, 200);
 }
 
 // Ir para calendário da unidade
 function irParaCalendarioUnidade() {
     closeModalAula();
-    showSection('planejador');
+    navegarParaSecao('planejador');
     setTimeout(() => {
-        const btnUnidade = document.querySelector('[onclick*="switchCalendarView"][onclick*="unidade"]');
-        if (btnUnidade) btnUnidade.click();
-    }, 100);
+        switchCalendarView('unidade');
+    }, 200);
 }
 
 // Navegar para página de membros da equipe
 function navegarParaMembrosEquipe() {
     closeModalAula();
-    showSection('pessoas');
+    navegarParaSecao('pessoas');
     setTimeout(() => {
-        const btnEquipe = document.querySelector('[onclick*="switchPessoasView"][onclick*="equipe"]');
-        if (btnEquipe) btnEquipe.click();
-    }, 100);
+        switchPessoasView('equipe');
+    }, 200);
+}
+
+// Função auxiliar para navegar entre seções
+function navegarParaSecao(secao) {
+    const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+    menuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.querySelector(`[onclick*="'${secao}'"]`) || item.getAttribute('onclick')?.includes(`'${secao}'`)) {
+            item.classList.add('active');
+        }
+    });
+    
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => {
+        page.classList.remove('active');
+        if (page.id === `page-${secao}`) {
+            page.classList.add('active');
+        }
+    });
+    
+    currentSection = secao;
 }
 
 // Limpar formulário
@@ -6054,35 +6072,74 @@ function preencherFormularioAula(aula) {
 
 // Salvar aula agendada (criar ou editar no calendário)
 async function salvarAulaAgendamento() {
-    const dados = {
-        tipo: document.getElementById('modal-tipo-aula').value,
-        instrutor: document.getElementById('modal-instrutor').value,
-        modo: document.getElementById('modal-modo').value,
-        sala: document.getElementById('modal-sala').value,
-        data: document.getElementById('modal-data').value,
-        horario_inicio: document.getElementById('modal-hora-inicio').value,
-        horario_fim: document.getElementById('modal-hora-fim').value,
-        recorrente: document.getElementById('modal-recorrente').checked,
-        capacidade: parseInt(document.getElementById('modal-capacidade-max').value),
-        inscritos: aulaEditando ? aulaEditando.inscritos : 0
-    };
+    const tipoAula = document.getElementById('modal-tipo-aula').value;
+    const membroEquipeId = document.getElementById('modal-instrutor').value;
+    const modo = document.getElementById('modal-modo').value;
+    const sala = document.getElementById('modal-sala').value;
+    const dataInicio = document.getElementById('modal-data').value;
+    const dataFimEl = document.getElementById('modal-data-fim');
+    const dataFim = dataFimEl ? dataFimEl.value : null;
+    const horaInicio = document.getElementById('modal-hora-inicio').value;
+    const horaFim = document.getElementById('modal-hora-fim').value;
+    const recorrente = document.getElementById('modal-recorrente').checked;
+    const capacidadeMax = parseInt(document.getElementById('modal-capacidade-max').value) || 20;
+    const participantesAlvo = document.getElementById('modal-participantes-alvo');
+    const requerReserva = document.getElementById('modal-requer-reserva');
+    const usarConfigPadrao = document.getElementById('modal-usar-config-padrao');
+    const gruposEspecificos = document.getElementById('modal-grupos-especificos');
+    const instrucoes = document.getElementById('modal-instrucoes');
+    const observacoes = document.getElementById('modal-observacoes');
+    const semanasEl = document.getElementById('modal-semanas');
     
-    if (!dados.tipo || !dados.data || !dados.horario_inicio) {
-        showToast('Preencha todos os campos obrigatórios', 'error');
+    if (!tipoAula || !dataInicio || !horaInicio) {
+        showToast('Preencha o tipo de aula, data e horário', 'error');
         return;
     }
     
-    const dataHora = `${dados.data}T${dados.horario_inicio}:00`;
-    const duracaoMinutos = calcularDuracaoMinutos(dados.horario_inicio, dados.horario_fim);
+    const dataHora = `${dataInicio}T${horaInicio}:00`;
+    const duracaoMinutos = calcularDuracaoMinutos(horaInicio, horaFim);
+    
+    const diasSelecionados = [];
+    document.querySelectorAll('.dia-btn.active').forEach(btn => {
+        diasSelecionados.push(btn.dataset.dia);
+    });
+    
+    const gruposSelecionados = [];
+    const selectGrupos = document.getElementById('modal-grupos');
+    if (selectGrupos && gruposEspecificos?.checked) {
+        Array.from(selectGrupos.selectedOptions).forEach(opt => {
+            gruposSelecionados.push(parseInt(opt.value));
+        });
+    }
+    
+    const dados = {
+        nome_aula: tipoAula,
+        membro_equipe_id: membroEquipeId || null,
+        modo: modo,
+        sala_nome: sala,
+        data_hora: dataHora,
+        data_fim: dataFim ? `${dataFim}T23:59:59` : null,
+        duracao_minutos: duracaoMinutos,
+        recorrente: recorrente,
+        dias_semana_recorrencia: diasSelecionados.length > 0 ? diasSelecionados : null,
+        semanas_recorrencia: semanasEl ? parseInt(semanasEl.value) || 1 : 1,
+        limite_inscricoes: capacidadeMax,
+        participantes_alvo: participantesAlvo ? parseInt(participantesAlvo.value) || null : null,
+        requer_reserva: requerReserva ? requerReserva.checked : true,
+        config_padrao_15dias: usarConfigPadrao ? usarConfigPadrao.checked : true,
+        grupos_permitidos: gruposSelecionados.length > 0 ? gruposSelecionados : null,
+        instrucoes: instrucoes ? instrucoes.value : null,
+        observacoes: observacoes ? observacoes.value : null
+    };
     
     try {
         if (aulaEditando && aulaEditando.id) {
             const params = new URLSearchParams({
-                nome_aula: dados.tipo,
+                nome_aula: tipoAula,
                 data_hora: dataHora,
                 duracao_minutos: duracaoMinutos.toString(),
-                limite_inscricoes: dados.capacidade.toString(),
-                recorrente: dados.recorrente.toString()
+                limite_inscricoes: capacidadeMax.toString(),
+                recorrente: recorrente.toString()
             });
             
             const response = await fetch(`${API_BASE}/aulas/${aulaEditando.id}?${params}`, {
@@ -6098,24 +6155,22 @@ async function salvarAulaAgendamento() {
                 return;
             }
         } else {
-            const params = new URLSearchParams({
-                nome_aula: dados.tipo,
-                descricao: dados.modo || 'Aula',
-                instrutor_id: '1',
-                sala_id: '1',
-                data_hora: dataHora,
-                duracao_minutos: duracaoMinutos.toString(),
-                limite_inscricoes: dados.capacidade.toString(),
-                recorrente: dados.recorrente.toString()
-            });
-            
-            const response = await fetch(`${API_BASE}/aulas/criar?${params}`, {
+            const response = await fetch(`${API_BASE}/aulas/criar-completa`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${authToken}` }
+                headers: { 
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dados)
             });
             
             if (response.ok) {
+                const result = await response.json();
                 showToast('Aula criada com sucesso!', 'success');
+                
+                if (result.evento && window.calendarioAulasFC) {
+                    window.calendarioAulasFC.addEvent(result.evento);
+                }
             } else {
                 const error = await response.json();
                 showToast(error.detail || 'Erro ao criar aula', 'error');
@@ -6123,12 +6178,26 @@ async function salvarAulaAgendamento() {
             }
         }
         
-        await renderAulasSemanais();
-        await renderCalendarioSemanalAulas();
+        await recarregarTodosCalendarios();
         closeModalAula();
     } catch (error) {
         console.error('Erro ao salvar aula:', error);
         showToast('Erro de conexão ao salvar aula', 'error');
+    }
+}
+
+async function recarregarTodosCalendarios() {
+    try {
+        if (fullCalendarPessoal) {
+            fullCalendarPessoal.refetchEvents();
+        }
+        if (fullCalendarUnidade) {
+            fullCalendarUnidade.refetchEvents();
+        }
+        await renderAulasSemanais();
+        await renderCalendarioSemanalAulas();
+    } catch (e) {
+        console.warn('Erro ao recarregar calendários:', e);
     }
 }
 
@@ -6234,27 +6303,33 @@ async function carregarAulasParaGradeDoBackend() {
     const fimStr = formatarDataLocal(fim);
     
     try {
-        const response = await fetch(`${API_BASE}/aulas?data_inicio=${inicioStr}&data_fim=${fimStr}T23:59:59`, {
+        const response = await fetch(`${API_BASE}/calendario/aulas-unidade?data_inicio=${inicioStr}&data_fim=${fimStr}`, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
         
         if (response.ok) {
-            const aulas = await response.json();
-            return aulas.map(a => {
-                const dataHora = new Date(a.data_hora);
+            const eventos = await response.json();
+            return eventos.map(e => {
+                const dataHora = new Date(e.start);
+                const dataFim = new Date(e.end);
                 const horaInicio = `${String(dataHora.getHours()).padStart(2, '0')}:${String(dataHora.getMinutes()).padStart(2, '0')}`;
-                const horaFim = calcularHoraFim(dataHora, a.duracao_minutos || 60);
+                const horaFim = `${String(dataFim.getHours()).padStart(2, '0')}:${String(dataFim.getMinutes()).padStart(2, '0')}`;
+                const duracao = Math.round((dataFim - dataHora) / 60000);
+                
                 return {
-                    id: a.id,
-                    tipo: a.nome_aula,
-                    instrutor: a.instrutor || 'Instrutor',
-                    sala: a.sala || 'Sala',
+                    id: e.id,
+                    tipo: e.title,
+                    instrutor: e.extendedProps?.instrutor || 'Instrutor',
+                    membro_equipe_id: e.extendedProps?.membro_equipe_id,
+                    sala: e.extendedProps?.sala || 'Sala',
+                    modo: e.extendedProps?.modo,
                     data: dataHora,
                     horario_inicio: horaInicio,
                     horario_fim: horaFim,
-                    capacidade: a.limite_inscricoes || 20,
-                    inscritos: a.total_reservas || 0,
-                    duracao: a.duracao_minutos || 60
+                    capacidade: e.extendedProps?.limite || 20,
+                    inscritos: e.extendedProps?.reservas || 0,
+                    duracao: duracao,
+                    cor: e.color || '#123058'
                 };
             });
         }

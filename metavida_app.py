@@ -197,20 +197,31 @@ class EventoAula(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome_aula = Column(String)
     descricao = Column(Text)
-    instrutor_id = Column(Integer, ForeignKey("instrutores.id"))
-    sala_id = Column(Integer, ForeignKey("salas.id"))
+    instrutor_id = Column(Integer, ForeignKey("instrutores.id"), nullable=True)
+    membro_equipe_id = Column(Integer, ForeignKey("membros_equipe.id"), nullable=True)
+    sala_id = Column(Integer, ForeignKey("salas.id"), nullable=True)
+    sala_nome = Column(String, nullable=True)
+    modo = Column(String, nullable=True)
     data_hora = Column(DateTime)
-    dia_semana = Column(String)  # segunda, terca, etc (para recorrencia)
+    data_fim = Column(DateTime, nullable=True)
+    dia_semana = Column(String)
+    dias_semana_recorrencia = Column(Text, nullable=True)
+    semanas_recorrencia = Column(Integer, default=1)
     duracao_minutos = Column(Integer, default=60)
     limite_inscricoes = Column(Integer)
+    participantes_alvo = Column(Integer, nullable=True)
     foto_url = Column(String, nullable=True)
-    grupos_permitidos = Column(Text)  # JSON string com lista de grupos
+    grupos_permitidos = Column(Text)
     requer_reserva = Column(Boolean, default=True)
     config_padrao_15dias = Column(Boolean, default=True)
     unidade_id = Column(Integer, ForeignKey("unidades.id"))
     recorrente = Column(Boolean, default=False)
     ativa = Column(Boolean, default=True)
+    instrucoes = Column(Text, nullable=True)
+    observacoes = Column(Text, nullable=True)
+    cor = Column(String, default="#123058")
     instrutor = relationship("Instrutor", back_populates="eventos_aulas")
+    membro_equipe = relationship("MembroEquipe")
     sala = relationship("Sala", back_populates="eventos_aulas")
     unidade = relationship("Unidade")
     reservas = relationship("ReservaAula", back_populates="evento_aula")
@@ -564,11 +575,55 @@ def migrar_schema_b2b_startup():
         conn.close()
 
 
+def migrar_schema_eventos_aulas():
+    """
+    Migração automática para novos campos em eventos_aulas
+    """
+    import sqlite3
+    
+    conn = sqlite3.connect("gym_wellness.db")
+    cursor = conn.cursor()
+    
+    def column_exists(table_name, column_name):
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = [col[1] for col in cursor.fetchall()]
+        return column_name in columns
+    
+    try:
+        new_columns = [
+            ('membro_equipe_id', 'INTEGER'),
+            ('sala_nome', 'VARCHAR'),
+            ('modo', 'VARCHAR'),
+            ('data_fim', 'DATETIME'),
+            ('dias_semana_recorrencia', 'TEXT'),
+            ('semanas_recorrencia', 'INTEGER DEFAULT 1'),
+            ('participantes_alvo', 'INTEGER'),
+            ('instrucoes', 'TEXT'),
+            ('observacoes', 'TEXT'),
+            ('cor', 'VARCHAR DEFAULT "#123058"'),
+        ]
+        
+        for col_name, col_type in new_columns:
+            if not column_exists('eventos_aulas', col_name):
+                cursor.execute(f"ALTER TABLE eventos_aulas ADD COLUMN {col_name} {col_type}")
+                print(f"✅ Migração EventoAula: Coluna '{col_name}' adicionada")
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"⚠️ Erro durante migração EventoAula: {e}")
+    finally:
+        conn.close()
+
+
 def init_sample_data():
     db = SessionLocal()
     try:
         # Passo 1: MIGRAÇÃO B2B AUTOMÁTICA
         migrar_schema_b2b_startup()
+        
+        # Passo 1.5: MIGRAÇÃO EVENTOS_AULAS
+        migrar_schema_eventos_aulas()
         
         # Passo 2: LIMPEZA AUTOMÁTICA DE DUPLICATAS
         limpar_duplicatas_attendance_startup(db)
@@ -1392,6 +1447,112 @@ def get_calendario_pessoal(
                 "color": "#123058"
             })
             
+    return eventos
+
+
+@app.get("/calendario/membro/{membro_id}")
+def get_calendario_membro(
+    membro_id: int,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    """
+    Retorna eventos do calendário pessoal de um membro da equipe
+    """
+    membro = db.query(MembroEquipe).filter(MembroEquipe.id == membro_id).first()
+    if not membro:
+        raise HTTPException(status_code=404, detail="Membro não encontrado")
+    
+    aulas = db.query(EventoAula).filter(
+        EventoAula.membro_equipe_id == membro_id,
+        EventoAula.ativa == True
+    ).all()
+    
+    eventos = []
+    for aula in aulas:
+        hora_fim = aula.data_hora + timedelta(minutes=aula.duracao_minutos) if aula.data_hora else None
+        eventos.append({
+            "id": aula.id,
+            "title": aula.nome_aula,
+            "start": aula.data_hora.isoformat() if aula.data_hora else None,
+            "end": hora_fim.isoformat() if hora_fim else None,
+            "color": aula.cor or membro.cor_agenda or "#123058",
+            "extendedProps": {
+                "tipo": "aula",
+                "instrutor": membro.nome,
+                "instrutor_id": membro.id,
+                "sala": aula.sala_nome or (aula.sala.nome if aula.sala else "N/A"),
+                "modo": aula.modo,
+                "reservas": len([r for r in aula.reservas if not r.cancelada]),
+                "limite": aula.limite_inscricoes
+            }
+        })
+    
+    return eventos
+
+
+@app.get("/calendario/aulas-unidade")
+def get_calendario_aulas_unidade(
+    data_inicio: str = None,
+    data_fim: str = None,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user)
+):
+    """
+    Retorna todas as aulas da unidade para exibição em Aulas em Andamento
+    """
+    query = db.query(EventoAula).filter(EventoAula.ativa == True)
+    
+    if usuario.unidade_id:
+        query = query.filter(EventoAula.unidade_id == usuario.unidade_id)
+    
+    if data_inicio:
+        try:
+            dt_inicio = datetime.fromisoformat(data_inicio.replace('Z', '+00:00'))
+            query = query.filter(EventoAula.data_hora >= dt_inicio)
+        except:
+            pass
+    
+    if data_fim:
+        try:
+            dt_fim = datetime.fromisoformat(data_fim.replace('Z', '+00:00'))
+            query = query.filter(EventoAula.data_hora <= dt_fim)
+        except:
+            pass
+    
+    aulas = query.order_by(EventoAula.data_hora).all()
+    
+    eventos = []
+    for aula in aulas:
+        hora_fim = aula.data_hora + timedelta(minutes=aula.duracao_minutos) if aula.data_hora else None
+        
+        instrutor_nome = "N/A"
+        instrutor_cor = "#123058"
+        if aula.membro_equipe:
+            instrutor_nome = aula.membro_equipe.nome
+            instrutor_cor = aula.membro_equipe.cor_agenda or "#123058"
+        elif aula.instrutor:
+            instrutor_nome = aula.instrutor.nome
+        
+        eventos.append({
+            "id": aula.id,
+            "title": aula.nome_aula,
+            "start": aula.data_hora.isoformat() if aula.data_hora else None,
+            "end": hora_fim.isoformat() if hora_fim else None,
+            "color": aula.cor or instrutor_cor,
+            "extendedProps": {
+                "tipo": "aula",
+                "instrutor": instrutor_nome,
+                "membro_equipe_id": aula.membro_equipe_id,
+                "sala": aula.sala_nome or (aula.sala.nome if aula.sala else "N/A"),
+                "modo": aula.modo,
+                "reservas": len([r for r in aula.reservas if not r.cancelada]),
+                "limite": aula.limite_inscricoes,
+                "requer_reserva": aula.requer_reserva,
+                "recorrente": aula.recorrente
+            }
+        })
+    
     return eventos
 
 
@@ -2263,6 +2424,109 @@ def criar_evento_aula(nome_aula: str,
     db.add(evento)
     db.commit()
     return {"mensagem": "Aula criada com sucesso!", "id": evento.id}
+
+
+@app.post("/aulas/criar-completa")
+def criar_evento_aula_completa(dados: dict,
+                                usuario: Usuario = Depends(get_current_user),
+                                db: Session = Depends(get_db)):
+    """
+    Cria uma aula com todos os campos do modal avançado
+    """
+    try:
+        data_hora_str = dados.get("data_hora")
+        if not data_hora_str:
+            raise HTTPException(status_code=400, detail="Data/hora obrigatória")
+        
+        data_hora = datetime.fromisoformat(data_hora_str.replace("Z", ""))
+        
+        data_fim = None
+        if dados.get("data_fim"):
+            data_fim = datetime.fromisoformat(dados["data_fim"].replace("Z", ""))
+        
+        grupos_json = "[]"
+        if dados.get("grupos_permitidos"):
+            grupos = dados["grupos_permitidos"]
+            grupos_json = json.dumps(grupos) if isinstance(grupos, list) else grupos
+        
+        dias_recorrencia = None
+        if dados.get("dias_semana_recorrencia"):
+            dias = dados["dias_semana_recorrencia"]
+            dias_recorrencia = json.dumps(dias) if isinstance(dias, list) else dias
+        
+        membro_equipe_id = None
+        if dados.get("membro_equipe_id"):
+            try:
+                membro_equipe_id = int(dados["membro_equipe_id"])
+                membro = db.query(MembroEquipe).filter(MembroEquipe.id == membro_equipe_id).first()
+                if membro:
+                    cor = membro.cor_agenda or "#123058"
+                else:
+                    cor = "#123058"
+            except:
+                cor = "#123058"
+        else:
+            cor = dados.get("cor", "#123058")
+        
+        evento = EventoAula(
+            nome_aula=dados.get("nome_aula", "Aula"),
+            descricao=dados.get("descricao", ""),
+            membro_equipe_id=membro_equipe_id,
+            instrutor_id=dados.get("instrutor_id"),
+            sala_id=dados.get("sala_id"),
+            sala_nome=dados.get("sala_nome"),
+            modo=dados.get("modo"),
+            data_hora=data_hora,
+            data_fim=data_fim,
+            dia_semana=dados.get("dia_semana"),
+            dias_semana_recorrencia=dias_recorrencia,
+            semanas_recorrencia=dados.get("semanas_recorrencia", 1),
+            duracao_minutos=dados.get("duracao_minutos", 60),
+            limite_inscricoes=dados.get("limite_inscricoes", 20),
+            participantes_alvo=dados.get("participantes_alvo"),
+            grupos_permitidos=grupos_json,
+            requer_reserva=dados.get("requer_reserva", True),
+            config_padrao_15dias=dados.get("config_padrao_15dias", True),
+            recorrente=dados.get("recorrente", False),
+            instrucoes=dados.get("instrucoes"),
+            observacoes=dados.get("observacoes"),
+            cor=cor,
+            unidade_id=usuario.unidade_id or 1,
+            ativa=True
+        )
+        
+        db.add(evento)
+        db.commit()
+        db.refresh(evento)
+        
+        instrutor_nome = "N/A"
+        if evento.membro_equipe:
+            instrutor_nome = evento.membro_equipe.nome
+        elif evento.instrutor:
+            instrutor_nome = evento.instrutor.nome
+        
+        return {
+            "mensagem": "Aula criada com sucesso!",
+            "id": evento.id,
+            "evento": {
+                "id": evento.id,
+                "title": evento.nome_aula,
+                "start": evento.data_hora.isoformat(),
+                "end": (evento.data_hora + timedelta(minutes=evento.duracao_minutos)).isoformat(),
+                "color": evento.cor,
+                "extendedProps": {
+                    "instrutor": instrutor_nome,
+                    "membro_equipe_id": evento.membro_equipe_id,
+                    "sala": evento.sala_nome or (evento.sala.nome if evento.sala else "N/A"),
+                    "modo": evento.modo,
+                    "reservas": 0,
+                    "limite": evento.limite_inscricoes
+                }
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/aulas")
