@@ -5776,12 +5776,10 @@ function navegarSecaoModal(secao, event) {
 }
 
 // Carregar opções dos dropdowns
-function carregarOpcoesModalAula() {
-    if (!window.mockData) return;
-    
-    // Tipos de aula
+async function carregarOpcoesModalAula() {
+    // Tipos de aula (mockData)
     const selectTipo = document.getElementById('modal-tipo-aula');
-    if (selectTipo && window.mockData.tiposAula) {
+    if (selectTipo && window.mockData?.tiposAula) {
         selectTipo.innerHTML = '<option value="">Selecione o tipo de aula...</option>';
         window.mockData.tiposAula.forEach(tipo => {
             const opt = document.createElement('option');
@@ -5791,21 +5789,42 @@ function carregarOpcoesModalAula() {
         });
     }
     
-    // Instrutores
+    // Instrutores (carregar da API - Membros da Equipe)
     const selectInstrutor = document.getElementById('modal-instrutor');
-    if (selectInstrutor && window.mockData.instrutores) {
+    if (selectInstrutor) {
         selectInstrutor.innerHTML = '<option value="">Selecione o instrutor...</option>';
-        window.mockData.instrutores.forEach(instrutor => {
-            const opt = document.createElement('option');
-            opt.value = instrutor.nome;
-            opt.textContent = instrutor.nome;
-            selectInstrutor.appendChild(opt);
-        });
+        try {
+            const response = await fetch(`${API_BASE}/membros-equipe`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (response.ok) {
+                const membros = await response.json();
+                window.membrosEquipeCache = membros;
+                membros.filter(m => m.ativo).forEach(membro => {
+                    const opt = document.createElement('option');
+                    opt.value = membro.id;
+                    opt.textContent = `${membro.nome} - ${membro.cargo}`;
+                    opt.dataset.cor = membro.cor_agenda || '#123058';
+                    opt.dataset.cargo = membro.cargo;
+                    selectInstrutor.appendChild(opt);
+                });
+            }
+        } catch (error) {
+            console.warn('Fallback para mockData de instrutores');
+            if (window.mockData?.instrutores) {
+                window.mockData.instrutores.forEach(instrutor => {
+                    const opt = document.createElement('option');
+                    opt.value = instrutor.nome;
+                    opt.textContent = instrutor.nome;
+                    selectInstrutor.appendChild(opt);
+                });
+            }
+        }
     }
     
     // Modos
     const selectModo = document.getElementById('modal-modo');
-    if (selectModo && window.mockData.modosAula) {
+    if (selectModo && window.mockData?.modosAula) {
         selectModo.innerHTML = '<option value="">Selecione o modo...</option>';
         window.mockData.modosAula.forEach(modo => {
             const opt = document.createElement('option');
@@ -5817,7 +5836,7 @@ function carregarOpcoesModalAula() {
     
     // Salas
     const selectSala = document.getElementById('modal-sala');
-    if (selectSala && window.mockData.salas) {
+    if (selectSala && window.mockData?.salas) {
         selectSala.innerHTML = '<option value="">Selecione a sala...</option>';
         window.mockData.salas.forEach(sala => {
             const opt = document.createElement('option');
@@ -5826,23 +5845,198 @@ function carregarOpcoesModalAula() {
             selectSala.appendChild(opt);
         });
     }
+    
+    // Carregar grupos para seção de reserva
+    await carregarGruposReserva();
+    
+    // Configurar event listeners do modal
+    configurarEventListenersModal();
+}
+
+// Carregar grupos para permitir reserva
+async function carregarGruposReserva() {
+    const selectGrupos = document.getElementById('modal-grupos');
+    if (!selectGrupos) return;
+    
+    selectGrupos.innerHTML = '';
+    try {
+        const response = await fetch(`${API_BASE}/grupos`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (response.ok) {
+            const grupos = await response.json();
+            grupos.forEach(grupo => {
+                const opt = document.createElement('option');
+                opt.value = grupo.id;
+                opt.textContent = grupo.nome;
+                selectGrupos.appendChild(opt);
+            });
+        }
+    } catch (error) {
+        console.warn('Erro ao carregar grupos:', error);
+    }
+}
+
+// Configurar event listeners do modal
+function configurarEventListenersModal() {
+    // Toggle recorrência
+    const recorrenteCheck = document.getElementById('modal-recorrente');
+    const recorrenciaOptions = document.getElementById('recorrencia-options');
+    if (recorrenteCheck && recorrenciaOptions) {
+        recorrenteCheck.addEventListener('change', function() {
+            recorrenciaOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Toggle reserva
+    const requerReserva = document.getElementById('modal-requer-reserva');
+    const reservaOptions = document.getElementById('reserva-options');
+    if (requerReserva && reservaOptions) {
+        requerReserva.addEventListener('change', function() {
+            reservaOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Toggle config padrão reserva
+    const usarConfigPadrao = document.getElementById('modal-usar-config-padrao');
+    const regraCustom = document.getElementById('regra-reserva-custom');
+    if (usarConfigPadrao && regraCustom) {
+        usarConfigPadrao.addEventListener('change', function() {
+            regraCustom.style.display = this.checked ? 'none' : 'block';
+        });
+    }
+    
+    // Toggle grupos específicos
+    const gruposCheck = document.getElementById('modal-grupos-especificos');
+    const gruposContainer = document.getElementById('grupos-select-container');
+    if (gruposCheck && gruposContainer) {
+        gruposCheck.addEventListener('change', function() {
+            gruposContainer.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Seleção de dias da semana
+    document.querySelectorAll('.dia-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+    });
+    
+    // Preview do instrutor selecionado
+    const selectInstrutor = document.getElementById('modal-instrutor');
+    if (selectInstrutor) {
+        selectInstrutor.addEventListener('change', atualizarPreviewInstrutor);
+    }
+}
+
+// Atualizar preview do instrutor
+function atualizarPreviewInstrutor() {
+    const select = document.getElementById('modal-instrutor');
+    const preview = document.getElementById('instrutor-preview');
+    if (!select || !preview) return;
+    
+    const selectedOption = select.options[select.selectedIndex];
+    if (select.value && window.membrosEquipeCache) {
+        const membro = window.membrosEquipeCache.find(m => m.id == select.value);
+        if (membro) {
+            const iniciais = membro.nome.split(' ').map(n => n[0]).slice(0,2).join('');
+            preview.querySelector('.instrutor-avatar').style.background = membro.cor_agenda || '#123058';
+            preview.querySelector('.instrutor-avatar').textContent = iniciais;
+            preview.querySelector('.nome').textContent = membro.nome;
+            preview.querySelector('.cargo').textContent = membro.cargo;
+            preview.style.display = 'flex';
+            return;
+        }
+    }
+    preview.style.display = 'none';
+}
+
+// Ajustar semanas
+function ajustarSemanas(delta) {
+    const input = document.getElementById('modal-semanas');
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    val = Math.max(1, Math.min(52, val + delta));
+    input.value = val;
+}
+
+// Ajustar participantes
+function ajustarParticipantes(tipo, delta) {
+    const inputId = tipo === 'max' ? 'modal-capacidade-max' : 'modal-participantes-alvo';
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    val = Math.max(1, val + delta);
+    input.value = val;
+}
+
+// Ir para calendário pessoal
+function irParaCalendarioPessoal() {
+    closeModalAula();
+    showSection('planejador');
+    setTimeout(() => {
+        const btnPessoal = document.querySelector('[onclick*="switchCalendarView"][onclick*="pessoal"]');
+        if (btnPessoal) btnPessoal.click();
+    }, 100);
+}
+
+// Ir para calendário da unidade
+function irParaCalendarioUnidade() {
+    closeModalAula();
+    showSection('planejador');
+    setTimeout(() => {
+        const btnUnidade = document.querySelector('[onclick*="switchCalendarView"][onclick*="unidade"]');
+        if (btnUnidade) btnUnidade.click();
+    }, 100);
+}
+
+// Navegar para página de membros da equipe
+function navegarParaMembrosEquipe() {
+    closeModalAula();
+    showSection('pessoas');
+    setTimeout(() => {
+        const btnEquipe = document.querySelector('[onclick*="switchPessoasView"][onclick*="equipe"]');
+        if (btnEquipe) btnEquipe.click();
+    }, 100);
 }
 
 // Limpar formulário
 function limparFormularioAula() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const seisNaFrente = new Date();
+    seisNaFrente.setMonth(seisNaFrente.getMonth() + 6);
+    const dataFim = seisNaFrente.toISOString().split('T')[0];
+    
     document.getElementById('modal-tipo-aula').value = '';
     document.getElementById('modal-instrutor').value = '';
     document.getElementById('modal-modo').value = '';
     document.getElementById('modal-sala').value = '';
-    document.getElementById('modal-data').value = '';
-    document.getElementById('modal-hora-inicio').value = '';
-    document.getElementById('modal-hora-fim').value = '';
+    document.getElementById('modal-data').value = hoje;
+    const dataFimEl = document.getElementById('modal-data-fim');
+    if (dataFimEl) dataFimEl.value = dataFim;
+    document.getElementById('modal-hora-inicio').value = '10:00';
+    document.getElementById('modal-hora-fim').value = '10:30';
     document.getElementById('modal-recorrente').checked = false;
-    document.getElementById('modal-capacidade-min').value = '1';
+    const recorrenciaOptions = document.getElementById('recorrencia-options');
+    if (recorrenciaOptions) recorrenciaOptions.style.display = 'none';
+    const semanasEl = document.getElementById('modal-semanas');
+    if (semanasEl) semanasEl.value = '1';
+    document.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('modal-capacidade-max').value = '20';
-    document.getElementById('modal-lista-espera').checked = false;
-    document.getElementById('modal-descricao').value = '';
-    document.getElementById('modal-observacoes').value = '';
+    const participantesAlvo = document.getElementById('modal-participantes-alvo');
+    if (participantesAlvo) participantesAlvo.value = '15';
+    const requerReserva = document.getElementById('modal-requer-reserva');
+    if (requerReserva) requerReserva.checked = true;
+    const usarConfigPadrao = document.getElementById('modal-usar-config-padrao');
+    if (usarConfigPadrao) usarConfigPadrao.checked = true;
+    const gruposCheck = document.getElementById('modal-grupos-especificos');
+    if (gruposCheck) gruposCheck.checked = false;
+    const instrucoes = document.getElementById('modal-instrucoes');
+    if (instrucoes) instrucoes.value = '';
+    const observacoes = document.getElementById('modal-observacoes');
+    if (observacoes) observacoes.value = '';
+    const instrutorPreview = document.getElementById('instrutor-preview');
+    if (instrutorPreview) instrutorPreview.style.display = 'none';
 }
 
 // Preencher formulário com dados da aula
