@@ -4053,19 +4053,11 @@ function renderCurrentTimeIndicator() {
         container.appendChild(timelineIndicatorLine);
     }
     
-    // Get current time in Lisbon timezone using Intl API
+    // Get user's local time (browser time)
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('pt-PT', {
-        timeZone: 'Europe/Lisbon',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: false
-    });
-    const parts = formatter.formatToParts(now);
-    const currentHour = parseInt(parts.find(p => p.type === 'hour').value);
-    const currentMinutes = parseInt(parts.find(p => p.type === 'minute').value);
-    const currentSeconds = parseInt(parts.find(p => p.type === 'second').value);
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentSeconds = now.getSeconds();
     const currentMilliseconds = now.getMilliseconds();
     
     // Each hour column is 80px wide
@@ -4076,6 +4068,9 @@ function renderCurrentTimeIndicator() {
     
     // Use transform for better performance
     timelineIndicatorLine.style.transform = `translateX(${offset}px)`;
+    
+    // Debug: log time to console (can be removed later)
+    // console.log(`Timer: ${currentHour}:${currentMinutes}:${currentSeconds} -> offset: ${offset}px`);
 }
 
 function startTimelineRealTimeUpdates() {
