@@ -3811,11 +3811,9 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
     const calendarEl = document.getElementById(calendarId);
     if (!calendarEl) return null;
     
-    const apiUrl = isPersonal 
+    const baseUrl = isPersonal 
         ? `/calendario/pessoal` 
         : `/calendario/unidade/${unidadeId}`;
-    
-    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
@@ -3831,11 +3829,11 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
             week: 'Semana',
             day: 'Dia'
         },
-        slotMinTime: '00:00:00',
-        slotMaxTime: '24:00:00',
+        slotMinTime: '06:00:00',
+        slotMaxTime: '23:00:00',
         expandRows: true,
         height: 'auto',
-        contentHeight: 'auto',
+        contentHeight: 600,
         allDaySlot: false,
         nowIndicator: true,
         slotDuration: '00:30:00',
@@ -3847,8 +3845,12 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
                 return;
             }
             
+            const startStr = fetchInfo.startStr.split('T')[0];
+            const endStr = fetchInfo.endStr.split('T')[0];
+            const urlWithParams = `${baseUrl}?data_inicio=${startStr}&data_fim=${endStr}`;
+            
             try {
-                const response = await fetch(apiUrl, {
+                const response = await fetch(urlWithParams, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
@@ -3862,6 +3864,7 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
                 }
                 
                 const data = await response.json();
+                console.log(`Calendário ${isPersonal ? 'Pessoal' : 'Unidade'}: ${data.length} eventos carregados`);
                 successCallback(data);
             } catch (error) {
                 console.warn('Erro ao carregar calendário:', error);
@@ -6184,7 +6187,8 @@ async function salvarAulaAgendamento() {
             }
         }
         
-        await recarregarTodosCalendarios();
+        const dataEvento = document.getElementById('modal-data').value;
+        await recarregarTodosCalendarios(dataEvento);
         closeModalAula();
     } catch (error) {
         console.error('Erro ao salvar aula:', error);
@@ -6192,8 +6196,19 @@ async function salvarAulaAgendamento() {
     }
 }
 
-async function recarregarTodosCalendarios() {
+async function recarregarTodosCalendarios(navegarParaData = null) {
     try {
+        if (navegarParaData) {
+            const dataEvento = new Date(navegarParaData);
+            if (fullCalendarPessoal) {
+                fullCalendarPessoal.gotoDate(dataEvento);
+            }
+            if (fullCalendarUnidade) {
+                fullCalendarUnidade.gotoDate(dataEvento);
+            }
+            semanaAulasAndamento = dataEvento;
+        }
+        
         if (fullCalendarPessoal) {
             fullCalendarPessoal.refetchEvents();
         }

@@ -1385,13 +1385,33 @@ def get_membros_equipe(unidade_id: int, db: Session = Depends(get_db)):
 @app.get("/calendario/unidade/{unidade_id}")
 def get_calendario_unidade(
     unidade_id: int,
+    data_inicio: str = None,
+    data_fim: str = None,
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_current_user)
 ):
-    aulas = db.query(EventoAula).filter(
+    query = db.query(EventoAula).filter(
         EventoAula.unidade_id == unidade_id,
         EventoAula.ativa == True
-    ).all()
+    )
+    
+    if data_inicio:
+        try:
+            dt_inicio = datetime.fromisoformat(data_inicio.replace('Z', '+00:00'))
+            query = query.filter(EventoAula.data_hora >= dt_inicio)
+        except:
+            pass
+    
+    if data_fim:
+        try:
+            dt_fim = datetime.fromisoformat(data_fim.replace('Z', '+00:00'))
+            if 'T' not in data_fim:
+                dt_fim = dt_fim.replace(hour=23, minute=59, second=59)
+            query = query.filter(EventoAula.data_hora <= dt_fim)
+        except:
+            pass
+    
+    aulas = query.all()
 
     eventos_unidade = []
     for aula in aulas:
@@ -1425,12 +1445,37 @@ def get_calendario_unidade(
 
 @app.get("/calendario/pessoal")
 def get_calendario_pessoal(
+    data_inicio: str = None,
+    data_fim: str = None,
     db: Session = Depends(get_db),
     gestor: Usuario = Depends(get_current_user)
 ):
-    eventos_pessoais = db.query(EventoCalendario).filter(
+    dt_inicio = None
+    dt_fim = None
+    
+    if data_inicio:
+        try:
+            dt_inicio = datetime.fromisoformat(data_inicio.replace('Z', '+00:00'))
+        except:
+            pass
+    
+    if data_fim:
+        try:
+            dt_fim = datetime.fromisoformat(data_fim.replace('Z', '+00:00'))
+            if 'T' not in data_fim:
+                dt_fim = dt_fim.replace(hour=23, minute=59, second=59)
+        except:
+            pass
+    
+    query_pessoal = db.query(EventoCalendario).filter(
         EventoCalendario.usuario_id == gestor.id
-    ).all()
+    )
+    if dt_inicio:
+        query_pessoal = query_pessoal.filter(EventoCalendario.data_inicio >= dt_inicio)
+    if dt_fim:
+        query_pessoal = query_pessoal.filter(EventoCalendario.data_inicio <= dt_fim)
+    
+    eventos_pessoais = query_pessoal.all()
 
     eventos = []
     for ev in eventos_pessoais:
