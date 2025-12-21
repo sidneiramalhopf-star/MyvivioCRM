@@ -4017,14 +4017,139 @@ textarea.form-control {
 /* Tab Content */
 .aulas-tab-content {
     display: none;
-    padding: 1.5rem 0;
+    padding: 0.5rem 0;
 }
 
 .aulas-tab-content.active {
     display: block;
 }
 
-/* Controles de Busca e Filtros */
+/* Header Row - Aulas em Andamento */
+.aulas-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.aulas-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.aulas-header-left h1 {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.aulas-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-input-compact {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    width: 140px;
+}
+
+.search-input-compact:focus {
+    outline: none;
+    border-color: var(--btn-primary);
+}
+
+.filter-select-compact {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: white;
+}
+
+.btn-mostra-compact {
+    padding: 0.5rem 1rem;
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-mostra-compact i {
+    font-size: 0.8rem;
+}
+
+.btn-mostra-compact:hover {
+    background: var(--btn-primary-hover);
+}
+
+/* Navegação Semanal Compacta */
+.week-navigation-aulas-compact {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+}
+
+.week-navigation-aulas-compact .btn-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.week-navigation-aulas-compact .btn-icon i {
+    font-size: 0.8rem;
+}
+
+.week-navigation-aulas-compact .btn-icon:hover {
+    border-color: var(--btn-primary);
+    color: var(--btn-primary);
+}
+
+.week-navigation-aulas-compact .btn-outline {
+    padding: 0.4rem 1rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.week-navigation-aulas-compact .btn-outline:hover {
+    border-color: var(--btn-primary);
+    color: var(--btn-primary);
+}
+
+/* Legacy styles kept for compatibility */
 .aulas-controles-top {
     margin-bottom: 1.5rem;
     padding: 1rem;
