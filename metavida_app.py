@@ -1395,18 +1395,29 @@ def get_calendario_unidade(
 
     eventos_unidade = []
     for aula in aulas:
+        instrutor_nome = "N/A"
+        if aula.membro_equipe_id:
+            membro = db.query(MembroEquipe).filter(MembroEquipe.id == aula.membro_equipe_id).first()
+            if membro:
+                instrutor_nome = membro.nome
+        elif aula.instrutor:
+            instrutor_nome = aula.instrutor.nome
+            
         eventos_unidade.append({
             "id": aula.id,
             "title": aula.nome_aula,
             "start": aula.data_hora.isoformat() if aula.data_hora else None,
             "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat() if aula.data_hora else None,
-            "resourceId": str(aula.instrutor_id) if aula.instrutor_id else None,
+            "resourceId": str(aula.membro_equipe_id or aula.instrutor_id) if (aula.membro_equipe_id or aula.instrutor_id) else None,
             "extendedProps": {
-                "instrutor": aula.instrutor.nome if aula.instrutor else "N/A",
-                "sala": aula.sala.nome if aula.sala else "N/A",
-                "reservas": len([r for r in aula.reservas if not r.cancelada])
+                "instrutor": instrutor_nome,
+                "membro_equipe_id": aula.membro_equipe_id,
+                "sala": aula.sala_nome or (aula.sala.nome if aula.sala else "N/A"),
+                "modo": aula.modo,
+                "reservas": len([r for r in aula.reservas if not r.cancelada]),
+                "limite": aula.limite_inscricoes
             },
-            "color": "#62b1ca"
+            "color": aula.cor or "#62b1ca"
         })
     
     return eventos_unidade
@@ -1445,6 +1456,55 @@ def get_calendario_pessoal(
                 "start": aula.data_hora.isoformat() if aula.data_hora else None,
                 "end": (aula.data_hora + timedelta(minutes=aula.duracao_minutos)).isoformat() if aula.data_hora else None,
                 "color": "#123058"
+            })
+    
+    membro_equipe = db.query(MembroEquipe).filter(
+        MembroEquipe.email == gestor.email
+    ).first()
+    
+    if membro_equipe:
+        aulas_atribuidas = db.query(EventoAula).filter(
+            EventoAula.membro_equipe_id == membro_equipe.id,
+            EventoAula.ativa == True
+        ).all()
+        
+        for aula in aulas_atribuidas:
+            hora_fim = aula.data_hora + timedelta(minutes=aula.duracao_minutos) if aula.data_hora else None
+            eventos.append({
+                "id": f"aula_{aula.id}",
+                "title": f"AULA: {aula.nome_aula}",
+                "start": aula.data_hora.isoformat() if aula.data_hora else None,
+                "end": hora_fim.isoformat() if hora_fim else None,
+                "color": aula.cor or membro_equipe.cor_agenda or "#667eea",
+                "extendedProps": {
+                    "tipo": "aula_atribuida",
+                    "sala": aula.sala_nome or (aula.sala.nome if aula.sala else "N/A"),
+                    "modo": aula.modo,
+                    "reservas": len([r for r in aula.reservas if not r.cancelada]),
+                    "limite": aula.limite_inscricoes
+                }
+            })
+    
+    aulas_instrutor = db.query(EventoAula).filter(
+        EventoAula.instrutor_id == gestor.id,
+        EventoAula.ativa == True
+    ).all()
+    
+    ids_existentes = set(e.get("id") for e in eventos)
+    for aula in aulas_instrutor:
+        aula_id = f"instrutor_{aula.id}"
+        if aula_id not in ids_existentes:
+            hora_fim = aula.data_hora + timedelta(minutes=aula.duracao_minutos) if aula.data_hora else None
+            eventos.append({
+                "id": aula_id,
+                "title": f"INSTRUTOR: {aula.nome_aula}",
+                "start": aula.data_hora.isoformat() if aula.data_hora else None,
+                "end": hora_fim.isoformat() if hora_fim else None,
+                "color": "#62b1ca",
+                "extendedProps": {
+                    "tipo": "aula_instrutor",
+                    "sala": aula.sala_nome or (aula.sala.nome if aula.sala else "N/A")
+                }
             })
             
     return eventos
