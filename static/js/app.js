@@ -3815,7 +3815,7 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
         ? `/calendario/pessoal` 
         : `/calendario/unidade/${unidadeId}`;
     
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
     
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
@@ -3841,25 +3841,31 @@ function initializeFullCalendar(calendarId, isPersonal, unidadeId) {
         slotDuration: '00:30:00',
         
         events: async function(fetchInfo, successCallback, failureCallback) {
+            const currentToken = localStorage.getItem('authToken') || localStorage.getItem('token') || authToken;
+            if (!currentToken) {
+                successCallback([]);
+                return;
+            }
+            
             try {
                 const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
                     }
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Erro ao carregar eventos');
+                    successCallback([]);
+                    return;
                 }
                 
                 const data = await response.json();
                 successCallback(data);
             } catch (error) {
-                console.error('Erro ao carregar calendário:', error);
-                failureCallback(error);
-                showToast('Erro ao carregar eventos do calendário', 'error');
+                console.warn('Erro ao carregar calendário:', error);
+                successCallback([]);
             }
         },
         
