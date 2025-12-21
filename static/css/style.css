@@ -5610,6 +5610,11 @@ textarea.form-control {
     background: #fff5f5;
 }
 
+#modal-membro-equipe .modal-footer {
+    margin-top: 15px;
+    padding-top: 1.5rem;
+}
+
 /* Suporte Content */
 .suporte-content {
     display: grid;
