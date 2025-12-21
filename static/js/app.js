@@ -6730,6 +6730,11 @@ function abrirPessoasTab(tabName, evt) {
     if (tabName === 'contatos') {
         carregarContatos();
     }
+    
+    // Carregar membros quando tab Equipe for aberta
+    if (tabName === 'equipe') {
+        loadMembrosEquipe();
+    }
 }
 
 // ============================================
@@ -12222,5 +12227,271 @@ async function renovarContrato(contratoId) {
         console.error('Erro ao renovar contrato:', error);
         showToast('Erro ao renovar contrato', 'error');
     }
+}
+
+
+// ============================================================
+// MEMBROS DA EQUIPE - CRUD COMPLETO
+// ============================================================
+
+let membrosEquipeCache = [];
+
+async function loadMembrosEquipe() {
+    if (!authToken) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/membros-equipe`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar membros da equipe');
+        }
+        
+        membrosEquipeCache = await response.json();
+        renderMembrosEquipe(membrosEquipeCache);
+        
+    } catch (error) {
+        console.error('Erro ao carregar membros da equipe:', error);
+    }
+}
+
+function renderMembrosEquipe(membros) {
+    const grid = document.getElementById('membros-equipe-grid');
+    const emptyState = document.getElementById('empty-state-equipe');
+    
+    if (!grid) return;
+    
+    if (!membros || membros.length === 0) {
+        grid.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'flex';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    const cargoIcons = {
+        'Instrutor': 'fa-dumbbell',
+        'Personal Trainer': 'fa-user-tie',
+        'Recepcionista': 'fa-headset',
+        'Gerente': 'fa-user-shield',
+        'Coordenador': 'fa-sitemap',
+        'Nutricionista': 'fa-apple-alt',
+        'Fisioterapeuta': 'fa-hand-holding-medical',
+        'Avaliador Físico': 'fa-clipboard-check',
+        'Administrativo': 'fa-briefcase',
+        'Manutenção': 'fa-tools'
+    };
+    
+    grid.innerHTML = membros.map(membro => {
+        const icon = cargoIcons[membro.cargo] || 'fa-user';
+        const especialidades = membro.especialidades && membro.especialidades.length > 0 
+            ? membro.especialidades.join(', ') 
+            : 'Sem especialidades';
+        const dataAdmissao = membro.data_admissao 
+            ? new Date(membro.data_admissao).toLocaleDateString('pt-BR')
+            : '-';
+        
+        return `
+            <div class="membro-card" style="border-left: 4px solid ${membro.cor_agenda || '#123058'}">
+                <div class="membro-avatar" style="background: ${membro.cor_agenda || '#123058'}">
+                    ${membro.foto_url 
+                        ? `<img src="${membro.foto_url}" alt="${membro.nome}">`
+                        : `<i class="fas ${icon}"></i>`
+                    }
+                </div>
+                <div class="membro-info">
+                    <h4 class="membro-nome">${membro.nome}</h4>
+                    <span class="membro-cargo">${membro.cargo}</span>
+                    <div class="membro-detalhes">
+                        <span><i class="fas fa-envelope"></i> ${membro.email}</span>
+                        ${membro.telefone ? `<span><i class="fas fa-phone"></i> ${membro.telefone}</span>` : ''}
+                        <span><i class="fas fa-calendar"></i> Desde ${dataAdmissao}</span>
+                    </div>
+                    <div class="membro-especialidades">
+                        <small>${especialidades}</small>
+                    </div>
+                </div>
+                <div class="membro-actions">
+                    <button class="btn-icon-sm" onclick="editarMembroEquipe(${membro.id})" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon-sm btn-danger" onclick="excluirMembroEquipe(${membro.id})" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function abrirModalMembroEquipe(membroId = null) {
+    const modal = document.getElementById('modal-membro-equipe');
+    const titulo = document.getElementById('modal-membro-titulo');
+    const form = document.getElementById('form-membro-equipe');
+    
+    if (!modal) return;
+    
+    form.reset();
+    document.getElementById('membro-id').value = '';
+    document.getElementById('membro-cor').value = '#123058';
+    
+    if (membroId) {
+        titulo.innerHTML = '<i class="fas fa-user-edit"></i> Editar Membro da Equipe';
+        carregarDadosMembroEquipe(membroId);
+    } else {
+        titulo.innerHTML = '<i class="fas fa-user-plus"></i> Adicionar Membro da Equipe';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function fecharModalMembroEquipe() {
+    const modal = document.getElementById('modal-membro-equipe');
+    if (modal) modal.style.display = 'none';
+}
+
+async function carregarDadosMembroEquipe(membroId) {
+    if (!authToken) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/membros-equipe/${membroId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao carregar dados do membro');
+        }
+        
+        const membro = await response.json();
+        
+        document.getElementById('membro-id').value = membro.id;
+        document.getElementById('membro-nome').value = membro.nome || '';
+        document.getElementById('membro-email').value = membro.email || '';
+        document.getElementById('membro-telefone').value = membro.telefone || '';
+        document.getElementById('membro-cargo').value = membro.cargo || '';
+        document.getElementById('membro-cor').value = membro.cor_agenda || '#123058';
+        document.getElementById('membro-observacoes').value = membro.observacoes || '';
+        
+        if (membro.data_admissao) {
+            const data = new Date(membro.data_admissao);
+            document.getElementById('membro-data-admissao').value = data.toISOString().split('T')[0];
+        }
+        
+        if (membro.especialidades && membro.especialidades.length > 0) {
+            document.getElementById('membro-especialidades').value = membro.especialidades.join(', ');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados do membro:', error);
+        showToast('Erro ao carregar dados do membro', 'error');
+    }
+}
+
+async function salvarMembroEquipe() {
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'error');
+        return;
+    }
+    
+    const membroId = document.getElementById('membro-id').value;
+    const nome = document.getElementById('membro-nome').value.trim();
+    const email = document.getElementById('membro-email').value.trim();
+    const telefone = document.getElementById('membro-telefone').value.trim();
+    const cargo = document.getElementById('membro-cargo').value;
+    const dataAdmissao = document.getElementById('membro-data-admissao').value;
+    const corAgenda = document.getElementById('membro-cor').value;
+    const especialidadesStr = document.getElementById('membro-especialidades').value.trim();
+    const observacoes = document.getElementById('membro-observacoes').value.trim();
+    
+    if (!nome || !email || !cargo) {
+        showToast('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    const especialidades = especialidadesStr 
+        ? especialidadesStr.split(',').map(e => e.trim()).filter(e => e)
+        : [];
+    
+    const membroData = {
+        nome,
+        email,
+        telefone: telefone || null,
+        cargo,
+        data_admissao: dataAdmissao || null,
+        cor_agenda: corAgenda,
+        especialidades,
+        observacoes: observacoes || null
+    };
+    
+    try {
+        const url = membroId ? `${API_BASE}/membros-equipe/${membroId}` : `${API_BASE}/membros-equipe`;
+        const method = membroId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(membroData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Erro ao salvar membro');
+        }
+        
+        showToast(membroId ? 'Membro atualizado com sucesso!' : 'Membro adicionado com sucesso!', 'success');
+        fecharModalMembroEquipe();
+        await loadMembrosEquipe();
+        
+    } catch (error) {
+        console.error('Erro ao salvar membro:', error);
+        showToast(error.message || 'Erro ao salvar membro', 'error');
+    }
+}
+
+async function editarMembroEquipe(membroId) {
+    abrirModalMembroEquipe(membroId);
+}
+
+async function excluirMembroEquipe(membroId) {
+    if (!confirm('Tem certeza que deseja desativar este membro da equipe?')) {
+        return;
+    }
+    
+    if (!authToken) {
+        showToast('Você precisa estar autenticado', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/membros-equipe/${membroId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erro ao excluir membro');
+        }
+        
+        showToast('Membro desativado com sucesso!', 'success');
+        await loadMembrosEquipe();
+        
+    } catch (error) {
+        console.error('Erro ao excluir membro:', error);
+        showToast('Erro ao excluir membro', 'error');
+    }
+}
+
+function getMembrosEquipeParaSelect() {
+    return membrosEquipeCache.filter(m => m.ativo);
 }
 

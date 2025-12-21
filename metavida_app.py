@@ -155,6 +155,26 @@ class Instrutor(Base):
     eventos_aulas = relationship("EventoAula", back_populates="instrutor")
 
 
+class MembroEquipe(Base):
+    __tablename__ = "membros_equipe"
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    telefone = Column(String, nullable=True)
+    cargo = Column(String, nullable=False)  # Instrutor, Personal Trainer, Recepcionista, Gerente, etc
+    especialidades = Column(Text, nullable=True)  # JSON string com lista de especialidades
+    foto_url = Column(String, nullable=True)
+    data_admissao = Column(DateTime, default=datetime.utcnow)
+    horario_trabalho = Column(Text, nullable=True)  # JSON com horários de trabalho
+    cor_agenda = Column(String, default="#123058")  # Cor para exibição no calendário
+    observacoes = Column(Text, nullable=True)
+    unidade_id = Column(Integer, ForeignKey("unidades.id"))
+    ativo = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    unidade = relationship("Unidade")
+
+
 class EventoCalendario(Base):
     __tablename__ = "eventos_calendario"
     id = Column(Integer, primary_key=True, index=True)
@@ -2015,6 +2035,198 @@ def criar_instrutor(nome: str,
     db.add(instrutor)
     db.commit()
     return {"mensagem": "Instrutor criado com sucesso!", "id": instrutor.id}
+
+
+# ============================================================
+# Endpoints de Membros da Equipe
+# ============================================================
+
+
+@app.get("/membros-equipe")
+def listar_membros_equipe(ativo: Optional[bool] = True,
+                          cargo: Optional[str] = None,
+                          usuario: Usuario = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    query = db.query(MembroEquipe)
+    
+    if ativo is not None:
+        query = query.filter(MembroEquipe.ativo == ativo)
+    
+    if cargo:
+        query = query.filter(MembroEquipe.cargo == cargo)
+    
+    membros = query.order_by(MembroEquipe.nome).all()
+    
+    return [{
+        "id": m.id,
+        "nome": m.nome,
+        "email": m.email,
+        "telefone": m.telefone,
+        "cargo": m.cargo,
+        "especialidades": json.loads(m.especialidades) if m.especialidades else [],
+        "foto_url": m.foto_url,
+        "data_admissao": m.data_admissao.isoformat() if m.data_admissao else None,
+        "horario_trabalho": json.loads(m.horario_trabalho) if m.horario_trabalho else None,
+        "cor_agenda": m.cor_agenda,
+        "observacoes": m.observacoes,
+        "ativo": m.ativo,
+        "created_at": m.created_at.isoformat() if m.created_at else None
+    } for m in membros]
+
+
+@app.get("/membros-equipe/{membro_id}")
+def obter_membro_equipe(membro_id: int,
+                        usuario: Usuario = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    membro = db.query(MembroEquipe).filter(MembroEquipe.id == membro_id).first()
+    
+    if not membro:
+        raise HTTPException(status_code=404, detail="Membro não encontrado")
+    
+    return {
+        "id": membro.id,
+        "nome": membro.nome,
+        "email": membro.email,
+        "telefone": membro.telefone,
+        "cargo": membro.cargo,
+        "especialidades": json.loads(membro.especialidades) if membro.especialidades else [],
+        "foto_url": membro.foto_url,
+        "data_admissao": membro.data_admissao.isoformat() if membro.data_admissao else None,
+        "horario_trabalho": json.loads(membro.horario_trabalho) if membro.horario_trabalho else None,
+        "cor_agenda": membro.cor_agenda,
+        "observacoes": membro.observacoes,
+        "ativo": membro.ativo
+    }
+
+
+@app.post("/membros-equipe")
+def criar_membro_equipe(dados: dict,
+                        usuario: Usuario = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    especialidades = dados.get("especialidades", [])
+    if isinstance(especialidades, list):
+        especialidades = json.dumps(especialidades)
+    
+    horario_trabalho = dados.get("horario_trabalho")
+    if horario_trabalho and isinstance(horario_trabalho, dict):
+        horario_trabalho = json.dumps(horario_trabalho)
+    
+    data_admissao = None
+    if dados.get("data_admissao"):
+        try:
+            data_admissao = datetime.fromisoformat(dados["data_admissao"].replace("Z", ""))
+        except:
+            data_admissao = datetime.utcnow()
+    else:
+        data_admissao = datetime.utcnow()
+    
+    membro = MembroEquipe(
+        nome=dados.get("nome"),
+        email=dados.get("email"),
+        telefone=dados.get("telefone"),
+        cargo=dados.get("cargo"),
+        especialidades=especialidades,
+        foto_url=dados.get("foto_url"),
+        data_admissao=data_admissao,
+        horario_trabalho=horario_trabalho,
+        cor_agenda=dados.get("cor_agenda", "#123058"),
+        observacoes=dados.get("observacoes"),
+        unidade_id=usuario.unidade_id or 1,
+        ativo=True
+    )
+    
+    db.add(membro)
+    db.commit()
+    db.refresh(membro)
+    
+    return {
+        "mensagem": "Membro da equipe criado com sucesso!",
+        "id": membro.id,
+        "membro": {
+            "id": membro.id,
+            "nome": membro.nome,
+            "email": membro.email,
+            "cargo": membro.cargo
+        }
+    }
+
+
+@app.put("/membros-equipe/{membro_id}")
+def atualizar_membro_equipe(membro_id: int,
+                            dados: dict,
+                            usuario: Usuario = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    membro = db.query(MembroEquipe).filter(MembroEquipe.id == membro_id).first()
+    
+    if not membro:
+        raise HTTPException(status_code=404, detail="Membro não encontrado")
+    
+    if "nome" in dados:
+        membro.nome = dados["nome"]
+    if "email" in dados:
+        membro.email = dados["email"]
+    if "telefone" in dados:
+        membro.telefone = dados["telefone"]
+    if "cargo" in dados:
+        membro.cargo = dados["cargo"]
+    if "especialidades" in dados:
+        esp = dados["especialidades"]
+        membro.especialidades = json.dumps(esp) if isinstance(esp, list) else esp
+    if "foto_url" in dados:
+        membro.foto_url = dados["foto_url"]
+    if "data_admissao" in dados:
+        try:
+            membro.data_admissao = datetime.fromisoformat(dados["data_admissao"].replace("Z", ""))
+        except:
+            pass
+    if "horario_trabalho" in dados:
+        ht = dados["horario_trabalho"]
+        membro.horario_trabalho = json.dumps(ht) if isinstance(ht, dict) else ht
+    if "cor_agenda" in dados:
+        membro.cor_agenda = dados["cor_agenda"]
+    if "observacoes" in dados:
+        membro.observacoes = dados["observacoes"]
+    if "ativo" in dados:
+        membro.ativo = dados["ativo"]
+    
+    membro.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Membro atualizado com sucesso!", "id": membro.id}
+
+
+@app.delete("/membros-equipe/{membro_id}")
+def excluir_membro_equipe(membro_id: int,
+                          usuario: Usuario = Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    membro = db.query(MembroEquipe).filter(MembroEquipe.id == membro_id).first()
+    
+    if not membro:
+        raise HTTPException(status_code=404, detail="Membro não encontrado")
+    
+    membro.ativo = False
+    membro.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {"mensagem": "Membro desativado com sucesso!"}
+
+
+@app.get("/membros-equipe/cargos/lista")
+def listar_cargos_equipe(usuario: Usuario = Depends(get_current_user)):
+    return {
+        "cargos": [
+            {"id": "instrutor", "nome": "Instrutor", "descricao": "Conduz aulas e treinos em grupo"},
+            {"id": "personal", "nome": "Personal Trainer", "descricao": "Treinos individuais personalizados"},
+            {"id": "recepcionista", "nome": "Recepcionista", "descricao": "Atendimento e recepção"},
+            {"id": "gerente", "nome": "Gerente", "descricao": "Gestão geral da unidade"},
+            {"id": "coordenador", "nome": "Coordenador", "descricao": "Coordenação de equipes e atividades"},
+            {"id": "nutricionista", "nome": "Nutricionista", "descricao": "Orientação nutricional"},
+            {"id": "fisioterapeuta", "nome": "Fisioterapeuta", "descricao": "Reabilitação e prevenção"},
+            {"id": "avaliador", "nome": "Avaliador Físico", "descricao": "Avaliações físicas e prescrição"},
+            {"id": "administrativo", "nome": "Administrativo", "descricao": "Suporte administrativo"},
+            {"id": "manutencao", "nome": "Manutenção", "descricao": "Manutenção de equipamentos e instalações"}
+        ]
+    }
 
 
 # ============================================================
