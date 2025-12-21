@@ -11847,8 +11847,8 @@ textarea.form-control {
 .timeline-hour {
     min-width: 80px;
     width: 80px;
-    text-align: center;
-    padding: 0.5rem 0;
+    text-align: left;
+    padding: 0.5rem 0 0.5rem 4px;
     font-size: 0.8rem;
     color: var(--text-secondary);
     border-right: 1px solid var(--border-color);
@@ -12088,6 +12088,11 @@ textarea.form-control {
 
 .fc-timegrid-slot {
     height: 40px !important;
+}
+
+.fc-timegrid-slot-label-cushion {
+    position: relative;
+    top: -4px;
 }
 
 .fc-event {
